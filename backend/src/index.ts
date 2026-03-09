@@ -2,6 +2,7 @@ import { serve } from '@hono/node-server'
 import { Hono } from 'hono'
 import { authRoutes } from './routes/auth.js'
 import {loungeRoutes} from './routes/lounges.js'
+import {staffRoutes} from './routes/staff.js'
 import { authMiddleware,requireRole } from './middleware/auth.js'
 
 const app = new Hono()
@@ -13,6 +14,7 @@ app.get('/', (c) => {
 //routes 
 app.route('/lounges',loungeRoutes)
 app.route('/auth',authRoutes)
+app.route('/staff',staffRoutes)
 
 
 // //temporary route to test middleware

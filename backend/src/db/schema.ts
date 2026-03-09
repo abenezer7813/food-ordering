@@ -1,6 +1,6 @@
 import { uuid,decimal,integer,pgTable,varchar ,boolean, timestamp, uniqueIndex, primaryKey, text} from "drizzle-orm/pg-core";
 import { pgEnum } from "drizzle-orm/pg-core";
-
+import { relations } from "drizzle-orm"
 
 export const userRoleEnum=pgEnum('user_role',[
     'super_admin',
@@ -193,3 +193,17 @@ export const sales_report=pgTable("sales_report",{
     total_orders:integer("total_orders").notNull(),
     created_at:  timestamp("created_at").notNull().defaultNow(),
 })      
+
+
+
+
+export const lounge_staff_relations = relations(lounge_staff, ({ one }) => ({
+  user: one(users, {
+    fields: [lounge_staff.user_id],
+    references: [users.id]
+  }),
+  lounge: one(lounges, {
+    fields: [lounge_staff.lounge_id],
+    references: [lounges.id]
+  })
+}))
