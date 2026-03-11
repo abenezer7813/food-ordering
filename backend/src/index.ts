@@ -4,6 +4,7 @@ import { authRoutes } from './routes/auth.js'
 import {loungeRoutes} from './routes/lounges.js'
 import {staffRoutes} from './routes/staff.js'
 import { authMiddleware,requireRole } from './middleware/auth.js'
+import { menuRoutes } from './routes/menu.js'
 
 const app = new Hono()
 
@@ -15,6 +16,7 @@ app.get('/', (c) => {
 app.route('/lounges',loungeRoutes)
 app.route('/auth',authRoutes)
 app.route('/staff',staffRoutes)
+app.route('/menu',menuRoutes)
 
 
 // //temporary route to test middleware
