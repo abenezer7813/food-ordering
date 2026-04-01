@@ -2,9 +2,8 @@ import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import z, { email } from "zod";
 import { requireRole, authMiddleware } from "../middleware/auth.js";
-import { createLounge, getAllLounges, createLoungeManager, assignLoungeManager, deactivateLounge } from "../services/lounge.service.js";
-import { da, tr } from "zod/locales";
-import { error } from "console";
+import { createLounge, getAllLounges, createLoungeManager, assignLoungeManager, getAllLoungesForadmin, loungeStatus } from "../services/lounge.service.js";
+
 
 
 export const loungeRoutes = new Hono()
@@ -44,7 +43,7 @@ loungeRoutes.post('/',
 //get lounge 
 
 loungeRoutes.get('/admin', async (c) => {
-  const lounges = await getAllLounges()
+  const lounges = await getAllLoungesForadmin()
   return c.json({ lounges })
 })
 
@@ -89,7 +88,7 @@ loungeRoutes.patch('/:id',
     if (!loungeId) {
       return c.json({ error: "Loinge id is required" }, 400)
     }
-    await deactivateLounge(loungeId)
+    await loungeStatus(loungeId)
     return c.json({ message: 'Lounge deactivated successfully' })
   }
 )

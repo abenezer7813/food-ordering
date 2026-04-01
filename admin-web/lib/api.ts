@@ -66,26 +66,30 @@ export interface Lounge {
   id: string;
   name: string;
   is_active: boolean;
-  manager_id: string | null;
+  manager: {
+    id: string,
+    first_name: string,
+    last_name: string
+  };
 }
 
 export const loungeApi = {
   getAll: () => fetcher<{ lounges: Lounge[] }>("/lounges"),
-  
+
   getAllAdmin: () => fetcher<{ lounges: Lounge[] }>("/lounges/admin"),
-  
+
   create: (name: string) =>
     fetcher<{ lounge: Lounge }>("/lounges", {
       method: "POST",
       body: JSON.stringify({ name }),
     }),
-  
+
   assignManager: (loungeId: string, managerId: string) =>
     fetcher<{ lounge: Lounge }>(`/lounges/${loungeId}/assign-manager`, {
       method: "PATCH",
       body: JSON.stringify({ manager_id: managerId }),
     }),
-  
+
   deactivate: (loungeId: string) =>
     fetcher<{ message: string }>(`/lounges/${loungeId}`, {
       method: "PATCH",
@@ -104,7 +108,8 @@ export interface Staff {
 
 export const staffApi = {
   getAll: () => fetcher<{ staff: Staff[] }>("/staff"),
-  
+  getAllmanager: () => fetcher<{ manager: Staff[] }>("/staff/managers"),
+
   createCashier: (data: {
     first_name: string;
     last_name: string;
@@ -115,7 +120,7 @@ export const staffApi = {
       method: "POST",
       body: JSON.stringify(data),
     }),
-  
+
   createCook: (data: {
     first_name: string;
     last_name: string;
@@ -126,7 +131,7 @@ export const staffApi = {
       method: "POST",
       body: JSON.stringify(data),
     }),
-  
+
   deactivate: (staffId: string) =>
     fetcher<{ message: string }>(`/staff/${staffId}/deactivate`, {
       method: "PATCH",
@@ -147,7 +152,7 @@ export interface MenuItem {
 export const menuApi = {
   getByLounge: (loungeId: string) =>
     fetcher<{ items: MenuItem[] }>(`/menu/${loungeId}`),
-  
+
   create: (data: {
     name: string;
     description?: string;
@@ -159,13 +164,13 @@ export const menuApi = {
       method: "POST",
       body: JSON.stringify(data),
     }),
-  
+
   toggleAvailability: (itemId: string, isAvailable: boolean) =>
     fetcher<{ item: MenuItem }>(`/menu/${itemId}/availability`, {
       method: "PATCH",
       body: JSON.stringify({ is_available: isAvailable }),
     }),
-  
+
   update: (
     itemId: string,
     data: {
@@ -203,18 +208,18 @@ export const orderApi = {
     const params = status ? `?status=${status}` : "";
     return fetcher<{ orders: Order[] }>(`/orders${params}`);
   },
-  
+
   updateStatus: (orderId: string, status: "preparing" | "ready") =>
     fetcher<{ order: Order }>(`/orders/${orderId}/status`, {
       method: "PATCH",
       body: JSON.stringify({ status }),
     }),
-  
+
   markCollected: (orderId: string) =>
     fetcher<{ order: Order }>(`/orders/${orderId}/collect`, {
       method: "PATCH",
     }),
-  
+
   createWalkIn: (data: { items: OrderItem[]; payment_method: string }) =>
     fetcher<{ order: Order }>("/orders/walk-in", {
       method: "POST",

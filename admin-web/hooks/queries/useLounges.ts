@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { loungeApi, Lounge } from "@/lib/api";
+import { notifySuccess } from "@/lib/notification";
 
 // Query Keys
 export const loungeKeys = {
@@ -38,7 +39,9 @@ export function useCreateLounge() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: loungeKeys.all });
       queryClient.invalidateQueries({ queryKey: loungeKeys.admin });
+      notifySuccess('Lounge created Successfuly')
     },
+
   });
 }
 
@@ -52,6 +55,7 @@ export function useAssignManager() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: loungeKeys.all });
       queryClient.invalidateQueries({ queryKey: loungeKeys.admin });
+      notifySuccess('Manager Assigned Successfuly')
     },
   });
 }
@@ -65,6 +69,7 @@ export function useDeactivateLounge() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: loungeKeys.all });
       queryClient.invalidateQueries({ queryKey: loungeKeys.admin });
+      notifySuccess("Status Updated Successfuly")
     },
   });
 }
