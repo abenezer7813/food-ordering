@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:food_ordering_app/features/auth/widgets/input_fields.dart';
 import '../../../core/constants/app_colors.dart';
 import '../validator/input_validator.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
 
@@ -11,6 +12,21 @@ class RegisterScreen extends StatefulWidget {
 
 class _RegisterScreenState extends State<RegisterScreen> {
   final _formKey=GlobalKey<FormState>();
+   @override
+  void initState() {
+    super.initState();
+    getFCMToken();
+  }
+
+  Future<void> getFCMToken() async {
+    FirebaseMessaging messaging = FirebaseMessaging.instance;
+
+    await messaging.requestPermission();
+
+    String? token = await messaging.getToken();
+
+    print("FCM Token: $token");
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(

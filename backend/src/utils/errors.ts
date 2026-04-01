@@ -1,4 +1,6 @@
 import type { Context } from 'hono'
+import { ZodError } from "zod"
+
 export class AppError extends Error {
   statusCode: number
 
@@ -17,11 +19,31 @@ export const Errors = {
   badRequest:    (msg: string)      => new AppError(msg, 400),
 }
 
-
 export function handleError(e: unknown, c: Context) {
-  if (e instanceof AppError) {
-    return c.json({ error: e.message }, e.statusCode as any)
+
+  // Handle Zod validation errors
+  if (e instanceof ZodError) {
+    return c.json({
+      success: false,
+      errors: e.issues.map(issue => ({
+        field: issue.path.join('.'),
+        message: issue.message
+      }))
+    }, 400)
   }
+
+  // Handle custom AppError
+  if (e instanceof AppError) {
+    return c.json(
+      { success: false, error: e.message },
+      e.statusCode as any
+    )
+  }
+
   console.error(e)
-  return c.json({ error: 'Internal server error' }, 500)
+
+  return c.json(
+    { success: false, error: 'Internal server error' },
+    500
+  )
 }

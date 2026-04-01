@@ -1,36 +1,51 @@
-export type UserRole = 'super_admin' | 'lounge_manager' | 'cashier' | 'cook'
-
 export interface User {
-  id:         string
-  first_name: string
-  last_name:  string
-  email:      string
-  role:       UserRole
-  is_active:  boolean
+  id: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  role: "super_admin" | "lounge_manager" | "cashier" | "cook";
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface LoginResponse {
+  token: string;
+  user: User;
 }
 
 export interface Lounge {
-  id:         string
-  name:       string
-  is_active:  boolean
-  manager_id: string | null
+  id: string;
+  name: string;
+  is_active: boolean;
+  manager_id: string | null;
+}
+
+export interface Staff {
+  id: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  role: "cashier" | "cook" | "lounge_manager";
+  is_active: boolean;
 }
 
 export interface MenuItem {
-  id:                        string
-  name:                      string
-  description:               string | null
-  price:                     string
-  image_url:                 string | null
-  is_available:              boolean
-  estimated_preparation_time: number
+  id: string;
+  name: string;
+  description: string | null;
+  price: string;
+  image_url: string | null;
+  is_available: boolean;
+  estimated_preparation_time: number;
 }
 
 export interface Order {
-  id:                   string
-  status:               'pending' | 'preparing' | 'ready' | 'collected'
-  order_type:           'online' | 'walk_in'
-  total_amount:         string
-  estimated_ready_time: number
-  created_at:           string
+  id: string;
+  status: "pending" | "preparing" | "ready" | "collected";
+  order_type: "online" | "walk_in";
+  total_amount: string;
+  estimated_ready_time?: number;
+  created_at: string;
+  items?: any[];
 }

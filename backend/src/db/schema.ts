@@ -9,11 +9,12 @@ export const userRoleEnum=pgEnum('user_role',[
     'cook'
     
 ])
-export const orderStatusEnum=pgEnum('order_status',[
-    'pending',
-    'preparing',
-    'ready',
-    'collected'
+export const orderStatusEnum = pgEnum('order_status', [
+  'pending',    
+  'confirmed',  
+  'preparing',  
+  'ready',      
+  'collected',  
 ])
 export const ordertypeEnum=pgEnum('order_type',
     [
@@ -160,6 +161,7 @@ export const wallet_transactions=pgTable("wallet_transactions",{
     order_id:uuid("order_id").references(()=>orders.id),
     amount:decimal("amount",{precision:10,scale:2}).notNull(),
     transaction_type:transactionTypeEnum("transaction_type").notNull(),
+     tx_ref:           varchar("tx_ref", { length: 255 }),
     description:varchar("description",{length:255}),
     created_at:  timestamp("created_at").notNull().defaultNow(),
     
@@ -169,6 +171,7 @@ export const payments=pgTable("payments",{
     order_id:uuid("order_id").notNull().references(()=>orders.id),
     lounge_id:uuid("lounge_id").notNull().references(()=>lounges.id),
     amount:decimal("amount",{precision:10,scale:2}).notNull(),
+    tx_ref: varchar("tx_ref", { length: 255 }),
     payment_method:paymentMethodEnum("payment_method").notNull(),
     payment_status:paymentStatusEnum("payment_status").notNull().default("pending"),
     payer_type:payerTypeEnum("payer_type").notNull(),
@@ -205,5 +208,21 @@ export const lounge_staff_relations = relations(lounge_staff, ({ one }) => ({
   lounge: one(lounges, {
     fields: [lounge_staff.lounge_id],
     references: [lounges.id]
+  })
+}))
+
+
+export const orders_relations = relations(orders, ({ many }) => ({
+  order_items: many(order_items)
+}))
+
+export const order_items_relations = relations(order_items, ({ one }) => ({
+  order: one(orders, {
+    fields: [order_items.order_id],
+    references: [orders.id]
+  }),
+  menu_item: one(menu_items, {
+    fields: [order_items.menu_item_id],
+    references: [menu_items.id]
   })
 }))

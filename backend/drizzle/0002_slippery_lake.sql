@@ -1,0 +1,1 @@
+ALTER TABLE "wallet_transactions" ADD COLUMN "tx_ref" varchar(255);
