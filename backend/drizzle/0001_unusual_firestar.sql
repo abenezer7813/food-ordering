@@ -1,0 +1,1 @@
+ALTER TABLE "payments" ADD COLUMN "tx_ref" varchar(255);

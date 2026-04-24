@@ -8,6 +8,27 @@
       "when": 1772795304619,
       "tag": "0000_nasty_random",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1773410997416,
+      "tag": "0001_unusual_firestar",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1773563802357,
+      "tag": "0002_slippery_lake",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1773569032068,
+      "tag": "0003_glossy_the_hunter",
+      "breakpoints": true
     }
   ]
 }

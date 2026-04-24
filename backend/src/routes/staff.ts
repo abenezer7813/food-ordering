@@ -1,5 +1,5 @@
 import z from "zod";
-import { createLoungeStaff, deactivateStaff, getLoungeStaff } from "../services/staff.service.js";
+import { createLoungeStaff, deactivateStaff, getLoungeStaff, getManagers } from "../services/staff.service.js";
 import { Hono, type Context } from "hono";
 import { authMiddleware, requireRole } from "../middleware/auth.js";
 import { zValidator } from "@hono/zod-validator";
@@ -80,10 +80,20 @@ staffRoutes.patch('/:id/deactivate',
             const staffId = c.req.param('id') as string
 
             await deactivateStaff(staffId, lounge.id)
-            return c.json({message:"Staff member deactivated successdully"})
+            return c.json({ message: "Staff member deactivated successdully" })
 
         } catch (e) {
             return handleError(e, c)
         }
     }
 )
+staffRoutes.get('/managers',
+    requireRole('super_admin'),
+    async (c) => {
+        try {
+            const managers = await getManagers()
+            return c.json(managers)
+        } catch (e) {
+            return handleError(e, c)
+        }
+    })
