@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:food_ordering_app/features/lounges/models/lounge_model.dart';
 import 'package:food_ordering_app/features/lounges/screens/lounges_screen.dart';
+import 'package:food_ordering_app/features/lounges/screens/non_cafe_register_screen.dart';
 import 'package:food_ordering_app/features/lounges/screens/order_type_screen.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -56,9 +57,10 @@ GoRoute(path: '/order-type',
 ),
 GoRoute(
   path: '/non-cafe-register',
-  builder: (context, state) => const Scaffold(
-    body: Center(child: Text('Non-Cafe Register - Coming Soon')),
-  ),
+ builder: (context, state) {
+    final lounge = state.extra as Lounge;
+    return NonCafeRegisterScreen(lounge: lounge);
+  },
 ),
   ],
 );

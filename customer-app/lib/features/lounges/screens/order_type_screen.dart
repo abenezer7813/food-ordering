@@ -140,12 +140,12 @@ class _NonCafeCard extends ConsumerWidget {
       onTap: () {
         statusAsync.whenData((isNonCafe) {
           if (isNonCafe) {
-            context.go('/menu', extra: {
+            context.push('/menu', extra: {
               'lounge': lounge,
               'isNonCafe': true,
             });
           } else {
-            context.go('/non-cafe-register', extra: lounge);
+            context.push('/non-cafe-register', extra: lounge);
           }
         });
       },

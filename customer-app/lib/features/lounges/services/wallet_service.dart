@@ -16,4 +16,14 @@ class WalletService {
       throw e.response?.data['message'] ?? 'Failed to check status';
     }
   }
+  Future<Map<String, dynamic>> registerNonCafe(String loungeId) async {
+  try {
+    final response = await _dio.post('/wallet/register', data: {
+      'lounge_id': loungeId,
+    });
+    return response.data['wallet'];
+  } on DioException catch (e) {
+    throw e.response?.data['message'] ?? 'Failed to register as non-café';
+  }
+}
 }

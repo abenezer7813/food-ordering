@@ -36,7 +36,7 @@ class LoungesScreen extends ConsumerWidget {
           itemBuilder: (context, index) {
             final lounge = lounges[index];
             return GestureDetector(
-              onTap: () => context.go('/order-type', extra: lounge),
+              onTap: () => context.push('/order-type', extra: lounge),
               child: Container(
                 margin: const EdgeInsets.only(bottom: 16),
                 padding: const EdgeInsets.all(20),
