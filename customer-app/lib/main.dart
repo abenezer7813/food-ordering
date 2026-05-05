@@ -1,4 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:food_ordering_app/features/lounges/models/lounge_model.dart';
+import 'package:food_ordering_app/features/lounges/screens/lounges_screen.dart';
+import 'package:food_ordering_app/features/lounges/screens/non_cafe_register_screen.dart';
+import 'package:food_ordering_app/features/lounges/screens/order_type_screen.dart';
+import 'package:food_ordering_app/features/menu/screens/menu_screen.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:food_ordering_app/features/auth/screens/register_screen.dart';
@@ -35,10 +40,37 @@ final goRouter = GoRouter(
       path: '/login',
       builder: (context, state) => const LoginScreen(),
     ),
-    GoRoute(
-  path: '/lounges',
+    
+GoRoute(
+path: '/lounges',
+builder:(context,state)=>const LoungesScreen()
+),
+GoRoute(path: '/order-type',
+  builder: (context ,state){
+    final lounge=state.extra as Lounge;
+    return OrderTypeScreen(lounge: lounge);
+  }),
+ 
+GoRoute(
+  path: '/non-cafe-register',
+ builder: (context, state) {
+    final lounge = state.extra as Lounge;
+    return NonCafeRegisterScreen(lounge: lounge);
+  },
+),
+GoRoute(
+  path: '/menu',
+  builder: (context, state) {
+    final extra = state.extra as Map<String, dynamic>;
+    final lounge = extra['lounge'] as Lounge;
+    final isNonCafe = extra['isNonCafe'] as bool;
+    return MenuScreen(lounge: lounge, isNonCafe: isNonCafe);
+  },
+),
+GoRoute(
+  path: '/cart',
   builder: (context, state) => const Scaffold(
-    body: Center(child: Text('Lounges - Coming Soon')),
+    body: Center(child: Text('Cart - Coming Soon')),
   ),
 ),
   ],

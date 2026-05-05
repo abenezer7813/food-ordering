@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { balanceTopUp, getTransactionHistory, getWalletBalance, nonCafeRegistration, verifyTopUp } from "../services/wallet.service.js";
+import { balanceTopUp, getNonCafeUser, getTransactionHistory, getWalletBalance, nonCafeRegistration, verifyTopUp } from "../services/wallet.service.js";
 import z, { string } from "zod";
 import { authMiddleware, requireRole } from "../middleware/auth.js";
 import { zValidator } from "@hono/zod-validator";
@@ -9,7 +9,20 @@ import { Errors, handleError } from "../utils/errors.js";
 export const walletRoutes=new Hono()
 walletRoutes.use('*',authMiddleware)
 
+walletRoutes.get('/customers/non-cafe/status',
+  requireRole('customer'),async(c)=>{
 
+    const customerId = c.get('userId')  as string
+  const loungeId = c.req.query('lounge_id')
+
+  if (!loungeId) {
+    return c.json({ message: 'lounge_id is required' }, 400)
+  }
+
+  const isNonCafe = await getNonCafeUser(customerId, loungeId)
+  return c.json({ is_non_cafe: isNonCafe })
+  }
+)
 walletRoutes.post('/register',
   requireRole('customer'),
   zValidator('json', z.object({ lounge_id: z.string().uuid() })),

@@ -7,6 +7,18 @@ import { findCustomer, findLounge } from "./common.js";
 import { initializeChapaPayment, verifyChapaPayment } from "../utils/chapa.js";
 
 
+
+export async function  getNonCafeUser(customerId:string,loungeId:string) {
+    const lounge = await findLounge(loungeId)
+   const existing = await db.query.wallets.findFirst({
+    where: and(
+      eq(wallets.customer_id, customerId),
+      eq(wallets.lounge_id, loungeId)
+    )
+  })
+  if (existing) return true
+  return false
+}
 // service
 export async function nonCafeRegistration(customerId: string, loungeId: string) {
   // 1. Check lounge exists

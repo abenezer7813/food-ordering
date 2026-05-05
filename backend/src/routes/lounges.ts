@@ -41,11 +41,20 @@ loungeRoutes.post('/',
 )
 
 //get lounge 
+loungeRoutes.get('/', async (c) => {
+  const lounges = await getAllLounges()
+  return c.json({ lounges })
+})
 
-loungeRoutes.get('/admin', async (c) => {
+//get for admin
+loungeRoutes.get('/admin', 
+   requireRole('super_admin'),
+   async (c) => {
+ 
   const lounges = await getAllLoungesForadmin()
   return c.json({ lounges })
 })
+
 
 //create manager
 loungeRoutes.post('/managers',
