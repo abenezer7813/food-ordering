@@ -9,7 +9,7 @@ class ApiClient {
 
   ApiClient(this._tokenStorage) : _dio = Dio(
     BaseOptions(
-      baseUrl: 'https://unsplendorously-unrecited-daina.ngrok-free.dev', 
+      baseUrl: 'https://food-ordering-l290.onrender.com', 
       connectTimeout: Duration(seconds: 10),
       receiveTimeout: Duration(seconds: 10),
     ),
