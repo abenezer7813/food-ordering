@@ -1,0 +1,347 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import '../../../core/constants/app_colors.dart';
+import '../../lounges/models/lounge_model.dart';
+import '../models/menu_item_model.dart';
+import '../providers/menu_provider.dart';
+
+// Simple cart state
+final cartProvider = StateProvider<Map<String, int>>((ref) => {});
+
+class MenuScreen extends ConsumerWidget {
+  final Lounge lounge;
+  final bool isNonCafe;
+
+  const MenuScreen({
+    super.key,
+    required this.lounge,
+    required this.isNonCafe,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final menuAsync = ref.watch(menuItemsProvider(lounge.id));
+    final cart = ref.watch(cartProvider);
+    final totalItems = cart.values.fold(0, (sum, qty) => sum + qty);
+
+    return Scaffold(
+      backgroundColor: AppColors.scaffoldBackground,
+      appBar: AppBar(
+        backgroundColor: AppColors.primaryBlue,
+        title: Text(
+          lounge.name,
+          style: const TextStyle(color: AppColors.textLight),
+        ),
+        actions: [
+          if (totalItems > 0)
+            Stack(
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.shopping_cart,
+                      color: AppColors.textLight),
+                  onPressed: () => context.push('/cart', extra: {
+                    'lounge': lounge,
+                    'isNonCafe': isNonCafe,
+                  }),
+                ),
+                Positioned(
+                  right: 6,
+                  top: 6,
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: const BoxDecoration(
+                      color: AppColors.error,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Text(
+                      '$totalItems',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+        ],
+      ),
+      body: menuAsync.when(
+        loading: () =>
+            const Center(child: CircularProgressIndicator()),
+        error: (error, _) => Center(
+          child: Text(
+            error.toString(),
+            style: const TextStyle(color: AppColors.error),
+          ),
+        ),
+        data: (items) => Column(
+          children: [
+            Expanded(
+              child: GridView.builder(
+                padding: const EdgeInsets.all(16),
+                gridDelegate:
+                    const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  crossAxisSpacing: 16,
+                  mainAxisSpacing: 16,
+                  childAspectRatio: 0.56,
+                ),
+                itemCount: items.length,
+                itemBuilder: (context, index) {
+                  final item = items[index];
+                  final qty = cart[item.id] ?? 0;
+                  return _MenuItemCard(item: item, qty: qty);
+                },
+              ),
+            ),
+            // Bottom cart bar
+            if (totalItems > 0)
+              _CartBar(
+                totalItems: totalItems,
+                items: items,
+                cart: cart,
+                lounge: lounge,
+                isNonCafe: isNonCafe,
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _MenuItemCard extends ConsumerWidget {
+  final MenuItem item;
+  final int qty;
+
+  const _MenuItemCard({required this.item, required this.qty});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.textLight,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Image or placeholder
+          ClipRRect(
+            borderRadius:
+                const BorderRadius.vertical(top: Radius.circular(16)),
+            child: item.imageUrl != null &&
+                    item.imageUrl!.startsWith('http') &&
+                    !item.imageUrl!.contains('img.com')
+                ? Image.network(
+                    item.imageUrl!,
+                    height: 110,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => _imagePlaceholder(),
+                  )
+                : _imagePlaceholder(),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  item.name,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                    color: AppColors.textPrimary,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                if (item.description != null)
+                  Text(
+                    item.description!,
+                    style: const TextStyle(
+                      fontSize: 11,
+                      color: AppColors.textSecondary,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                const SizedBox(height: 4),
+                Text(
+                  'ETB ${item.price.toStringAsFixed(2)}',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                    color: AppColors.primaryBlue,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    const Icon(Icons.timer,
+                        size: 11, color: AppColors.textSecondary),
+                    const SizedBox(width: 3),
+                    Text(
+                      '${item.estimatedPreparationTime} min',
+                      style: const TextStyle(
+                          fontSize: 11, color: AppColors.textSecondary),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                // Add/Remove controls
+                qty == 0
+                    ? SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: () {
+                            ref.read(cartProvider.notifier).update(
+                                (cart) => {...cart, item.id: 1});
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primaryBlue,
+                            padding:
+                                const EdgeInsets.symmetric(vertical: 6),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                          ),
+                          child: const Text(
+                            'Add',
+                            style: TextStyle(
+                                color: AppColors.textLight, fontSize: 12),
+                          ),
+                        ),
+                      )
+                    : Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          GestureDetector(
+                            onTap: () {
+                              ref.read(cartProvider.notifier).update(
+                                (cart) {
+                                  final updated = Map<String, int>.from(cart);
+                                  if (updated[item.id] == 1) {
+                                    updated.remove(item.id);
+                                  } else {
+                                    updated[item.id] = (updated[item.id] ?? 1) - 1;
+                                  }
+                                  return updated;
+                                },
+                              );
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.all(4),
+                              decoration: BoxDecoration(
+                                color: AppColors.primaryBlue,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: const Icon(Icons.remove,
+                                  color: Colors.white, size: 16),
+                            ),
+                          ),
+                          Text(
+                            '$qty',
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                              color: AppColors.textPrimary,
+                            ),
+                          ),
+                          GestureDetector(
+                            onTap: () {
+                              ref.read(cartProvider.notifier).update(
+                                (cart) => {
+                                  ...cart,
+                                  item.id: (cart[item.id] ?? 0) + 1
+                                },
+                              );
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.all(4),
+                              decoration: BoxDecoration(
+                                color: AppColors.primaryBlue,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: const Icon(Icons.add,
+                                  color: Colors.white, size: 16),
+                            ),
+                          ),
+                        ],
+                      ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _imagePlaceholder() {
+    return Container(
+      height: 110,
+      width: double.infinity,
+      color: AppColors.primaryBlue.withOpacity(0.1),
+      child: const Icon(Icons.restaurant,
+          color: AppColors.primaryBlue, size: 40),
+    );
+  }
+}
+
+class _CartBar extends ConsumerWidget {
+  final int totalItems;
+  final List<MenuItem> items;
+  final Map<String, int> cart;
+  final Lounge lounge;
+  final bool isNonCafe;
+
+  const _CartBar({
+    required this.totalItems,
+    required this.items,
+    required this.cart,
+    required this.lounge,
+    required this.isNonCafe,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final totalPrice = items.fold(0.0, (sum, item) {
+      final qty = cart[item.id] ?? 0;
+      return sum + (item.price * qty);
+    });
+
+    return GestureDetector(
+      onTap: () => context.push('/cart', extra: {
+        'lounge': lounge,
+        'isNonCafe': isNonCafe,
+      }),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+        color: AppColors.primaryBlue,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              '$totalItems item${totalItems > 1 ? 's' : ''} in cart',
+              style: const TextStyle(
+                color: AppColors.textLight,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            Text(
+              'ETB ${totalPrice.toStringAsFixed(2)}',
+              style: const TextStyle(
+                color: AppColors.textLight,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
