@@ -1,0 +1,85 @@
+
+#################################################
+# 🔒 ENV FILES (NEVER COMMIT SECRETS)
+#################################################
+.env
+.env.*
+*.env
+
+#################################################
+# 🧠 OS FILES
+#################################################
+.DS_Store
+Thumbs.db
+
+#################################################
+# 💻 IDE / EDITORS
+#################################################
+.vscode/
+.idea/
+*.swp
+*.log
+
+#################################################
+# 📦 NODE (backend + admin-web)
+#################################################
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+package-lock.json
+
+#################################################
+# ⚙️ BACKEND (Node / TypeScript build)
+#################################################
+backend/dist/
+backend/build/
+
+#################################################
+# 🌐 NEXT.JS (admin-web)
+#################################################
+admin-web/.next/
+admin-web/out/
+admin-web/node_modules/
+
+#################################################
+# 📱 FLUTTER (customer-app)
+#################################################
+
+# Dart/Flutter generated files
+customer-app/.dart_tool/
+customer-app/.flutter-plugins
+customer-app/.flutter-plugins-dependencies
+customer-app/.packages
+
+# Build output
+customer-app/build/
+
+# Android
+customer-app/android/.gradle/
+customer-app/android/local.properties
+customer-app/android/app/build/
+
+# iOS
+customer-app/ios/Flutter/ephemeral/
+customer-app/ios/Flutter/Generated.xcconfig
+customer-app/ios/Flutter/flutter_export_environment.sh
+
+#################################################
+# 🔥 FLUTTER / WEB DEBUG (Chrome device)
+#################################################
+customer-app/.dart_tool/chrome-device/
+
+#################################################
+# 🔐 OPTIONAL (Firebase / keys)
+#################################################
+google-services.json
+GoogleService-Info.plist
+
+#################################################
+# 📦 CACHES
+#################################################
+.cache/
+tmp/
+temp/
