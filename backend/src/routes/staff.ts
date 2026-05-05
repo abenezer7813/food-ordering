@@ -9,7 +9,9 @@ import { lounges } from "../db/schema.js";
 import { handleError } from "../utils/errors.js";
 
 
-
+type Variables = {
+  userId: string
+}
 const createLoungeStaffSchema = z.object({
     first_name: z.string().min(2),
     last_name: z.string().min(2),
@@ -27,14 +29,14 @@ export async function getManagerLounge(managerId: string) {
     return lounge
 }
 
-export const staffRoutes = new Hono()
+export const staffRoutes = new Hono<{ Variables: Variables }>()
 
 staffRoutes.use('*', authMiddleware)
 //get all staff for specific lounge
 staffRoutes.get('/',
     requireRole('lounge_manager'),
     async (c) => {
-        const managerId = c.get('userId') as string
+        const managerId = c.get('userId') as string 
         try {
             const lounge = await getManagerLounge(managerId);
 

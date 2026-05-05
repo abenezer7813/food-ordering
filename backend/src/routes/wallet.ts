@@ -5,8 +5,10 @@ import { authMiddleware, requireRole } from "../middleware/auth.js";
 import { zValidator } from "@hono/zod-validator";
 import { Errors, handleError } from "../utils/errors.js";
 
-
-export const walletRoutes=new Hono()
+type Variables = {
+  userId: string
+} 
+export const walletRoutes=new Hono<{ Variables: Variables }>()
 walletRoutes.use('*',authMiddleware)
 
 walletRoutes.get('/customers/non-cafe/status',

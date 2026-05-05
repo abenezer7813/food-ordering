@@ -5,8 +5,10 @@ import { handleError } from "../utils/errors.js";
 import z from "zod";
 import { zValidator } from "@hono/zod-validator";
 
-
-export const menuRoutes =new Hono()
+type Variables = {
+  userId: string
+}
+export const menuRoutes =new Hono<{ Variables: Variables }>()
 
 const createMenuItemSchema = z.object({
   name:                      z.string().min(2),

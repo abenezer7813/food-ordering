@@ -5,7 +5,10 @@ import { zValidator } from "@hono/zod-validator";
 import { handleError } from "../utils/errors.js";
 import { collectOrder, createOrder, createWalkInOrder, getCustomerOrders, getLoungeOrders, updateOrderStatus } from "../services/order.service.js";
 
-export const orderRoutes=new Hono()
+type Variables = {
+  userId: string
+}
+export const orderRoutes=new Hono<{ Variables: Variables }>()
 
 orderRoutes.use('*',authMiddleware)
 
