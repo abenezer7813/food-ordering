@@ -7,7 +7,7 @@ import { Errors, handleError } from "../utils/errors.js";
 
 type Variables = {
   userId: string
-}
+} 
 export const walletRoutes=new Hono<{ Variables: Variables }>()
 walletRoutes.use('*',authMiddleware)
 
