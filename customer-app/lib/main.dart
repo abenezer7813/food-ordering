@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:food_ordering_app/features/lounges/screens/lounges_screen.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:food_ordering_app/features/auth/screens/register_screen.dart';
@@ -35,12 +36,11 @@ final goRouter = GoRouter(
       path: '/login',
       builder: (context, state) => const LoginScreen(),
     ),
-    GoRoute(
-  path: '/lounges',
-  builder: (context, state) => const Scaffold(
-    body: Center(child: Text('Lounges - Coming Soon')),
-  ),
-),
+    
+GoRoute(
+path: '/lounges',
+builder:(context,state)=>const LoungesScreen()
+)
   ],
 );
 class MyApp extends ConsumerWidget { // what should this extend?
