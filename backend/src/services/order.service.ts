@@ -13,7 +13,7 @@ export async function createOrder(data: {
     quantity: number,
     special_instructions?: string
   }[],
-  payment_method: 'wallet' | 'chapa',
+  payment_method: 'wallet' | 'chapa'|'cash',
 }, customerId: string) {
 
   let totalAmount = 0
