@@ -5,7 +5,10 @@ import { zValidator } from "@hono/zod-validator";
 import { handleError } from "../utils/errors.js";
 import { generateReport } from "../services/report.service.js";
 
-export const reportRoutes=new Hono()
+type Variables = {
+  userId: string
+}
+export const reportRoutes=new Hono<{ Variables: Variables }>()
 
 reportRoutes.use('*',authMiddleware)
 

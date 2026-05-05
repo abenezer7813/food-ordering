@@ -6,7 +6,10 @@ import { authMiddleware, requireRole } from '../middleware/auth.js'
 import { submitFeedback, getLoungeFeedback } from '../services/feedback.service.js'
 import { handleError } from '../utils/errors.js'
 
-export const feedbackRoutes = new Hono()
+type Variables = {
+  userId: string
+}
+export const feedbackRoutes = new Hono<{ Variables: Variables }>()
 
 feedbackRoutes.use('*', authMiddleware)
 
