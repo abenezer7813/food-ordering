@@ -15,7 +15,8 @@ const app = new Hono()
 app.use(
   "*",
   cors({
-    origin: process.env.FRONTEND_URL || "http://localhost:3000",
+    origin:"*",
+    // process.env.FRONTEND_URL || "http://localhost:3000",
     credentials: true,
   })
 );
@@ -38,6 +39,7 @@ app.route('/feedback', feedbackRoutes)
 serve({
   fetch: app.fetch,
   port: Number(process.env.PORT) || 4001,
+  hostname: '0.0.0.0',
 }, (info) => {
   console.log(`Server is running on http://localhost:${info.port}`)
 })

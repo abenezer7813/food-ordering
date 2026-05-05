@@ -5,6 +5,7 @@ import '../../../core/constants/app_colors.dart';
 
 class InputFields {
   static Widget textInput({
+    required TextEditingController controller,
     required IconData prefixIcon,
     IconData? suffixIcon,
     required String text,
@@ -18,6 +19,7 @@ class InputFields {
         borderRadius: BorderRadius.circular(30),
       ),
       child: TextFormField(
+        controller: controller,
         obscureText: isObscure,
         validator: validator,
         decoration: InputDecoration(

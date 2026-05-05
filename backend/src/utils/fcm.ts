@@ -4,13 +4,13 @@ import 'dotenv/config'
 
 // Initialize Firebase Admin
 if (!admin.apps.length) {
-  const serviceAccount = JSON.parse(
-    readFileSync(process.env.FIREBASE_SERVICE_ACCOUNT_PATH!, 'utf8')
-  )
+  // const serviceAccount = JSON.parse(
+  //   readFileSync(process.env.FIREBASE_SERVICE_ACCOUNT_PATH!, 'utf8')
+  // )
 
-  admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount)
-  })
+  // admin.initializeApp({
+  //   credential: admin.credential.cert(serviceAccount)
+  // })
 }
 
 export async function sendPushNotification(data: {
