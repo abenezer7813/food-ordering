@@ -83,3 +83,11 @@ GoogleService-Info.plist
 .cache/
 tmp/
 temp/
+# Flutter generated files
+**/GeneratedPluginRegistrant.*
+**/generated_plugin_registrant.*
+**/generated_plugins.cmake
+**/ephemeral/
+customer-app/windows/flutter/generated_plugin_registrant.h
+customer-app/ios/Runner/GeneratedPluginRegistrant.h
+ customer-app/windows/flutter/generated_plugin_registrant.h
