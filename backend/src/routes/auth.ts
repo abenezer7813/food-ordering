@@ -1,12 +1,17 @@
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import z, { email, string } from "zod";
-import { customerRegistration, loginCustomer, loginStaff, verifyUser } from "../services/auth.service.js";
+import { customerRegistration, getCustomerProfile, loginCustomer, loginStaff, verifyUser } from "../services/auth.service.js";
 import { handleError } from "../utils/errors.js";
 import { verifyOTP } from "../utils/otp.js";
 import { tr } from "zod/locales";
+import { authMiddleware, requireRole } from "../middleware/auth.js";
 
-export const authRoutes=new Hono()
+
+type Variables = {
+  userId: string
+}
+export const authRoutes=new Hono<{ Variables: Variables }>()
 
 //staff login schema 
 const staffLoginSchema=z.object({
@@ -76,6 +81,21 @@ authRoutes.post('/customer/login',
     return c.json({token:customer.token,customer:customer.customer})
     }catch(e){
       return handleError(e,c)
+    }
+  }
+  
+)
+
+authRoutes.get('/profile',
+  authMiddleware,
+  requireRole('customer'),
+  async (c) => {
+    try {
+      const customerId = c.get('userId') as string
+      const customer = await getCustomerProfile(customerId)
+      return c.json({ customer })
+    } catch (e) {
+      return handleError(e, c)
     }
   }
 )
