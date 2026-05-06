@@ -1,0 +1,1 @@
+ALTER TABLE "customer_feedback" ALTER COLUMN "order_id" SET NOT NULL;

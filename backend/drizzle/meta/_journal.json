@@ -29,6 +29,20 @@
       "when": 1773569032068,
       "tag": "0003_glossy_the_hunter",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1778098759749,
+      "tag": "0004_dapper_thanos",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1778098918897,
+      "tag": "0005_big_garia",
+      "breakpoints": true
     }
   ]
 }

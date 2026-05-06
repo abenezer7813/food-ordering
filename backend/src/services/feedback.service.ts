@@ -6,6 +6,7 @@ import { Errors } from '../utils/errors.js'
 
 export async function submitFeedback(data: {
   lounge_id: string
+  order_id:string,
   rating:    number
   comment?:  string
 }, customerId: string) {
@@ -16,6 +17,7 @@ export async function submitFeedback(data: {
 
   const [feedback] = await db.insert(customer_feedback).values({
     customer_id: customerId,
+    order_id:data.order_id,
     lounge_id:   data.lounge_id,
     rating:      data.rating,
     comment:     data.comment,
