@@ -40,7 +40,7 @@ walletRoutes.post('/register',
   }
 )
 const topupSchema=z.object({
-  amount: z.number().positive().min(10), // ← minimum 10 ETB
+  amount: z.number().positive().min(10), 
 })
 //top-up
 walletRoutes.post('/:loungeId/topup',

@@ -11,3 +11,8 @@ final nonCafeStatusProvider = FutureProvider.family<bool, String>((ref, loungeId
   final walletService = ref.watch(walletServiceProvider);
   return walletService.checkNonCafeStatus(loungeId);
 });
+
+final walletProvider = FutureProvider.family<Map<String, dynamic>, String>((ref, loungeId) async {
+  final walletService = ref.watch(walletServiceProvider);
+  return walletService.getWallet(loungeId);
+});
