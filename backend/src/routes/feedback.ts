@@ -15,6 +15,7 @@ feedbackRoutes.use('*', authMiddleware)
 
 const feedbackSchema = z.object({
   lounge_id: z.uuid(),
+  order_id:z.uuid(),
   rating:    z.number().int().min(1).max(5),
   comment:   z.string().optional(),
 })

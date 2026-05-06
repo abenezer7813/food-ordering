@@ -184,6 +184,7 @@ export const customer_feedback = pgTable('customer_feedback', {
   customer_id: uuid("customer_id").notNull().references(() => customers.id),
   rating: integer("rating").notNull(),
   comment: text("comment"),
+  order_id:uuid('order_id').notNull().references(()=>orders.id),
   created_at: timestamp("created_at").notNull().defaultNow(),
 })
 export const sales_report = pgTable("sales_report", {
