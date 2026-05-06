@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -8,7 +9,7 @@ import '../../lounges/models/lounge_model.dart';
 import '../../menu/models/menu_item_model.dart';
 import '../../menu/providers/menu_provider.dart';
 import '../../menu/screens/menu_screen.dart';
-
+import 'dart:async';
 class CartScreen extends ConsumerStatefulWidget {
   final Lounge lounge;
   final bool isNonCafe;
@@ -27,49 +28,118 @@ class _CartScreenState extends ConsumerState<CartScreen> {
   bool _isLoading = false;
 
   Future<void> _placeOrder(List<MenuItem> menuItems) async {
-    final cart = ref.read(cartProvider);
-    if (cart.isEmpty) return;
+  final cart = ref.read(cartProvider);
+  if (cart.isEmpty) return;
 
-    setState(() => _isLoading = true);
+  setState(() => _isLoading = true);
 
-    try {
-      final dio = ref.read(apiClientProvider).dio;
+  try {
+    final dio = ref.read(apiClientProvider).dio;
 
-      final items = cart.entries.map((entry) {
-        return {
-          'menu_item_id': entry.key,
-          'quantity': entry.value,
-        };
-      }).toList();
+    final items = cart.entries.map((entry) {
+      return {
+        'menu_item_id': entry.key,
+        'quantity': entry.value,
+      };
+    }).toList();
 
-      final response = await dio.post('/order', data: {
-        'lounge_id': widget.lounge.id,
-        'items': items,
-        'payment_method': widget.isNonCafe ? 'wallet' : 'chapa',
-      });
+    final response = await dio.post('/order', data: {
+      'lounge_id': widget.lounge.id,
+      'items': items,
+      'payment_method': widget.isNonCafe ? 'wallet' : 'chapa',
+    });
 
-      final paymentUrl = response.data['payment_url'];
+    final paymentUrl = response.data['payment_url'];
+    final txRef = response.data['tx_ref']; // capture tx_ref
 
-      if (paymentUrl != null) {
-        final uri = Uri.parse(paymentUrl);
-        if (await canLaunchUrl(uri)) {
-          // Clear cart before launching
-          ref.read(cartProvider.notifier).state = {};
-          await launchUrl(uri, mode: LaunchMode.externalApplication);
-          if (mounted) context.go('/lounges');
+    if (paymentUrl != null && txRef != null) {
+      final uri = Uri.parse(paymentUrl);
+      if (await canLaunchUrl(uri)) {
+        ref.read(cartProvider.notifier).state = {};
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+
+        // Wait for user to return to app
+        await _waitForAppFocus();
+
+        if (mounted) {
+          final confirmed = await showDialog<bool>(
+            context: context,
+            barrierDismissible: false,
+            builder: (context) => AlertDialog(
+              title: const Text('Payment Completed?'),
+              content: const Text('Did you complete the payment on Chapa?'),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context, false),
+                  child: const Text('No, Cancel'),
+                ),
+                ElevatedButton(
+                  onPressed: () => Navigator.pop(context, true),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primaryBlue,
+                  ),
+                  child: const Text(
+                    'Yes, Verify',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ),
+              ],
+            ),
+          );
+
+          if (confirmed == true) {
+            setState(() => _isLoading = true);
+           try {
+  final verifyResponse = await dio.post('/payments/verify', data: {'tx_ref': txRef});
+  print('SUCCESS: ${verifyResponse.data}');
+  if (mounted) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Order placed successfully!'),
+        backgroundColor: AppColors.success,
+      ),
+    );
+    context.go('/lounges');
+  }
+} on DioException catch (e) {
+  final errorData = e.response?.data;
+  final statusCode = e.response?.statusCode;
+  if (mounted) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Error $statusCode: $errorData')),
+    );
+  }
+}
+          } else {
+            // User cancelled — go back to lounges
+            if (mounted) context.go('/lounges');
+          }
         }
       }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString())),
-        );
-      }
-    } finally {
-      if (mounted) setState(() => _isLoading = false);
     }
+  } catch (e) {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.toString())),
+      );
+    }
+  } finally {
+    if (mounted) setState(() => _isLoading = false);
   }
-
+}
+Future<void> _waitForAppFocus() async {
+  final completer = Completer<void>();
+  late final AppLifecycleListener listener;
+  listener = AppLifecycleListener(
+    onResume: () {
+      if (!completer.isCompleted) {
+        completer.complete();
+        listener.dispose();
+      }
+    },
+  );
+  await completer.future;
+}
   @override
   Widget build(BuildContext context) {
     final cart = ref.watch(cartProvider);

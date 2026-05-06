@@ -4,6 +4,7 @@ import 'package:food_ordering_app/features/lounges/screens/lounges_screen.dart';
 import 'package:food_ordering_app/features/lounges/screens/non_cafe_register_screen.dart';
 import 'package:food_ordering_app/features/lounges/screens/order_type_screen.dart';
 import 'package:food_ordering_app/features/menu/screens/menu_screen.dart';
+import 'package:food_ordering_app/features/wallet/screens/wallet_screen.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:food_ordering_app/features/auth/screens/register_screen.dart';
@@ -74,6 +75,13 @@ GoRoute(
     final lounge = extra['lounge'] as Lounge;
     final isNonCafe = extra['isNonCafe'] as bool;
     return CartScreen(lounge: lounge, isNonCafe: isNonCafe);
+  },
+),
+GoRoute(
+  path: '/wallet',
+  builder: (context, state) {
+    final lounge = state.extra as Lounge;
+    return WalletScreen(lounge: lounge);
   },
 ),
   ],

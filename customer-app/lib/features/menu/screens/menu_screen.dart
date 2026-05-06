@@ -34,6 +34,12 @@ class MenuScreen extends ConsumerWidget {
           style: const TextStyle(color: AppColors.textLight),
         ),
         actions: [
+          if (isNonCafe)
+    IconButton(
+      icon: const Icon(Icons.account_balance_wallet,
+          color: AppColors.textLight),
+      onPressed: () => context.push('/wallet', extra: lounge),
+    ),
           if (totalItems > 0)
             Stack(
               children: [
