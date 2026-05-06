@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../providers/lounge_provider.dart';
+import '../../auth/providers/auth_provider.dart';
 
 class LoungesScreen extends ConsumerWidget {
   const LoungesScreen({super.key});
@@ -19,30 +20,42 @@ class LoungesScreen extends ConsumerWidget {
           'Lounges',
           style: TextStyle(color: AppColors.textLight),
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout, color: AppColors.textLight),
+            onPressed: () async {
+              await ref.read(authProvider.notifier).logout();
+              if (context.mounted) context.go('/login');
+            },
+          ),
+        ],
       ),
-       bottomNavigationBar: BottomNavigationBar(
-    currentIndex: 0,
-    selectedItemColor: AppColors.primaryBlue,
-    unselectedItemColor: AppColors.textSecondary,
-    onTap: (index) {
-      if (index == 0) context.go('/lounges');
-      if (index == 1) context.go('/orders');
-    },
-    items: const [
-      BottomNavigationBarItem(
-        icon: Icon(Icons.restaurant),
-        label: 'Lounges',
-      ),
-      BottomNavigationBarItem(
-        icon: Icon(Icons.receipt_long),
-        label: 'My Orders',
-      ),
-    ],
-  ),
+      bottomNavigationBar: BottomNavigationBar(
+  currentIndex: 0, 
+  selectedItemColor: AppColors.primaryBlue,
+  unselectedItemColor: AppColors.textSecondary,
+  onTap: (index) {
+    if (index == 0) context.go('/lounges');
+    if (index == 1) context.go('/orders');
+    if (index == 2) context.push('/profile');
+  },
+  items: const [
+    BottomNavigationBarItem(
+      icon: Icon(Icons.restaurant),
+      label: 'Lounges',
+    ),
+    BottomNavigationBarItem(
+      icon: Icon(Icons.receipt_long),
+      label: 'My Orders',
+    ),
+    BottomNavigationBarItem(
+      icon: Icon(Icons.person),
+      label: 'Profile',
+    ),
+  ],
+),
       body: loungesAsync.when(
-        loading: () => const Center(
-          child: CircularProgressIndicator(),
-        ),
+        loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, stack) => Center(
           child: Text(
             error.toString(),
