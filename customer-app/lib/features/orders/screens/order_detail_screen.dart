@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../core/constants/app_colors.dart';
 import '../models/order_model.dart';
+import 'package:go_router/go_router.dart';
 
 class OrderDetailScreen extends StatelessWidget {
   final Order order;
@@ -146,9 +147,42 @@ class OrderDetailScreen extends StatelessWidget {
                   ),
                 ],
               ),
+              
             ),
-          ],
+            // Add at the bottom of the Column in body
+if (order.status == 'collected')
+  Padding(
+    padding: const EdgeInsets.only(top: 20),
+    child: SizedBox(
+      width: double.infinity,
+      child: ElevatedButton.icon(
+        onPressed: () => context.push('/feedback', extra: {
+          'lounge_id': order.loungeId,
+          'order_id': order.id,
+        }),
+        icon: const Icon(Icons.star, color: Colors.white),
+        label: const Text(
+          'Leave Feedback',
+          style: TextStyle(
+            color: AppColors.textLight,
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
         ),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: AppColors.accent,
+          padding: const EdgeInsets.symmetric(vertical: 15),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(30),
+          ),
+        ),
+      ),
+    ),
+  ),
+          ],
+          
+        ),
+        
       ),
     );
   }
@@ -244,7 +278,9 @@ class _OrderProgress extends StatelessWidget {
             }),
           ),
         ],
+        
       ),
+      
     );
   }
 }

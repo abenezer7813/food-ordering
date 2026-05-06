@@ -21,6 +21,25 @@ class OrdersScreen extends ConsumerWidget {
           style: TextStyle(color: AppColors.textLight),
         ),
       ),
+       bottomNavigationBar: BottomNavigationBar(
+    currentIndex: 1,
+    selectedItemColor: AppColors.primaryBlue,
+    unselectedItemColor: AppColors.textSecondary,
+    onTap: (index) {
+      if (index == 0) context.go('/lounges');
+      if (index == 1) context.go('/orders');
+    },
+    items: const [
+      BottomNavigationBarItem(
+        icon: Icon(Icons.restaurant),
+        label: 'Lounges',
+      ),
+      BottomNavigationBarItem(
+        icon: Icon(Icons.receipt_long),
+        label: 'My Orders',
+      ),
+    ],
+  ),
       body: ordersAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(

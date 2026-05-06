@@ -106,3 +106,19 @@ return {token,customer:customerWithoutPassword}
         const {password:_,...customerWithoutPassword}=customer
         return {token,customer:customerWithoutPassword}
  }
+ export async function getCustomerProfile(customerId: string) {
+  const customer = await db.query.customers.findFirst({
+    where: eq(customers.id, customerId),
+    columns: {
+      id: true,
+      first_name: true,
+      last_name: true,
+      email: true,
+      gender: true,
+      is_verified: true,
+      created_at: true,
+    }
+  })
+  if (!customer) throw Errors.notFound('Customer')
+  return customer
+}

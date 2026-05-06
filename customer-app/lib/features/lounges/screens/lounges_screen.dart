@@ -20,6 +20,25 @@ class LoungesScreen extends ConsumerWidget {
           style: TextStyle(color: AppColors.textLight),
         ),
       ),
+       bottomNavigationBar: BottomNavigationBar(
+    currentIndex: 0,
+    selectedItemColor: AppColors.primaryBlue,
+    unselectedItemColor: AppColors.textSecondary,
+    onTap: (index) {
+      if (index == 0) context.go('/lounges');
+      if (index == 1) context.go('/orders');
+    },
+    items: const [
+      BottomNavigationBarItem(
+        icon: Icon(Icons.restaurant),
+        label: 'Lounges',
+      ),
+      BottomNavigationBarItem(
+        icon: Icon(Icons.receipt_long),
+        label: 'My Orders',
+      ),
+    ],
+  ),
       body: loungesAsync.when(
         loading: () => const Center(
           child: CircularProgressIndicator(),

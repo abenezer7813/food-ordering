@@ -15,6 +15,7 @@ import 'package:food_ordering_app/features/cart/screens/cart_screen.dart';
 import 'package:food_ordering_app/features/orders/screens/orders_screen.dart';
 import 'package:food_ordering_app/features/orders/screens/order_detail_screen.dart';
 import 'package:food_ordering_app/features/orders/models/order_model.dart';
+import 'package:food_ordering_app/features/feedback/screens/feedback_screen.dart';
 final goRouter = GoRouter(
   initialLocation: '/register',
   redirect: (context, state) async {
@@ -87,6 +88,7 @@ GoRoute(
     return WalletScreen(lounge: lounge);
   },
 ),
+
 GoRoute(
   path: '/orders',
   builder: (context, state) => const OrdersScreen(),
@@ -96,6 +98,16 @@ GoRoute(
   builder: (context, state) {
     final order = state.extra as Order;
     return OrderDetailScreen(order: order);
+  },
+),
+GoRoute(
+  path: '/feedback',
+  builder: (context, state) {
+    final extra = state.extra as Map<String, dynamic>;
+    return FeedbackScreen(
+      loungeId: extra['lounge_id'] as String,
+      orderId: extra['order_id'] as String,
+    );
   },
 ),
   ],
