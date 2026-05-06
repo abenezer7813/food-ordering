@@ -13,11 +13,7 @@ class MenuScreen extends ConsumerWidget {
   final Lounge lounge;
   final bool isNonCafe;
 
-  const MenuScreen({
-    super.key,
-    required this.lounge,
-    required this.isNonCafe,
-  });
+  const MenuScreen({super.key, required this.lounge, required this.isNonCafe});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -35,21 +31,25 @@ class MenuScreen extends ConsumerWidget {
         ),
         actions: [
           if (isNonCafe)
-    IconButton(
-      icon: const Icon(Icons.account_balance_wallet,
-          color: AppColors.textLight),
-      onPressed: () => context.push('/wallet', extra: lounge),
-    ),
+            IconButton(
+              icon: const Icon(
+                Icons.account_balance_wallet,
+                color: AppColors.textLight,
+              ),
+              onPressed: () => context.push('/wallet', extra: lounge),
+            ),
           if (totalItems > 0)
             Stack(
               children: [
                 IconButton(
-                  icon: const Icon(Icons.shopping_cart,
-                      color: AppColors.textLight),
-                  onPressed: () => context.push('/cart', extra: {
-                    'lounge': lounge,
-                    'isNonCafe': isNonCafe,
-                  }),
+                  icon: const Icon(
+                    Icons.shopping_cart,
+                    color: AppColors.textLight,
+                  ),
+                  onPressed: () => context.push(
+                    '/cart',
+                    extra: {'lounge': lounge, 'isNonCafe': isNonCafe},
+                  ),
                 ),
                 Positioned(
                   right: 6,
@@ -72,11 +72,19 @@ class MenuScreen extends ConsumerWidget {
                 ),
               ],
             ),
+            IconButton(
+      icon: const Icon(
+        Icons.receipt_long,
+        color: AppColors.textLight,
+      ),
+      onPressed: () {
+        context.push('/orders');
+      },
+    ),
         ],
       ),
       body: menuAsync.when(
-        loading: () =>
-            const Center(child: CircularProgressIndicator()),
+        loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, _) => Center(
           child: Text(
             error.toString(),
@@ -88,8 +96,7 @@ class MenuScreen extends ConsumerWidget {
             Expanded(
               child: GridView.builder(
                 padding: const EdgeInsets.all(16),
-                gridDelegate:
-                    const SliverGridDelegateWithFixedCrossAxisCount(
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 2,
                   crossAxisSpacing: 16,
                   mainAxisSpacing: 16,
@@ -137,9 +144,9 @@ class _MenuItemCard extends ConsumerWidget {
         children: [
           // Image or placeholder
           ClipRRect(
-            borderRadius:
-                const BorderRadius.vertical(top: Radius.circular(16)),
-            child: item.imageUrl != null &&
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+            child:
+                item.imageUrl != null &&
                     item.imageUrl!.startsWith('http') &&
                     !item.imageUrl!.contains('img.com')
                 ? Image.network(
@@ -188,13 +195,18 @@ class _MenuItemCard extends ConsumerWidget {
                 const SizedBox(height: 4),
                 Row(
                   children: [
-                    const Icon(Icons.timer,
-                        size: 11, color: AppColors.textSecondary),
+                    const Icon(
+                      Icons.timer,
+                      size: 11,
+                      color: AppColors.textSecondary,
+                    ),
                     const SizedBox(width: 3),
                     Text(
                       '${item.estimatedPreparationTime} min',
                       style: const TextStyle(
-                          fontSize: 11, color: AppColors.textSecondary),
+                        fontSize: 11,
+                        color: AppColors.textSecondary,
+                      ),
                     ),
                   ],
                 ),
@@ -205,13 +217,13 @@ class _MenuItemCard extends ConsumerWidget {
                         width: double.infinity,
                         child: ElevatedButton(
                           onPressed: () {
-                            ref.read(cartProvider.notifier).update(
-                                (cart) => {...cart, item.id: 1});
+                            ref
+                                .read(cartProvider.notifier)
+                                .update((cart) => {...cart, item.id: 1});
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.primaryBlue,
-                            padding:
-                                const EdgeInsets.symmetric(vertical: 6),
+                            padding: const EdgeInsets.symmetric(vertical: 6),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(20),
                             ),
@@ -219,7 +231,9 @@ class _MenuItemCard extends ConsumerWidget {
                           child: const Text(
                             'Add',
                             style: TextStyle(
-                                color: AppColors.textLight, fontSize: 12),
+                              color: AppColors.textLight,
+                              fontSize: 12,
+                            ),
                           ),
                         ),
                       )
@@ -228,17 +242,16 @@ class _MenuItemCard extends ConsumerWidget {
                         children: [
                           GestureDetector(
                             onTap: () {
-                              ref.read(cartProvider.notifier).update(
-                                (cart) {
-                                  final updated = Map<String, int>.from(cart);
-                                  if (updated[item.id] == 1) {
-                                    updated.remove(item.id);
-                                  } else {
-                                    updated[item.id] = (updated[item.id] ?? 1) - 1;
-                                  }
-                                  return updated;
-                                },
-                              );
+                              ref.read(cartProvider.notifier).update((cart) {
+                                final updated = Map<String, int>.from(cart);
+                                if (updated[item.id] == 1) {
+                                  updated.remove(item.id);
+                                } else {
+                                  updated[item.id] =
+                                      (updated[item.id] ?? 1) - 1;
+                                }
+                                return updated;
+                              });
                             },
                             child: Container(
                               padding: const EdgeInsets.all(4),
@@ -246,8 +259,11 @@ class _MenuItemCard extends ConsumerWidget {
                                 color: AppColors.primaryBlue,
                                 borderRadius: BorderRadius.circular(8),
                               ),
-                              child: const Icon(Icons.remove,
-                                  color: Colors.white, size: 16),
+                              child: const Icon(
+                                Icons.remove,
+                                color: Colors.white,
+                                size: 16,
+                              ),
                             ),
                           ),
                           Text(
@@ -260,12 +276,14 @@ class _MenuItemCard extends ConsumerWidget {
                           ),
                           GestureDetector(
                             onTap: () {
-                              ref.read(cartProvider.notifier).update(
-                                (cart) => {
-                                  ...cart,
-                                  item.id: (cart[item.id] ?? 0) + 1
-                                },
-                              );
+                              ref
+                                  .read(cartProvider.notifier)
+                                  .update(
+                                    (cart) => {
+                                      ...cart,
+                                      item.id: (cart[item.id] ?? 0) + 1,
+                                    },
+                                  );
                             },
                             child: Container(
                               padding: const EdgeInsets.all(4),
@@ -273,8 +291,11 @@ class _MenuItemCard extends ConsumerWidget {
                                 color: AppColors.primaryBlue,
                                 borderRadius: BorderRadius.circular(8),
                               ),
-                              child: const Icon(Icons.add,
-                                  color: Colors.white, size: 16),
+                              child: const Icon(
+                                Icons.add,
+                                color: Colors.white,
+                                size: 16,
+                              ),
                             ),
                           ),
                         ],
@@ -292,8 +313,11 @@ class _MenuItemCard extends ConsumerWidget {
       height: 110,
       width: double.infinity,
       color: AppColors.primaryBlue.withOpacity(0.1),
-      child: const Icon(Icons.restaurant,
-          color: AppColors.primaryBlue, size: 40),
+      child: const Icon(
+        Icons.restaurant,
+        color: AppColors.primaryBlue,
+        size: 40,
+      ),
     );
   }
 }
@@ -321,10 +345,10 @@ class _CartBar extends ConsumerWidget {
     });
 
     return GestureDetector(
-      onTap: () => context.push('/cart', extra: {
-        'lounge': lounge,
-        'isNonCafe': isNonCafe,
-      }),
+      onTap: () => context.push(
+        '/cart',
+        extra: {'lounge': lounge, 'isNonCafe': isNonCafe},
+      ),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
         color: AppColors.primaryBlue,

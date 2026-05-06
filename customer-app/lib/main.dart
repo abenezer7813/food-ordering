@@ -12,6 +12,9 @@ import 'package:food_ordering_app/features/auth/screens/otp_screen.dart';
 import 'package:food_ordering_app/features/auth/screens/login_screen.dart';
 import 'core/storage/token_storage.dart';
 import 'package:food_ordering_app/features/cart/screens/cart_screen.dart';
+import 'package:food_ordering_app/features/orders/screens/orders_screen.dart';
+import 'package:food_ordering_app/features/orders/screens/order_detail_screen.dart';
+import 'package:food_ordering_app/features/orders/models/order_model.dart';
 final goRouter = GoRouter(
   initialLocation: '/register',
   redirect: (context, state) async {
@@ -82,6 +85,17 @@ GoRoute(
   builder: (context, state) {
     final lounge = state.extra as Lounge;
     return WalletScreen(lounge: lounge);
+  },
+),
+GoRoute(
+  path: '/orders',
+  builder: (context, state) => const OrdersScreen(),
+),
+GoRoute(
+  path: '/order-detail',
+  builder: (context, state) {
+    final order = state.extra as Order;
+    return OrderDetailScreen(order: order);
   },
 ),
   ],
