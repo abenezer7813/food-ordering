@@ -10,7 +10,7 @@ import 'package:food_ordering_app/features/auth/screens/register_screen.dart';
 import 'package:food_ordering_app/features/auth/screens/otp_screen.dart';
 import 'package:food_ordering_app/features/auth/screens/login_screen.dart';
 import 'core/storage/token_storage.dart';
-
+import 'package:food_ordering_app/features/cart/screens/cart_screen.dart';
 final goRouter = GoRouter(
   initialLocation: '/register',
   redirect: (context, state) async {
@@ -69,9 +69,12 @@ GoRoute(
 ),
 GoRoute(
   path: '/cart',
-  builder: (context, state) => const Scaffold(
-    body: Center(child: Text('Cart - Coming Soon')),
-  ),
+  builder: (context, state) {
+    final extra = state.extra as Map<String, dynamic>;
+    final lounge = extra['lounge'] as Lounge;
+    final isNonCafe = extra['isNonCafe'] as bool;
+    return CartScreen(lounge: lounge, isNonCafe: isNonCafe);
+  },
 ),
   ],
 );
