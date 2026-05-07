@@ -41,7 +41,7 @@ class OrderTypeScreen extends ConsumerWidget {
               icon: Icons.credit_card,
               title: 'Regular',
               subtitle: 'Browse menu and pay via Chapa',
-              onTap: () => context.go('/menu', extra: {
+              onTap: () => context.push('/menu', extra: {
                 'lounge': lounge,
                 'isNonCafe': false,
               }),

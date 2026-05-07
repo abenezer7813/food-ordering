@@ -94,6 +94,10 @@ class AuthNotifier extends StateNotifier<AuthState> {
     state = state.copyWith(isLoading: false, error: e.toString());
   }
 }
+Future<void> logout() async {
+  await _ref.read(tokenStorageProvider).deleteToken();
+  state = AuthState();
+}
 }
 
 // 4. StateNotifierProvider

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
-import '../models/order_model.dart';
 import '../providers/order_provider.dart';
 
 class OrdersScreen extends ConsumerWidget {
@@ -21,112 +20,178 @@ class OrdersScreen extends ConsumerWidget {
           style: TextStyle(color: AppColors.textLight),
         ),
       ),
-       bottomNavigationBar: BottomNavigationBar(
-    currentIndex: 1,
-    selectedItemColor: AppColors.primaryBlue,
-    unselectedItemColor: AppColors.textSecondary,
-    onTap: (index) {
-      if (index == 0) context.go('/lounges');
-      if (index == 1) context.go('/orders');
-    },
-    items: const [
-      BottomNavigationBarItem(
-        icon: Icon(Icons.restaurant),
-        label: 'Lounges',
-      ),
-      BottomNavigationBarItem(
-        icon: Icon(Icons.receipt_long),
-        label: 'My Orders',
-      ),
-    ],
-  ),
-      body: ordersAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(
-          child: Text(
-            e.toString(),
-            style: const TextStyle(color: AppColors.error),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: 1,
+        selectedItemColor: AppColors.primaryBlue,
+        unselectedItemColor: AppColors.textSecondary,
+        onTap: (index) {
+          if (index == 0) context.go('/lounges');
+          if (index == 1) context.go('/orders');
+          if (index == 2) context.push('/profile');
+        },
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.restaurant),
+            label: 'Lounges',
           ),
-        ),
-        data: (orders) {
-          if (orders.isEmpty) {
-            return const Center(
-              child: Text(
-                'No orders yet',
-                style: TextStyle(color: AppColors.textLight, fontSize: 18),
-              ),
-            );
-          }
-
-          return ListView.builder(
-            padding: const EdgeInsets.all(16),
-            itemCount: orders.length,
-            itemBuilder: (context, index) {
-              final order = orders[index];
-              return GestureDetector(
-                onTap: () => context.push('/order-detail', extra: order),
-                child: Container(
-                  margin: const EdgeInsets.only(bottom: 16),
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
+          BottomNavigationBarItem(
+            icon: Icon(Icons.receipt_long),
+            label: 'My Orders',
+          ),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
+        ],
+      ),
+      body: RefreshIndicator(
+        onRefresh: () async {
+          ref.invalidate(myOrdersProvider);
+          await ref.read(myOrdersProvider.future);
+        },
+        child: ordersAsync.when(
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (e, _) => Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(
+                  Icons.wifi_off,
+                  color: AppColors.textSecondary,
+                  size: 60,
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'No connection',
+                  style: TextStyle(
                     color: AppColors.textLight,
-                    borderRadius: BorderRadius.circular(16),
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
                   ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'Order #${order.id.substring(0, 8).toUpperCase()}',
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                              color: AppColors.textPrimary,
-                            ),
-                          ),
-                          _StatusBadge(status: order.status),
-                        ],
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'Check your internet and try again',
+                  style: TextStyle(
+                    color: AppColors.textSecondary,
+                    fontSize: 14,
+                  ),
+                ),
+                const SizedBox(height: 24),
+                ElevatedButton.icon(
+                  onPressed: () {
+                    ref.invalidate(myOrdersProvider);
+                    ref.read(myOrdersProvider.future);
+                  },
+                  icon: const Icon(Icons.refresh, color: Colors.white),
+                  label: const Text(
+                    'Retry',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primaryBlue,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 30,
+                      vertical: 12,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          data: (orders) {
+            if (orders.isEmpty) {
+              return const SingleChildScrollView(
+                physics: AlwaysScrollableScrollPhysics(),
+                child: SizedBox(
+                  height: 400,
+                  child: Center(
+                    child: Text(
+                      'No orders yet',
+                      style: TextStyle(
+                        color: AppColors.textLight,
+                        fontSize: 18,
                       ),
-                      const SizedBox(height: 8),
-                      Text(
-                        '${order.orderItems.length} item${order.orderItems.length > 1 ? 's' : ''} · ETB ${order.totalAmount.toStringAsFixed(2)}',
-                        style: const TextStyle(
-                          color: AppColors.textSecondary,
-                          fontSize: 14,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        _formatDate(order.createdAt),
-                        style: const TextStyle(
-                          color: AppColors.textSecondary,
-                          fontSize: 12,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Row(
-                        children: [
-                          const Icon(Icons.timer,
-                              size: 14, color: AppColors.textSecondary),
-                          const SizedBox(width: 4),
-                          Text(
-                            'Est. ready in ${order.estimatedReadyTime} min',
-                            style: const TextStyle(
-                              color: AppColors.textSecondary,
-                              fontSize: 12,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
+                    ),
                   ),
                 ),
               );
-            },
-          );
-        },
+            }
+
+            return ListView.builder(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.all(16),
+              itemCount: orders.length,
+              itemBuilder: (context, index) {
+                final order = orders[index];
+                return GestureDetector(
+                  onTap: () => context.push('/order-detail', extra: order),
+                  child: Container(
+                    margin: const EdgeInsets.only(bottom: 16),
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: AppColors.textLight,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Order #${order.id.substring(0, 8).toUpperCase()}',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                                color: AppColors.textPrimary,
+                              ),
+                            ),
+                            _StatusBadge(status: order.status),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          '${order.orderItems.length} item${order.orderItems.length > 1 ? 's' : ''} · ETB ${order.totalAmount.toStringAsFixed(2)}',
+                          style: const TextStyle(
+                            color: AppColors.textSecondary,
+                            fontSize: 14,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          _formatDate(order.createdAt),
+                          style: const TextStyle(
+                            color: AppColors.textSecondary,
+                            fontSize: 12,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            const Icon(
+                              Icons.timer,
+                              size: 14,
+                              color: AppColors.textSecondary,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              'Est. ready in ${order.estimatedReadyTime} min',
+                              style: const TextStyle(
+                                color: AppColors.textSecondary,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            );
+          },
+        ),
       ),
     );
   }

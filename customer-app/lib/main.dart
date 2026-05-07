@@ -16,6 +16,8 @@ import 'package:food_ordering_app/features/orders/screens/orders_screen.dart';
 import 'package:food_ordering_app/features/orders/screens/order_detail_screen.dart';
 import 'package:food_ordering_app/features/orders/models/order_model.dart';
 import 'package:food_ordering_app/features/feedback/screens/feedback_screen.dart';
+import 'package:food_ordering_app/features/profile/screens/profile_screen.dart';
+import 'package:firebase_core/firebase_core.dart';
 final goRouter = GoRouter(
   initialLocation: '/register',
   redirect: (context, state) async {
@@ -110,6 +112,10 @@ GoRoute(
     );
   },
 ),
+GoRoute(
+  path: '/profile',
+  builder: (context, state) => const ProfileScreen(),
+),
   ],
 );
 class MyApp extends ConsumerWidget { // what should this extend?
@@ -124,10 +130,12 @@ class MyApp extends ConsumerWidget { // what should this extend?
   }
 }
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
   runApp(
     ProviderScope(
-      child: MyApp(), 
+      child: MyApp(),
     ),
   );
 }

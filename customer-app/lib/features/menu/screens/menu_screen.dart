@@ -72,54 +72,82 @@ class MenuScreen extends ConsumerWidget {
                 ),
               ],
             ),
-            IconButton(
-      icon: const Icon(
-        Icons.receipt_long,
-        color: AppColors.textLight,
-      ),
-      onPressed: () {
-        context.push('/orders');
-      },
-    ),
+          IconButton(
+            icon: const Icon(Icons.receipt_long, color: AppColors.textLight),
+            onPressed: () {
+              context.push('/orders');
+            },
+          ),
         ],
       ),
-      body: menuAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) => Center(
-          child: Text(
-            error.toString(),
-            style: const TextStyle(color: AppColors.error),
-          ),
-        ),
-        data: (items) => Column(
-          children: [
-            Expanded(
-              child: GridView.builder(
-                padding: const EdgeInsets.all(16),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  crossAxisSpacing: 16,
-                  mainAxisSpacing: 16,
-                  childAspectRatio: 0.56,
+      body: RefreshIndicator(
+        onRefresh: () async {
+          ref.invalidate(menuItemsProvider(lounge.id));
+          ref.read(menuItemsProvider(lounge.id).future);
+        },
+        child: menuAsync.when(
+          loading: () => const Center(child: CircularProgressIndicator()),
+         error: (e, _) => Center(
+  child: Column(
+    mainAxisAlignment: MainAxisAlignment.center,
+    children: [
+      const Icon(Icons.wifi_off, color: AppColors.textSecondary, size: 60),
+      const SizedBox(height: 16),
+      const Text('No connection', ),
+      const SizedBox(height: 8),
+      const Text('Check your internet and try again', ),
+      const SizedBox(height: 24),
+      ElevatedButton.icon(
+        onPressed: () {           // <-- HERE
+          ref.invalidate(menuItemsProvider(lounge.id)) ;
+           ref.read(menuItemsProvider(lounge.id).future);
+        },
+        icon: const Icon(Icons.refresh, color: Colors.white),
+        label: const Text('Retry', style: TextStyle(color: Colors.white)),
+        style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primaryBlue,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 30,
+                      vertical: 12,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                  ),
+      ),
+    ],
+  ),
+),
+          data: (items) => Column(
+            children: [
+              Expanded(
+                child: GridView.builder(
+                  padding: const EdgeInsets.all(16),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    crossAxisSpacing: 16,
+                    mainAxisSpacing: 16,
+                    childAspectRatio: 0.56,
+                  ),
+                  itemCount: items.length,
+                  itemBuilder: (context, index) {
+                    final item = items[index];
+                    final qty = cart[item.id] ?? 0;
+                    return _MenuItemCard(item: item, qty: qty);
+                  },
                 ),
-                itemCount: items.length,
-                itemBuilder: (context, index) {
-                  final item = items[index];
-                  final qty = cart[item.id] ?? 0;
-                  return _MenuItemCard(item: item, qty: qty);
-                },
               ),
-            ),
-            // Bottom cart bar
-            if (totalItems > 0)
-              _CartBar(
-                totalItems: totalItems,
-                items: items,
-                cart: cart,
-                lounge: lounge,
-                isNonCafe: isNonCafe,
-              ),
-          ],
+              // Bottom cart bar
+              if (totalItems > 0)
+                _CartBar(
+                  totalItems: totalItems,
+                  items: items,
+                  cart: cart,
+                  lounge: lounge,
+                  isNonCafe: isNonCafe,
+                ),
+            ],
+          ),
         ),
       ),
     );
@@ -154,7 +182,7 @@ class _MenuItemCard extends ConsumerWidget {
                     height: 110,
                     width: double.infinity,
                     fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => _imagePlaceholder(),
+                    errorBuilder: (_, _, _) => _imagePlaceholder(),
                   )
                 : _imagePlaceholder(),
           ),

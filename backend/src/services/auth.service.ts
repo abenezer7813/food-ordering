@@ -122,3 +122,8 @@ return {token,customer:customerWithoutPassword}
   if (!customer) throw Errors.notFound('Customer')
   return customer
 }
+export async function updateDeviceToken(customerId: string, deviceToken: string) {
+  await db.update(customers)
+    .set({ device_token: deviceToken })
+    .where(eq(customers.id, customerId))
+}

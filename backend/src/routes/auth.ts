@@ -1,7 +1,7 @@
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import z, { email, string } from "zod";
-import { customerRegistration, getCustomerProfile, loginCustomer, loginStaff, verifyUser } from "../services/auth.service.js";
+import { customerRegistration, getCustomerProfile, loginCustomer, loginStaff, updateDeviceToken, verifyUser } from "../services/auth.service.js";
 import { handleError } from "../utils/errors.js";
 import { verifyOTP } from "../utils/otp.js";
 import { tr } from "zod/locales";
@@ -94,6 +94,20 @@ authRoutes.get('/profile',
       const customerId = c.get('userId') as string
       const customer = await getCustomerProfile(customerId)
       return c.json({ customer })
+    } catch (e) {
+      return handleError(e, c)
+    }
+  }
+)
+authRoutes.patch('/device-token',
+  authMiddleware,
+  requireRole('customer'),
+  async (c) => {
+    try {
+      const customerId = c.get('userId') as string
+      const { device_token } = await c.req.json()
+      await updateDeviceToken(customerId, device_token)
+      return c.json({ message: 'Device token updated' })
     } catch (e) {
       return handleError(e, c)
     }
