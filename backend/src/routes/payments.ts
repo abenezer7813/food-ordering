@@ -5,6 +5,7 @@ import { payments, orders, customers } from '../db/schema.js'
 import { eq } from 'drizzle-orm'
 import { handleError } from '../utils/errors.js'
 import { authMiddleware } from '../middleware/auth.js'
+import { sendPushNotification } from '../utils/fcm.js'
 
 export const paymentRoutes = new Hono()
 
@@ -32,23 +33,30 @@ paymentRoutes.post('/verify',
         .set({ payment_status: 'completed' })
         .where(eq(payments.tx_ref, tx_ref))
 
-      // 4. Update order status
-      await db.update(orders)
-        .set({ status: 'confirmed' })
-        .where(eq(orders.id, payment.order_id))
-//         // in payments verify route after updating order status
-// const customer = await db.query.customers.findFirst({
-//   where: eq(customers.id, order.customer_id)
-// })
+      // 4. Find order
+const order = await db.query.orders.findFirst({
+  where: eq(orders.id, payment.order_id!)
+})
 
-// if (customer?.device_token) {
-//   await sendPushNotification({
-//     device_token: customer.device_token,
-//     title:        'Order confirmed! 👨‍🍳',
-//     body:         'Your payment was received. We are preparing your order.',
-//     order_id:     order.id,
-//   })
-// }
+// 5. Update order status
+await db.update(orders)
+  .set({ status: 'confirmed' })
+  .where(eq(orders.id, payment.order_id!))
+
+// 6. Send notification
+if (order) {
+  const customer = await db.query.customers.findFirst({
+    where: eq(customers.id, order.customer_id!)
+  })
+  if (customer?.device_token) {
+    await sendPushNotification({
+      device_token: customer.device_token,
+      title: 'Order Confirmed! 🎉',
+      body: 'Your payment was received. We are now preparing your order.',
+      order_id: order.id,
+    })
+  }
+}
 
       return c.json({
         message: 'Payment verified successfully',
