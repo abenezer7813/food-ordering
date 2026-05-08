@@ -60,8 +60,8 @@ export async function createOrder(data: {
         }
       })
     )
-  
-//wallet payment
+
+    //wallet payment
     if (data.payment_method === 'wallet') {
 
       // 1. find wallet
@@ -114,7 +114,17 @@ export async function createOrder(data: {
         })
         .where(eq(orders.id, order.id))
         .returning()
-
+      const customer = await tx.query.customers.findFirst({
+        where: eq(customers.id, customerId)
+      })
+      if (customer?.device_token) {
+        await sendPushNotification({
+          device_token: customer.device_token,
+          title: 'Order placed successfully 🍽️',
+          body: 'Your order has been received and is being processed.',
+          order_id: order.id,
+        })
+      }
       return {
         order: confirmedOrder
       }
