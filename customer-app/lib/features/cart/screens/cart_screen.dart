@@ -10,15 +10,12 @@ import '../../menu/models/menu_item_model.dart';
 import '../../menu/providers/menu_provider.dart';
 import '../../menu/screens/menu_screen.dart';
 import 'dart:async';
+
 class CartScreen extends ConsumerStatefulWidget {
   final Lounge lounge;
   final bool isNonCafe;
 
-  const CartScreen({
-    super.key,
-    required this.lounge,
-    required this.isNonCafe,
-  });
+  const CartScreen({super.key, required this.lounge, required this.isNonCafe});
 
   @override
   ConsumerState<CartScreen> createState() => _CartScreenState();
@@ -28,118 +25,134 @@ class _CartScreenState extends ConsumerState<CartScreen> {
   bool _isLoading = false;
 
   Future<void> _placeOrder(List<MenuItem> menuItems) async {
-  final cart = ref.read(cartProvider);
-  if (cart.isEmpty) return;
+    final cart = ref.read(cartProvider);
+    if (cart.isEmpty) return;
 
-  setState(() => _isLoading = true);
+    setState(() => _isLoading = true);
 
-  try {
-    final dio = ref.read(apiClientProvider).dio;
+    try {
+      final dio = ref.read(apiClientProvider).dio;
 
-    final items = cart.entries.map((entry) {
-      return {
-        'menu_item_id': entry.key,
-        'quantity': entry.value,
-      };
-    }).toList();
+      final items = cart.entries.map((entry) {
+        return {'menu_item_id': entry.key, 'quantity': entry.value};
+      }).toList();
 
-    final response = await dio.post('/order', data: {
-      'lounge_id': widget.lounge.id,
-      'items': items,
-      'payment_method': widget.isNonCafe ? 'wallet' : 'chapa',
-    });
+      final response = await dio.post(
+        '/order',
+        data: {
+          'lounge_id': widget.lounge.id,
+          'items': items,
+          'payment_method': widget.isNonCafe ? 'wallet' : 'chapa',
+        },
+      );
 
-    final paymentUrl = response.data['payment_url'];
-    final txRef = response.data['tx_ref']; // capture tx_ref
+      final paymentUrl = response.data['payment_url'];
+      final txRef = response.data['tx_ref']; // capture tx_ref
 
-    if (paymentUrl != null && txRef != null) {
-      final uri = Uri.parse(paymentUrl);
-      if (await canLaunchUrl(uri)) {
-        ref.read(cartProvider.notifier).state = {};
-        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      if (paymentUrl != null && txRef != null) {
+        final uri = Uri.parse(paymentUrl);
+        if (await canLaunchUrl(uri)) {
+          ref.read(cartProvider.notifier).state = {};
+          await launchUrl(uri, mode: LaunchMode.externalApplication);
 
-        // Wait for user to return to app
-        await _waitForAppFocus();
+          // Wait for user to return to app
+          await _waitForAppFocus();
 
-        if (mounted) {
-          final confirmed = await showDialog<bool>(
-            context: context,
-            barrierDismissible: false,
-            builder: (context) => AlertDialog(
-              title: const Text('Payment Completed?'),
-              content: const Text('Did you complete the payment on Chapa?'),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context, false),
-                  child: const Text('No, Cancel'),
-                ),
-                ElevatedButton(
-                  onPressed: () => Navigator.pop(context, true),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primaryBlue,
+          if (mounted) {
+            final confirmed = await showDialog<bool>(
+              context: context,
+              barrierDismissible: false,
+              builder: (context) => AlertDialog(
+                title: const Text('Payment Completed?'),
+                content: const Text('Did you complete the payment on Chapa?'),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context, false),
+                    child: const Text('No, Cancel'),
                   ),
-                  child: const Text(
-                    'Yes, Verify',
-                    style: TextStyle(color: Colors.white),
+                  ElevatedButton(
+                    onPressed: () => Navigator.pop(context, true),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primaryBlue,
+                    ),
+                    child: const Text(
+                      'Yes, Verify',
+                      style: TextStyle(color: Colors.white),
+                    ),
                   ),
-                ),
-              ],
-            ),
-          );
+                ],
+              ),
+            );
 
-          if (confirmed == true) {
-            setState(() => _isLoading = true);
-           try {
-  final verifyResponse = await dio.post('/payments/verify', data: {'tx_ref': txRef});
-  print('SUCCESS: ${verifyResponse.data}');
-  if (mounted) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Order placed successfully!'),
-        backgroundColor: AppColors.success,
-      ),
-    );
-    context.go('/lounges');
-  }
-} on DioException catch (e) {
-  final errorData = e.response?.data;
-  final statusCode = e.response?.statusCode;
-  if (mounted) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Error $statusCode: $errorData')),
-    );
-  }
-}
-          } else {
-            // User cancelled — go back to lounges
-            if (mounted) context.go('/lounges');
+            if (confirmed == true) {
+              setState(() => _isLoading = true);
+              try {
+                final verifyResponse = await dio.post(
+                  '/payments/verify',
+                  data: {'tx_ref': txRef},
+                );
+                print('SUCCESS: ${verifyResponse.data}');
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Order placed successfully!'),
+                      backgroundColor: AppColors.success,
+                    ),
+                  );
+                  context.go('/lounges');
+                }
+              } on DioException catch (e) {
+                final errorData = e.response?.data;
+                final statusCode = e.response?.statusCode;
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Error $statusCode: $errorData')),
+                  );
+                }
+              }
+            } else {
+              // User cancelled — go back to lounges
+              if (mounted) context.go('/lounges');
+            }
           }
         }
+      } else {
+        ref.read(cartProvider.notifier).state = {};
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Order placed successfully!'),
+              backgroundColor: AppColors.success,
+            ),
+          );
+          context.go('/lounges');
+        }
       }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.toString())));
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
-  } catch (e) {
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString())),
-      );
-    }
-  } finally {
-    if (mounted) setState(() => _isLoading = false);
   }
-}
-Future<void> _waitForAppFocus() async {
-  final completer = Completer<void>();
-  late final AppLifecycleListener listener;
-  listener = AppLifecycleListener(
-    onResume: () {
-      if (!completer.isCompleted) {
-        completer.complete();
-        listener.dispose();
-      }
-    },
-  );
-  await completer.future;
-}
+
+  Future<void> _waitForAppFocus() async {
+    final completer = Completer<void>();
+    late final AppLifecycleListener listener;
+    listener = AppLifecycleListener(
+      onResume: () {
+        if (!completer.isCompleted) {
+          completer.complete();
+          listener.dispose();
+        }
+      },
+    );
+    await completer.future;
+  }
+
   @override
   Widget build(BuildContext context) {
     final cart = ref.watch(cartProvider);
@@ -222,19 +235,18 @@ Future<void> _waitForAppFocus() async {
                             children: [
                               GestureDetector(
                                 onTap: () {
-                                  ref.read(cartProvider.notifier).update(
-                                    (cart) {
-                                      final updated =
-                                          Map<String, int>.from(cart);
-                                      if (updated[item.id] == 1) {
-                                        updated.remove(item.id);
-                                      } else {
-                                        updated[item.id] =
-                                            (updated[item.id] ?? 1) - 1;
-                                      }
-                                      return updated;
-                                    },
-                                  );
+                                  ref.read(cartProvider.notifier).update((
+                                    cart,
+                                  ) {
+                                    final updated = Map<String, int>.from(cart);
+                                    if (updated[item.id] == 1) {
+                                      updated.remove(item.id);
+                                    } else {
+                                      updated[item.id] =
+                                          (updated[item.id] ?? 1) - 1;
+                                    }
+                                    return updated;
+                                  });
                                 },
                                 child: Container(
                                   padding: const EdgeInsets.all(6),
@@ -242,13 +254,17 @@ Future<void> _waitForAppFocus() async {
                                     color: AppColors.primaryBlue,
                                     borderRadius: BorderRadius.circular(8),
                                   ),
-                                  child: const Icon(Icons.remove,
-                                      color: Colors.white, size: 16),
+                                  child: const Icon(
+                                    Icons.remove,
+                                    color: Colors.white,
+                                    size: 16,
+                                  ),
                                 ),
                               ),
                               Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 12),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                ),
                                 child: Text(
                                   '$qty',
                                   style: const TextStyle(
@@ -260,12 +276,14 @@ Future<void> _waitForAppFocus() async {
                               ),
                               GestureDetector(
                                 onTap: () {
-                                  ref.read(cartProvider.notifier).update(
-                                    (cart) => {
-                                      ...cart,
-                                      item.id: (cart[item.id] ?? 0) + 1,
-                                    },
-                                  );
+                                  ref
+                                      .read(cartProvider.notifier)
+                                      .update(
+                                        (cart) => {
+                                          ...cart,
+                                          item.id: (cart[item.id] ?? 0) + 1,
+                                        },
+                                      );
                                 },
                                 child: Container(
                                   padding: const EdgeInsets.all(6),
@@ -273,8 +291,11 @@ Future<void> _waitForAppFocus() async {
                                     color: AppColors.primaryBlue,
                                     borderRadius: BorderRadius.circular(8),
                                   ),
-                                  child: const Icon(Icons.add,
-                                      color: Colors.white, size: 16),
+                                  child: const Icon(
+                                    Icons.add,
+                                    color: Colors.white,
+                                    size: 16,
+                                  ),
                                 ),
                               ),
                             ],
@@ -299,8 +320,7 @@ Future<void> _waitForAppFocus() async {
                 padding: const EdgeInsets.all(20),
                 decoration: const BoxDecoration(
                   color: AppColors.textLight,
-                  borderRadius:
-                      BorderRadius.vertical(top: Radius.circular(20)),
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
                 ),
                 child: Column(
                   children: [
@@ -341,7 +361,8 @@ Future<void> _waitForAppFocus() async {
                         ),
                         child: _isLoading
                             ? const CircularProgressIndicator(
-                                color: Colors.white)
+                                color: Colors.white,
+                              )
                             : Text(
                                 widget.isNonCafe
                                     ? 'Place Order (Wallet)'
