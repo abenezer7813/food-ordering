@@ -5,6 +5,7 @@ import '../../../core/constants/app_colors.dart';
 import '../../lounges/models/lounge_model.dart';
 import '../../lounges/providers/wallet_provider.dart';
 import 'dart:async';
+
 class WalletScreen extends ConsumerStatefulWidget {
   final Lounge lounge;
 
@@ -23,25 +24,27 @@ class _WalletScreenState extends ConsumerState<WalletScreen> {
     _amountController.dispose();
     super.dispose();
   }
-Future<void> _waitForAppFocus() async {
-  final completer = Completer<void>();
-  late final AppLifecycleListener listener;
-  listener = AppLifecycleListener(
-    onResume: () {
-      if (!completer.isCompleted) {
-        completer.complete();
-        listener.dispose();
-      }
-    },
-  );
-  await completer.future;
-}
+
+  Future<void> _waitForAppFocus() async {
+    final completer = Completer<void>();
+    late final AppLifecycleListener listener;
+    listener = AppLifecycleListener(
+      onResume: () {
+        if (!completer.isCompleted) {
+          completer.complete();
+          listener.dispose();
+        }
+      },
+    );
+    await completer.future;
+  }
+
   Future<void> _topUp() async {
     final amountText = _amountController.text.trim();
     if (amountText.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter an amount')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Please enter an amount')));
       return;
     }
 
@@ -58,10 +61,10 @@ Future<void> _waitForAppFocus() async {
     try {
       final walletService = ref.read(walletServiceProvider);
       final result = await walletService.topUpWallet(widget.lounge.id, amount);
-      
+
       final paymentUrl = result['payment_url'];
       final txRef = result['tx_ref'];
-      
+
       final uri = Uri.parse(paymentUrl);
       if (await canLaunchUrl(uri)) {
         _amountController.clear();
@@ -69,52 +72,51 @@ Future<void> _waitForAppFocus() async {
         await _waitForAppFocus();
         // Verify payment after returning from Chapa
         if (mounted) {
-  final confirmed = await showDialog<bool>(
-    context: context,
-    barrierDismissible: false,
-    builder: (context) => AlertDialog(
-      title: const Text('Payment Completed?'),
-      content: const Text(
-          'Did you complete the payment on Chapa?'),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context, false),
-          child: const Text('No, Cancel'),
-        ),
-        ElevatedButton(
-          onPressed: () => Navigator.pop(context, true),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.primaryBlue,
-          ),
-          child: const Text(
-            'Yes, Verify',
-            style: TextStyle(color: Colors.white),
-          ),
-        ),
-      ],
-    ),
-  );
+          final confirmed = await showDialog<bool>(
+            context: context,
+            barrierDismissible: false,
+            builder: (context) => AlertDialog(
+              title: const Text('Payment Completed?'),
+              content: const Text('Did you complete the payment on Chapa?'),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context, false),
+                  child: const Text('No, Cancel'),
+                ),
+                ElevatedButton(
+                  onPressed: () => Navigator.pop(context, true),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primaryBlue,
+                  ),
+                  child: const Text(
+                    'Yes, Verify',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ),
+              ],
+            ),
+          );
 
-  if (confirmed == true) {
-    setState(() => _isLoading = true);
-    await walletService.verifyTopUp(txRef);
-    ref.invalidate(walletProvider(widget.lounge.id));
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Wallet topped up successfully!'),
-          backgroundColor: AppColors.success,
-        ),
-      );
-    }
-  }
-}
+          if (confirmed == true) {
+            setState(() => _isLoading = true);
+            await walletService.verifyTopUp(txRef);
+            ref.invalidate(walletProvider(widget.lounge.id));
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Wallet topped up successfully!'),
+                  backgroundColor: AppColors.success,
+                ),
+              );
+            }
+          }
+        }
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString())),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.toString())));
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -134,52 +136,53 @@ Future<void> _waitForAppFocus() async {
           style: TextStyle(color: AppColors.textLight),
         ),
       ),
-      body: RefreshIndicator(
-        onRefresh: () async {
-    ref.invalidate(walletProvider(widget.lounge.id)) ;
-     ref.read(walletProvider(widget.lounge.id).future);
-  },
-        child: walletAsync.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
-         error: (e, _) => Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(
-                  Icons.wifi_off,
-                  color: AppColors.textSecondary,
-                  size: 60,
+      body: walletAsync.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (e, _) => Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(
+                Icons.wifi_off,
+                color: AppColors.textSecondary,
+                size: 60,
+              ),
+              const SizedBox(height: 16),
+              const Text('No connection'),
+              const SizedBox(height: 8),
+              const Text('Check your internet and try again'),
+              const SizedBox(height: 24),
+              ElevatedButton.icon(
+                onPressed: () {
+                  ref.invalidate(walletProvider(widget.lounge.id));
+                  ref.read(walletProvider(widget.lounge.id).future);
+                },
+                icon: const Icon(Icons.refresh, color: Colors.white),
+                label: const Text(
+                  'Retry',
+                  style: TextStyle(color: Colors.white),
                 ),
-                const SizedBox(height: 16),
-                const Text('No connection'),
-                const SizedBox(height: 8),
-                const Text('Check your internet and try again'),
-                const SizedBox(height: 24),
-                ElevatedButton.icon(
-                  onPressed: () {
-                    ref.invalidate(walletProvider(widget.lounge.id)) ;
-                     ref.read(walletProvider(widget.lounge.id).future);
-                  },
-                  icon: const Icon(Icons.refresh, color: Colors.white),
-                  label: const Text(
-                    'Retry',
-                    style: TextStyle(color: Colors.white),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primaryBlue,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 30,
+                    vertical: 12,
                   ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primaryBlue,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 30,
-                      vertical: 12,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30),
-                    ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30),
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
-          data: (wallet) => SingleChildScrollView(
+        ),
+        data: (wallet) => RefreshIndicator(
+          onRefresh: () async {
+            ref.invalidate(walletProvider(widget.lounge.id));
+            await ref.read(walletProvider(widget.lounge.id).future);
+          },
+          child: SingleChildScrollView(
+             physics: const AlwaysScrollableScrollPhysics(),
             padding: const EdgeInsets.all(20),
             child: Column(
               children: [
@@ -221,7 +224,7 @@ Future<void> _waitForAppFocus() async {
                   ),
                 ),
                 const SizedBox(height: 30),
-        
+
                 // Top up section
                 Container(
                   padding: const EdgeInsets.all(20),
@@ -251,12 +254,15 @@ Future<void> _waitForAppFocus() async {
                             },
                             child: Container(
                               padding: const EdgeInsets.symmetric(
-                                  horizontal: 16, vertical: 10),
+                                horizontal: 16,
+                                vertical: 10,
+                              ),
                               decoration: BoxDecoration(
                                 color: AppColors.primaryBlue.withOpacity(0.1),
                                 borderRadius: BorderRadius.circular(20),
                                 border: Border.all(
-                                    color: AppColors.primaryBlue.withOpacity(0.3)),
+                                  color: AppColors.primaryBlue.withOpacity(0.3),
+                                ),
                               ),
                               child: Text(
                                 'ETB $amount',
@@ -281,12 +287,13 @@ Future<void> _waitForAppFocus() async {
                           controller: _amountController,
                           keyboardType: TextInputType.number,
                           decoration: const InputDecoration(
-                            prefixIcon: Icon(Icons.attach_money,
-                                color: AppColors.primaryBlue),
+                            prefixIcon: Icon(
+                              Icons.attach_money,
+                              color: AppColors.primaryBlue,
+                            ),
                             hintText: 'Enter custom amount',
                             border: InputBorder.none,
-                            contentPadding:
-                                EdgeInsets.symmetric(vertical: 15),
+                            contentPadding: EdgeInsets.symmetric(vertical: 15),
                           ),
                         ),
                       ),
@@ -304,7 +311,8 @@ Future<void> _waitForAppFocus() async {
                           ),
                           child: _isLoading
                               ? const CircularProgressIndicator(
-                                  color: Colors.white)
+                                  color: Colors.white,
+                                )
                               : const Text(
                                   'Top Up via Chapa',
                                   style: TextStyle(

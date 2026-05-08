@@ -16,7 +16,7 @@ export function useSalesReport(
     queryKey: reportKeys.sales(period, date),
     queryFn: async () => {
       const data = await reportApi.getSales(period, date);
-      return data.report;
+      return data.data;
     },
   });
 }

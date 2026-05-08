@@ -50,6 +50,7 @@ export default function CashierDashboard() {
   };
 
   // Calculate stats
+  console.log(orders)
   const readyOrders = orders?.filter((o) => o.status === "ready").length || 0;
 
   return (

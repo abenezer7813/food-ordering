@@ -69,11 +69,10 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       super_admin: [
         { icon: IconBuildingStore, label: "Lounges", href: "/dashboard/super-admin/lounges" },
         { icon: IconUsers, label: "Managers", href: "/dashboard/super-admin/managers" },
-        { icon: IconReportAnalytics, label: "Reports", href: "/dashboard/super-admin/reports" },
-        { icon: IconMessage, label: "Feedback", href: "/dashboard/super-admin/feedback" },
       ],
       lounge_manager: [
         { icon: IconMenuOrder, label: "Menu", href: "/dashboard/provider/menu" },
+        { icon: IconMessage, label: "Feedback", href: "/dashboard/provider/feedback" },
         { icon: IconShoppingCart, label: "Orders", href: "/dashboard/provider/orders" },
         { icon: IconUsers, label: "Staff", href: "/dashboard/provider/staff" },
         { icon: IconReportAnalytics, label: "Reports", href: "/dashboard/provider/reports" },
@@ -81,7 +80,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       cashier: [
         { icon: IconShoppingCart, label: "Orders", href: "/dashboard/cashier/orders" },
         { icon: IconMenuOrder, label: "Menu", href: "/dashboard/cashier/menu" },
-        { icon: IconWallet, label: "Wallet Top-up", href: "/dashboard/cashier/wallet" },
+      
         { icon: IconReportAnalytics, label: "Reports", href: "/dashboard/cashier/reports" },
       ],
       cook: [

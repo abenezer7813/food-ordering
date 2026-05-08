@@ -4,18 +4,18 @@ import { menuApi } from "@/lib/api";
 // Query Keys
 export const menuKeys = {
   all: ["menu"] as const,
-  byLounge: (loungeId: string) => ["menu", loungeId] as const,
+  byLounge: () => ["menu"] as const,
 };
 
 // Get menu for a lounge
-export function useMenu(loungeId: string) {
+export function useMenu() {
   return useQuery({
-    queryKey: menuKeys.byLounge(loungeId),
+    queryKey: menuKeys.byLounge(),
     queryFn: async () => {
-      const data = await menuApi.getByLounge(loungeId);
-      return data.items;
+      const data = await menuApi.getByLounge();
+      return data.menuItems;
     },
-    enabled: !!loungeId, // Only run if loungeId exists
+   
   });
 }
 

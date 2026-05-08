@@ -151,7 +151,7 @@ export interface MenuItem {
 
 export const menuApi = {
   getByLounge: (loungeId: string) =>
-    fetcher<{ items: MenuItem[] }>(`/menu/${loungeId}`),
+    fetcher<{ menuItems: MenuItem[] }>(`/menu/manage`),
 
   create: (data: {
     name: string;
@@ -206,7 +206,7 @@ export interface Order {
 export const orderApi = {
   getAll: (status?: string) => {
     const params = status ? `?status=${status}` : "";
-    return fetcher<{ orders: Order[] }>(`/orders${params}`);
+    return fetcher<{ orders: Order[] }>(`/order${params}`);
   },
 
   updateStatus: (orderId: string, status: "preparing" | "ready") =>
@@ -216,12 +216,12 @@ export const orderApi = {
     }),
 
   markCollected: (orderId: string) =>
-    fetcher<{ order: Order }>(`/orders/${orderId}/collect`, {
+    fetcher<{ order: Order }>(`/order/${orderId}/collect`, {
       method: "PATCH",
     }),
 
   createWalkIn: (data: { items: OrderItem[]; payment_method: string }) =>
-    fetcher<{ order: Order }>("/orders/walk-in", {
+    fetcher<{ order: Order }>("/order/walk-in", {
       method: "POST",
       body: JSON.stringify(data),
     }),
@@ -240,7 +240,7 @@ export const reportApi = {
   getSales: (period: "daily" | "weekly" | "monthly", date?: string) => {
     const params = new URLSearchParams({ period });
     if (date) params.append("date", date);
-    return fetcher<{ report: SalesReport }>(`/reports?${params}`);
+    return fetcher<{ data: SalesReport }>(`/reports?${params}`);
   },
 };
 
