@@ -1,6 +1,6 @@
-import { eq, inArray } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import { db } from "../db/index.js";
-import { lounges, order_items, orders, menu_items, payments, customers, lounge_staff } from "../db/schema.js";
+import { lounges, order_items, orders, menu_items, payments, customers, lounge_staff, wallets, wallet_transactions } from "../db/schema.js";
 import { Errors } from "../utils/errors.js";
 import { initializeChapaPayment } from "../utils/chapa.js";
 import { findOrder } from "./common.js";
@@ -13,7 +13,7 @@ export async function createOrder(data: {
     quantity: number,
     special_instructions?: string
   }[],
-  payment_method: 'wallet' | 'chapa'|'cash',
+  payment_method: 'wallet' | 'chapa' | 'cash',
 }, customerId: string) {
 
   let totalAmount = 0
@@ -61,6 +61,76 @@ export async function createOrder(data: {
       })
     )
 
+    //wallet payment
+    if (data.payment_method === 'wallet') {
+
+      // 1. find wallet
+      const wallet = await tx.query.wallets.findFirst({
+        where: and(
+          eq(wallets.customer_id, customerId),
+          eq(wallets.lounge_id, data.lounge_id)
+        )
+      })
+
+      if (!wallet) {
+        throw Errors.notFound('Wallet')
+      }
+
+      // 2. check balance
+      if (Number(wallet.balance) < totalAmount) {
+        throw Errors.badRequest('Insufficient wallet balance')
+      }
+
+      // 3. deduct balance
+      const newBalance = Number(wallet.balance) - totalAmount
+
+      await tx.update(wallets)
+        .set({
+          balance: String(newBalance)
+        })
+        .where(eq(wallets.id, wallet.id))
+
+      // 4. save wallet transaction
+      await tx.insert(wallet_transactions).values({
+        wallet_id: wallet.id,
+        amount: String(totalAmount),
+        transaction_type: 'deduction',
+      })
+
+      // 5. create payment record
+      await tx.insert(payments).values({
+        order_id: order.id,
+        lounge_id: data.lounge_id,
+        amount: String(totalAmount),
+        payment_method: 'wallet',
+        payment_status: 'completed',
+        payer_type: 'cafe',
+      })
+
+      // 6. confirm order immediately
+      const [confirmedOrder] = await tx.update(orders)
+        .set({
+          status: 'confirmed'
+        })
+        .where(eq(orders.id, order.id))
+        .returning()
+      const customer = await tx.query.customers.findFirst({
+        where: eq(customers.id, customerId)
+      })
+      if (customer?.device_token) {
+        await sendPushNotification({
+          device_token: customer.device_token,
+          title: 'Order placed successfully 🍽️',
+          body: 'Your order has been received and is being processed.',
+          order_id: order.id,
+        })
+      }
+      return {
+        order: confirmedOrder
+      }
+    }
+
+    //cahpa
     if (data.payment_method === 'chapa') {
 
       const customer = await tx.query.customers.findFirst({
@@ -91,6 +161,9 @@ export async function createOrder(data: {
         tx_ref: chapaPayment.tx_ref
       }
     }
+
+
+
   })
 }
 
