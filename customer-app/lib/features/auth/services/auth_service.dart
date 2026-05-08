@@ -57,4 +57,13 @@ class AuthService {
     throw e.response?.data['message'] ?? 'Verification failed';
   }
 }
+Future<void> updateDeviceToken(String deviceToken) async {
+  try {
+    await _dio.patch('/auth/device-token', data: {
+      'device_token': deviceToken,
+    });
+  } on DioException catch (e) {
+    throw e.response?.data['message'] ?? 'Failed to update device token';
+  }
+}
 }

@@ -18,6 +18,8 @@ import 'package:food_ordering_app/features/orders/models/order_model.dart';
 import 'package:food_ordering_app/features/feedback/screens/feedback_screen.dart';
 import 'package:food_ordering_app/features/profile/screens/profile_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'core/services/notification_service.dart';
 final goRouter = GoRouter(
   initialLocation: '/register',
   redirect: (context, state) async {
@@ -130,9 +132,16 @@ class MyApp extends ConsumerWidget { // what should this extend?
   }
 }
 
+// Background message handler - must be top level function
+@pragma('vm:entry-point')
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  await Firebase.initializeApp();
+}
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
+  await NotificationService.initialize();
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
   runApp(
     ProviderScope(
       child: MyApp(),

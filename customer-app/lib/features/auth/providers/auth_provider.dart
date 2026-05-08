@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/providers/core_providers.dart';
 import '../services/auth_service.dart';
-
+import 'package:firebase_messaging/firebase_messaging.dart';
 // 1. Provider for AuthService
 final authServiceProvider = Provider<AuthService>((ref) {
   final dio = ref.watch(apiClientProvider).dio;
@@ -65,19 +65,27 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 
   Future<void> login({
-    required String email,
-    required String password,
-  }) async {
-    state = state.copyWith(isLoading: true, error: null);
-    try {
-      final response = await _authService.login(email: email, password: password);
-      final token = response['token'];
-      await _ref.read(tokenStorageProvider).saveToken(token);
-      state = state.copyWith(isLoading: false, isSuccess: true);
-    } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+  required String email,
+  required String password,
+}) async {
+  state = state.copyWith(isLoading: true, error: null);
+  try {
+    final response = await _authService.login(email: email, password: password);
+    final token = response['token'];
+    await _ref.read(tokenStorageProvider).saveToken(token);
+
+
+    final messaging = FirebaseMessaging.instance;
+    final deviceToken = await messaging.getToken();
+    if (deviceToken != null) {
+      await _authService.updateDeviceToken(deviceToken);
     }
+
+    state = state.copyWith(isLoading: false, isSuccess: true);
+  } catch (e) {
+    state = state.copyWith(isLoading: false, error: e.toString());
   }
+}
 
   
   Future<void> verifyOtp({
