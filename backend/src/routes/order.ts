@@ -124,7 +124,7 @@ orderRoutes.patch('/:id/collect',
 
 )
 
-// GET /orders — cashier + cook
+// GET /order — cashier + cook
 orderRoutes.get('/',
   requireRole('cashier', 'cook'),
   async (c) => {
@@ -138,7 +138,7 @@ orderRoutes.get('/',
   }
 )
 
-// GET /orders/my-orders — customer
+// GET /order/my-orders — customer
 orderRoutes.get('/my-orders',
   requireRole('customer'),
   async (c) => {

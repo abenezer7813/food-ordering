@@ -200,7 +200,7 @@ export async function updateOrderStatus(orderId: string, status: 'preparing' | '
     .where(eq(orders.id, orderId))
     .returning()
 
-  if (status === 'ready' && updatedOrder.customer_id) {
+  if (status === 'preparing' && updatedOrder.customer_id) {
 
     const customer = await db.query.customers.findFirst({
       where: eq(customers.id, updatedOrder.customer_id)
@@ -209,8 +209,21 @@ export async function updateOrderStatus(orderId: string, status: 'preparing' | '
     if (customer?.device_token) {
       await sendPushNotification({
         device_token: customer.device_token,
-        title: 'Your order is ready! 🍽️',
-        body: 'Come pick up your order at the lounge.',
+        title: 'we are  praparing your order! 👨‍🍳',
+        body: 'Your order is now being prepared. Please wait for the ready notification.',
+        order_id: orderId,
+      })
+    }
+  } else if (status === "ready" && updatedOrder.customer_id) {
+    const customer = await db.query.customers.findFirst({
+      where: eq(customers.id, updatedOrder.customer_id)
+    })
+
+    if (customer?.device_token) {
+      await sendPushNotification({
+        device_token: customer.device_token,
+        title: 'Your order is ready! ✅🍽️',
+        body: 'Your order is ready for pickup. Please come to the lounge.',
         order_id: orderId,
       })
     }
