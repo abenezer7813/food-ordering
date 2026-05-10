@@ -17,7 +17,7 @@ const reportSchema=z.object({
     period:z.enum(['daily','weekly','monthly'])
 })
 reportRoutes.get('/',
-    requireRole('cashier'),
+    requireRole('cashier','manager'),
     zValidator('query',reportSchema),
     async (c)=>{
         try{
