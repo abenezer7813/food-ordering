@@ -54,7 +54,7 @@ function WalkInOrderModal({
   opened: boolean;
   onClose: () => void;
 }) {
-  const { data: menuItems, isLoading: menuLoading } = useMenu("");
+  const { data: menuItems, isLoading: menuLoading } = useMenu();
   const createOrderMutation = useCreateWalkInOrder();
 
   const [orderItems, setOrderItems] = useState<

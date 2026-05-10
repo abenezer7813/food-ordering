@@ -85,7 +85,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       ],
       cook: [
         { icon: IconShoppingCart, label: "Orders", href: "/dashboard/cook/orders" },
-        { icon: IconChefHat, label: "Kitchen View", href: "/dashboard/cook/kitchen" },
+      
       ],
     };
 

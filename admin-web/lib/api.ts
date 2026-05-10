@@ -150,7 +150,7 @@ export interface MenuItem {
 }
 
 export const menuApi = {
-  getByLounge: (loungeId: string) =>
+  getByLounge: () =>
     fetcher<{ menuItems: MenuItem[] }>(`/menu/manage`),
 
   create: (data: {
@@ -195,7 +195,7 @@ export interface OrderItem {
 
 export interface Order {
   id: string;
-  status: "pending" | "preparing" | "ready" | "collected";
+  status: "pending" | "preparing" | "ready" | "collected"|"confirmed";
   order_type: "online" | "walk_in";
   total_amount: string;
   estimated_ready_time?: number;
@@ -210,7 +210,7 @@ export const orderApi = {
   },
 
   updateStatus: (orderId: string, status: "preparing" | "ready") =>
-    fetcher<{ order: Order }>(`/orders/${orderId}/status`, {
+    fetcher<{ order: Order }>(`/order/${orderId}/status`, {
       method: "PATCH",
       body: JSON.stringify({ status }),
     }),
