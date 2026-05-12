@@ -1,13 +1,11 @@
 import SibApiV3Sdk from 'sib-api-v3-sdk'
 import 'dotenv/config'
 
-const client = SibApiV3Sdk.ApiClient.instance
-const apiKey = client.authentications['api-key']
-apiKey.apiKey = process.env.BREVO_API_KEY!
-
-const apiInstance = new SibApiV3Sdk.TransactionalEmailsApi()
-
 export async function sendOTPEmail(email: string, otp: string) {
+  const client = SibApiV3Sdk.ApiClient.instance
+  client.authentications['api-key'].apiKey = process.env.BREVO_API_KEY!
+
+  const apiInstance = new SibApiV3Sdk.TransactionalEmailsApi()
   const sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail()
 
   sendSmtpEmail.subject = 'Verify your Lounge account'
