@@ -94,7 +94,7 @@ staffRoutes.get('/managers',
     async (c) => {
         try {
             const managers = await getManagers()
-            return c.json(managers)
+            return c.json({managers})
         } catch (e) {
             return handleError(e, c)
         }
