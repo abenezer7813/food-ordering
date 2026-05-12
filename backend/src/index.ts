@@ -12,8 +12,8 @@ import { feedbackRoutes } from './routes/feedback.js'
 import { cors } from 'hono/cors'
 
 const app = new Hono()
-app.use(
-  "*",
+app.use( 
+  "*", 
   cors({
     origin:"*",
     // process.env.FRONTEND_URL || "http://localhost:3000",
