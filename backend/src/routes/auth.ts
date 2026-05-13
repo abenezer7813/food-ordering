@@ -77,18 +77,36 @@ authRoutes.post('/customer/verify',
 const resendOtpSchema=z.object({
   email:z.email({error:"Invalid email address"})
 })
-authRoutes.post('/customer/resend-otp',
-  zValidator('json',resendOtpSchema),
-  async (c)=>{
-    try{
-    const data=c.req.valid('json')
-    console.log(data.email)
-     // Generate and send OTP
-      const otp = Math.floor(100000 + Math.random() * 900000).toString()
-     storeOTP(data.email, otp)
+authRoutes.post(
+  '/customer/resend-otp',
+  zValidator('json', resendOtpSchema),
+  async (c) => {
+    try {
+      const data = c.req.valid('json')
+
+      console.log(data.email)
+
+      // Generate OTP
+      const otp = Math.floor(
+        100000 + Math.random() * 900000
+      ).toString()
+
+      
+      storeOTP(data.email, otp)
+
+      
       await sendOTPEmail(data.email, otp)
-    }catch(e){
-      return handleError(e,c)
+
+      
+      return c.json(
+        {
+          success: true,
+          message: 'OTP resent successfully',
+        },
+        200
+      )
+    } catch (e) {
+      return handleError(e, c)
     }
   }
 )
