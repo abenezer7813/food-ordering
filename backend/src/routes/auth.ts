@@ -85,7 +85,7 @@ authRoutes.post('/customer/resend-otp',
     console.log(data.email)
      // Generate and send OTP
       const otp = Math.floor(100000 + Math.random() * 900000).toString()
-     // storeOTP(data.email, otp)
+     storeOTP(data.email, otp)
       await sendOTPEmail(data.email, otp)
     }catch(e){
       return handleError(e,c)
