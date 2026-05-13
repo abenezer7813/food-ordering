@@ -11,7 +11,7 @@ export async function sendOTPEmail(email: string, otp: string) {
   sendSmtpEmail.subject = 'Verify your Lounge account'
   sendSmtpEmail.htmlContent = `
     <h2>Welcome to University Lounge!</h2>
-    <p>Your verification code is:</p>
+    <p>Your verification code is:</p> 
     <h1 style="letter-spacing: 8px">${otp}</h1>
     <p>This code expires in 10 minutes.</p>
   `

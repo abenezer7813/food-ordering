@@ -3,9 +3,10 @@ import { Hono } from "hono";
 import z, { email, string } from "zod";
 import { customerRegistration, getCustomerProfile, loginCustomer, loginStaff, updateDeviceToken, verifyUser } from "../services/auth.service.js";
 import { handleError } from "../utils/errors.js";
-import { verifyOTP } from "../utils/otp.js";
+import { storeOTP, verifyOTP } from "../utils/otp.js";
 import { tr } from "zod/locales";
 import { authMiddleware, requireRole } from "../middleware/auth.js";
+import { sendOTPEmail } from "../utils/email.js";
 
 
 type Variables = {
@@ -72,6 +73,26 @@ authRoutes.post('/customer/verify',
     }
   }
 )
+
+const resendOtpSchema=z.object({
+  email:z.email({error:"Invalid email address"})
+})
+authRoutes.post('/customer/resend-otp',
+  zValidator('json',resendOtpSchema),
+  async (c)=>{
+    try{
+    const data=c.req.valid('json')
+    console.log(data.email)
+     // Generate and send OTP
+      const otp = Math.floor(100000 + Math.random() * 900000).toString()
+     // storeOTP(data.email, otp)
+      await sendOTPEmail(data.email, otp)
+    }catch(e){
+      return handleError(e,c)
+    }
+  }
+)
+
 authRoutes.post('/customer/login',
   zValidator('json',customerLoginSchema),
   async (c)=>{
