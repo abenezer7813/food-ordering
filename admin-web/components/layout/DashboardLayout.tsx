@@ -57,11 +57,20 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   const getNavigationItems = () => {
     const role = user?.role;
 
+const getRolePath = (role: string) => {
+  const paths: Record<string, string> = {
+    super_admin: "super-admin",
+    lounge_manager: "provider",
+    cashier: "cashier",
+    cook: "cook",
+  };
+  return paths[role] || role;
+};
     const commonItems = [
       {
         icon: IconLayoutDashboard,
         label: "Dashboard",
-        href: `/dashboard/${role?.replace("_", "-")}`,
+        href: `/dashboard/${getRolePath(role||"")}`,
       },
     ];
 

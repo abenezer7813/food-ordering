@@ -1,15 +1,16 @@
 'use client'
 
 import { DashboardShell } from "@/components/layout/DashboardShell"
-import { useAssignManager, useCreateLounge, useDeactivateLounge, useLoungesAdmin } from "@/hooks/queries/useLounges"
+import { useAssignManager, useAddNewManger, useCreateLounge, useDeactivateLounge, useLoungesAdmin } from "@/hooks/queries/useLounges"
 import { useManagers } from "@/hooks/queries/useStaff";
-import { Table, Button, Modal, TextInput, Select, Tooltip, List, ScrollArea, Stack, Text, Group } from "@mantine/core";
+import { Table, Button, Modal, TextInput, Select, Tooltip, List, ScrollArea, Stack, Text, Group, Divider } from "@mantine/core";
 import { IconBan, IconCheck, IconChevronLeft, IconChevronRight, IconCircleCheck, IconPlus, IconToggleLeft, IconUserOff } from "@tabler/icons-react";
-
+import { CreateManagerDrawer } from "@/components/domain/CreateManagerDrawer";
 import { use, useState } from "react";
 export default function DashboardLounges() {
     const { data: lounges, refetch } = useLoungesAdmin()
     const createLounge = useCreateLounge();
+    const addNewMager = useAddNewManger();
     const assignManager = useAssignManager();
     const deactivateLounge = useDeactivateLounge();
     const [opened, setOpened] = useState(false)
@@ -18,6 +19,9 @@ export default function DashboardLounges() {
     const [newLoungeName, setNewLoungeName] = useState("")
     const [loungeId, setLoungeId] = useState('')
     const { data: managers } = useManagers()
+    const [firstName, setFirstName] = useState('');
+    const [lastName, setLastName] = useState('');
+    const [drawerOpened, setDrawerOpened] = useState(false);
 
     const handleAddLounge = async () => {
         createLounge.mutate(newLoungeName)
@@ -27,15 +31,17 @@ export default function DashboardLounges() {
     const handleAssignManager = async (managerId: string) => {
         assignManager.mutate({ loungeId, managerId });
 
-
     }
+
     const handleDeactivate = async () => {
         deactivateLounge.mutate(loungeId)
 
     }
 
 
-    return (<DashboardShell>
+    return (
+    <DashboardShell>
+       console.log("managers:", managers)
         <Group justify="right">
             <Button onClick={() => setOpenAddoungeModal(true)}>Add Lounge</Button>
         </Group>
@@ -87,46 +93,58 @@ export default function DashboardLounges() {
             </Table.Tbody>
         </Table>
 
-        <Modal centered opened={opened} onClose={() => setOpened(false)} title='assign manager' >
-            <ScrollArea >
-                <Stack justify='right'>
-                    {managers && managers.length > 0 ? (
-                        managers.map((manager) => (
-                            <Button
-                                key={manager.id}
-                                variant="outline"
-                                onClick={() => {
-                                    handleAssignManager(manager.id);
-                                    setOpened(false);
-                                }}
-                            >
-                                {manager.first_name + " " + manager.last_name}
-                            </Button>
-                        ))
-                    ) : (
-                        <Text>No managers available.</Text>
-                    )}
-                </Stack>
-            </ScrollArea>
+        <Modal centered opened={opened} onClose={() => setOpened(false)} title='Assign Manager'>
+  <Stack gap="md">
+    <Text size="sm" c="dimmed">Select an existing manager to assign to this lounge</Text>
+    
+    <ScrollArea h={250}>
+      <Stack gap="xs">
+        {managers && managers.length > 0 ? (
+          managers.map((manager) => (
+            <Button
+              key={manager.id}
+              variant="outline"
+              justify="space-between"
+              rightSection={<IconCheck size={16} />}
+              onClick={() => {
+                handleAssignManager(manager.id);
+                setOpened(false);
+              }}
+              styles={{
+                root: { height: "auto", padding: "10px 14px" },
+                inner: { width: "100%" },
+              }}
+            >
+              <Stack gap={2} align="flex-start">
+                <Text size="sm" fw={600}>
+                  {manager.first_name} {manager.last_name}
+                </Text>
+                <Text size="xs" c="dimmed">
+                  {manager.email}
+                </Text>
+              </Stack>
+            </Button>
+          ))
+        ) : (
+          <Text ta="center" c="dimmed" py="xl">No managers available</Text>
+        )}
+      </Stack>
+    </ScrollArea>
 
-            {/* Add new manager */}
-            <Group justify='stretch' my={10}>
-                <TextInput
-                    w='100%'
-                    placeholder="Manger Name"
-                    value={newLoungeName}
-                    onChange={(e) => setNewLoungeName(e.currentTarget.value)}
-                />
-            </Group>
-            <Group justify="right" >
-                <Button
-                    leftSection={<IconPlus size={16} />}
-                    onClick={() => "handleAddManager(loungeId)"}
-                >
-                    Add New Manager
-                </Button>
-            </Group>
-        </Modal>
+    <Divider label="or" labelPosition="center" />
+
+    <Button
+      variant="light"
+      leftSection={<IconPlus size={16} />}
+      onClick={() => {
+        setOpened(false);
+        setTimeout(() => setDrawerOpened(true), 200);
+      }}
+    >
+      Create New Manager
+    </Button>
+  </Stack>
+</Modal>
 
 
         {/* modal for adding lounge  */}
@@ -138,6 +156,11 @@ export default function DashboardLounges() {
             />
             <Group justify="right"><Button mt="md" onClick={handleAddLounge}>Add</Button></Group>
         </Modal>
+        <CreateManagerDrawer
+            opened={drawerOpened}
+            onClose={() => setDrawerOpened(false)}
+            loungeId={loungeId}
+        />
     </DashboardShell>)
 
 }

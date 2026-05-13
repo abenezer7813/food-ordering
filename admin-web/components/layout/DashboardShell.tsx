@@ -24,7 +24,7 @@ export function DashboardShell({ children, allowedRoles }: DashboardShellProps) 
   useEffect(() => {
     if (!isChecking) {
       console.log("Auth check:", { isAuthenticated, user, allowedRoles }); // DEBUG
-      
+
       if (!isAuthenticated) {
         router.push("/auth/login");
         return;
@@ -32,7 +32,14 @@ export function DashboardShell({ children, allowedRoles }: DashboardShellProps) 
 
       if (allowedRoles && user && !allowedRoles.includes(user.role)) {
         console.log("Role not allowed, redirecting..."); // DEBUG
-        router.push(`/dashboard/${user.role.replace("_", "-")}`);
+
+        const rolePaths: Record<string, string> = {
+          super_admin: "super-admin",
+          lounge_manager: "provider",
+          cashier: "cashier",
+          cook: "cook",
+        };
+        router.push(`/dashboard/${rolePaths[user.role] || user.role}`);
       }
     }
   }, [isAuthenticated, isChecking, router, user, allowedRoles]);
