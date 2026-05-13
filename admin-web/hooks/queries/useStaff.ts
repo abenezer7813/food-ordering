@@ -13,51 +13,34 @@ export function useStaff() {
   return useQuery({
     queryKey: staffKeys.all,
     queryFn: async () => {
-      const data = await staffApi.getAll();
-      return data.staff;
-    },
+  const data = await staffApi.getAll();
+  return data.staff.map((s: any) => s.user); 
+},
   });
 }
 //get all managers
 export function useManagers() {
-
   return useQuery({
     queryKey: staffKeys.managers,
     queryFn: async () => {
       const data = await staffApi.getAllmanager();
+        console.log("managers:", data)
 
-      return data
+      return data.managers; // return directly, it's already an array
     }
   })
 }
-// Create cashier
-export function useCreateCashier() {
-  const queryClient = useQueryClient();
 
+export function useCreateStaff() {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (data: {
       first_name: string;
       last_name: string;
       email: string;
       password: string;
-    }) => staffApi.createCashier(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: staffKeys.all });
-    },
-  });
-}
-
-// Create cook
-export function useCreateCook() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (data: {
-      first_name: string;
-      last_name: string;
-      email: string;
-      password: string;
-    }) => staffApi.createCook(data),
+      role: "cashier" | "cook";
+    }) => staffApi.createStaff(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: staffKeys.all });
     },

@@ -6,28 +6,47 @@ class AuthService {
   AuthService(this._dio);
 
   Future<Map<String, dynamic>> register({
-    required String firstName,
-    required String lastName,
-    required String email,
-    required String password,
-    required String gender,
-    String? deviceToken,
-  }) async {
-    try {
-      final response = await _dio.post('/auth/customer/register', data: {
-        'first_name': firstName,
-        'last_name': lastName,
-        'email': email,
-        'password': password,
-        'gender': gender,
-        'device_token': 'deviceToken',
-        "registration_method": "email",
-      });
-      return response.data;
-    } on DioException catch (e) {
-      throw e.response?.data['message'] ?? 'Registration failed';
-    }
+  required String firstName,
+  required String lastName,
+  required String email,
+  required String password,
+  required String gender,
+  String? deviceToken,
+}) async {
+  try {
+    final payload = {
+      'first_name': firstName,
+      'last_name': lastName,
+      'email': email,
+      'password': password,
+      'gender': gender,
+      'device_token': deviceToken,
+      "registration_method": "email",
+    };
+
+    print('=== REGISTER PAYLOAD ===');
+    print(payload);
+
+    final response = await _dio.post('/auth/customer/register', data: payload);
+
+    print('=== REGISTER RESPONSE ===');
+    print(response.statusCode);
+    print(response.data);
+
+    return response.data;
+  } on DioException catch (e) {
+    print('=== DIO ERROR ===');
+    print('Status code: ${e.response?.statusCode}');
+    print('Response data: ${e.response?.data}');
+    print('Error message: ${e.message}');
+    print('Error type: ${e.type}');
+    throw e.response?.data['message'] ?? 'Registration failed';
+  } catch (e) {
+    print('=== UNKNOWN ERROR ===');
+    print(e);
+    rethrow;
   }
+}
 
   Future<Map<String, dynamic>> login({
     required String email,
@@ -54,7 +73,7 @@ class AuthService {
     });
     return response.data;
   } on DioException catch (e) {
-    throw e.response?.data['message'] ?? 'Verification failed';
+    throw e.response?.data['error'] ?? 'Verification failed';
   }
 }
 Future<void> updateDeviceToken(String deviceToken) async {
@@ -65,5 +84,18 @@ Future<void> updateDeviceToken(String deviceToken) async {
   } on DioException catch (e) {
     throw e.response?.data['message'] ?? 'Failed to update device token';
   }
+}
+
+Future<Map<String, dynamic>> resendOtp({
+  required String email,
+}) async {
+  final response = await _dio.post(
+    '/auth/customer/resend-otp',
+    data: {
+      'email': email,
+    },
+  );
+
+  return response.data['message'];
 }
 }

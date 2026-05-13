@@ -93,18 +93,68 @@ class AuthNotifier extends StateNotifier<AuthState> {
   required String otp,
 }) async {
   state = state.copyWith(isLoading: true, error: null);
+
   try {
-    final response = await _authService.verifyOtp(email: email, otp: otp);
+    final response = await _authService.verifyOtp(
+      email: email,
+      otp: otp,
+    );
+
     final token = response['token'];
-    await _ref.read(tokenStorageProvider).saveToken(token);
-    state = state.copyWith(isLoading: false, isSuccess: true);
+
+    // SUCCESS
+    if (token != null) {
+      await _ref.read(tokenStorageProvider).saveToken(token);
+
+      state = state.copyWith(
+        isLoading: false,
+        isSuccess: true,
+        error: null,
+      );
+    } 
+    // FAILED
+    else {
+      state = state.copyWith(
+        isLoading: false,
+        isSuccess: false,
+        error: response['error'] ?? 'Invalid OTP',
+      );
+    }
   } catch (e) {
-    state = state.copyWith(isLoading: false, error: e.toString());
+    state = state.copyWith(
+      isLoading: false,
+      isSuccess: false,
+      error: e.toString(),
+    );
   }
 }
 Future<void> logout() async {
   await _ref.read(tokenStorageProvider).deleteToken();
   state = AuthState();
+}
+Future<void> resendOtp({
+  required String email,
+}) async {
+  state = state.copyWith(
+    isLoading: true,
+    error: null,
+  );
+
+  try {
+    final response = await _authService.resendOtp(
+      email: email,
+    );
+
+    state = state.copyWith(
+      isLoading: false,
+      error: null,
+    );
+  } catch (e) {
+    state = state.copyWith(
+      isLoading: false,
+      error: e.toString(),
+    );
+  }
 }
 }
 

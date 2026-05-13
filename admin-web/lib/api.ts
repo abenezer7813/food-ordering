@@ -94,6 +94,13 @@ export const loungeApi = {
     fetcher<{ message: string }>(`/lounges/${loungeId}`, {
       method: "PATCH",
     }),
+    addNewManager:(data:{first_name:string,last_name:string,email:string,password:string})=>{
+      fetcher<{message:string}>(`/lounges/managers`,{
+        method:"POST",
+        body:JSON.stringify(data)
+      
+    })
+  }
 };
 
 // ============ STAFF ============
@@ -108,26 +115,18 @@ export interface Staff {
 
 export const staffApi = {
   getAll: () => fetcher<{ staff: Staff[] }>("/staff"),
-  getAllmanager: () => fetcher<{ manager: Staff[] }>("/staff/managers"),
+  getAllmanager: () => fetcher<{ managers: Staff[] }>("/staff/managers"),
 
-  createCashier: (data: {
+  
+
+  createStaff: (data: {
     first_name: string;
     last_name: string;
     email: string;
     password: string;
+    role:"cashier"|"cook"
   }) =>
-    fetcher<{ cashier: Staff }>("/staff/cashier", {
-      method: "POST",
-      body: JSON.stringify(data),
-    }),
-
-  createCook: (data: {
-    first_name: string;
-    last_name: string;
-    email: string;
-    password: string;
-  }) =>
-    fetcher<{ cook: Staff }>("/staff/cook", {
+    fetcher<{ cook: Staff }>("/staff", {
       method: "POST",
       body: JSON.stringify(data),
     }),
@@ -250,6 +249,7 @@ export interface Feedback {
   rating: number;
   comment: string | null;
   lounge_id: string;
+  order_id:string;
   customer_id: string;
   created_at: string;
 }

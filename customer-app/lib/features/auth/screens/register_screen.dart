@@ -73,6 +73,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     if (authState.isSuccess) {
       context.go('/otp', extra: _emailController.text.trim());
     } else if (authState.error != null) {
+      print(authState.error);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(authState.error!)),
       );

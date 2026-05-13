@@ -25,6 +25,7 @@ export function useLoungesAdmin() {
     queryKey: loungeKeys.admin,
     queryFn: async () => {
       const data = await loungeApi.getAllAdmin();
+    
       return data.lounges;
     },
   });
@@ -45,6 +46,22 @@ export function useCreateLounge() {
   });
 }
 
+export function useAddNewManger() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (data: {
+      first_name: string;
+      last_name: string;
+      email: string;
+      password:string;
+    }) => loungeApi.addNewManager(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: loungeKeys.all });
+      queryClient.invalidateQueries({ queryKey: loungeKeys.admin });
+      notifySuccess('Manager created Successfuly')
+    }
+  })
+}
 // Assign manager to lounge
 export function useAssignManager() {
   const queryClient = useQueryClient();
