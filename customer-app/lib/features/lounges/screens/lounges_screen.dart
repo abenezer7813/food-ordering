@@ -31,7 +31,7 @@ class LoungesScreen extends ConsumerWidget {
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
-        currentIndex: 0, // 0 for lounges, 1 for orders, 2 for profile
+        currentIndex: 0,
         selectedItemColor: AppColors.primaryBlue,
         unselectedItemColor: AppColors.textSecondary,
         onTap: (index) {
@@ -59,23 +59,30 @@ class LoungesScreen extends ConsumerWidget {
         child: loungesAsync.when(
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (e, _) => Center(
-  child: Column(
-    mainAxisAlignment: MainAxisAlignment.center,
-    children: [
-      const Icon(Icons.wifi_off, color: AppColors.textSecondary, size: 60),
-      const SizedBox(height: 16),
-      const Text('No connection'),
-      const SizedBox(height: 8),
-      const Text('Check your internet and try again', ),
-      const SizedBox(height: 24),
-      ElevatedButton.icon(
-        onPressed: () {           
-          ref.invalidate(loungesProvider);
-          ref.read(loungesProvider.future);
-        },
-        icon: const Icon(Icons.refresh, color: Colors.white),
-        label: const Text('Retry', style: TextStyle(color: Colors.white)),
-        style: ElevatedButton.styleFrom(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(
+                  Icons.wifi_off,
+                  color: AppColors.textSecondary,
+                  size: 60,
+                ),
+                const SizedBox(height: 16),
+                const Text('No connection'),
+                const SizedBox(height: 8),
+                const Text('Check your internet and try again'),
+                const SizedBox(height: 24),
+                ElevatedButton.icon(
+                  onPressed: () {
+                    ref.invalidate(loungesProvider);
+                    ref.read(loungesProvider.future);
+                  },
+                  icon: const Icon(Icons.refresh, color: Colors.white),
+                  label: const Text(
+                    'Retry',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                  style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primaryBlue,
                     padding: const EdgeInsets.symmetric(
                       horizontal: 30,
@@ -85,18 +92,23 @@ class LoungesScreen extends ConsumerWidget {
                       borderRadius: BorderRadius.circular(30),
                     ),
                   ),
-        
-      ),
-    ],
-  ),
-),
+                ),
+              ],
+            ),
+          ),
           data: (lounges) => ListView.builder(
             padding: const EdgeInsets.all(16),
             itemCount: lounges.length,
             itemBuilder: (context, index) {
               final lounge = lounges[index];
               return GestureDetector(
-                onTap: () => context.push('/order-type', extra: lounge),
+                onTap: () => context.push(
+                  '/menu',
+                  extra: {
+                    'lounge': lounge,
+                    'isNonCafe': false, 
+                  },
+                ),
                 child: Container(
                   margin: const EdgeInsets.only(bottom: 16),
                   padding: const EdgeInsets.all(20),

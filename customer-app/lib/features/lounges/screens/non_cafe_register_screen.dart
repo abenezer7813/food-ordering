@@ -5,7 +5,7 @@ import '../../../core/constants/app_colors.dart';
 import '../models/lounge_model.dart';
 import '../services/wallet_service.dart';
 import '../../../core/providers/core_providers.dart';
-
+import '../../lounges/providers/wallet_provider.dart';
 class NonCafeRegisterScreen extends ConsumerStatefulWidget {
   final Lounge lounge;
   const NonCafeRegisterScreen({super.key, required this.lounge});
@@ -29,18 +29,17 @@ class _NonCafeRegisterScreenState
     try {
       final walletService = WalletService(ref.read(apiClientProvider).dio);
       await walletService.registerNonCafe(widget.lounge.id);
-      if (mounted) {
+     if (mounted) {
   ScaffoldMessenger.of(context).showSnackBar(
     const SnackBar(
       content: Text('Successfully registered as non-café customer!'),
       backgroundColor: AppColors.success,
     ),
   );
-  await Future.delayed(const Duration(seconds: 2));
-  context.push('/menu', extra: {
-    'lounge': widget.lounge,
-    'isNonCafe': true,
-  });
+  await Future.delayed(const Duration(seconds: 1));
+  // Invalidate the status provider so it refreshes
+  ref.invalidate(nonCafeStatusProvider(widget.lounge.id));
+  context.pushReplacement('/wallet', extra: widget.lounge);
 }
   } catch (e) {
       setState(() {
