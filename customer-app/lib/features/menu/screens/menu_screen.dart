@@ -5,6 +5,7 @@ import '../../../core/constants/app_colors.dart';
 import '../../lounges/models/lounge_model.dart';
 import '../models/menu_item_model.dart';
 import '../providers/menu_provider.dart';
+import '../../lounges/providers/wallet_provider.dart';
 
 // Simple cart state
 final cartProvider = StateProvider<Map<String, int>>((ref) => {});
@@ -30,14 +31,51 @@ class MenuScreen extends ConsumerWidget {
           style: const TextStyle(color: AppColors.textLight),
         ),
         actions: [
-          if (isNonCafe)
-            IconButton(
-              icon: const Icon(
-                Icons.account_balance_wallet,
-                color: AppColors.textLight,
-              ),
-              onPressed: () => context.push('/wallet', extra: lounge),
+          IconButton(
+            icon: const Icon(
+              Icons.account_balance_wallet,
+              color: AppColors.textLight,
             ),
+            onPressed: () async {
+              final status = await ref.read(
+                nonCafeStatusProvider(lounge.id).future,
+              );
+              if (status) {
+                context.push('/wallet', extra: lounge);
+              } else {
+                if (context.mounted) {
+                  showDialog(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      title: const Text('Non-Café Registration'),
+                      content: const Text(
+                        'You need to register as a non-café customer to access the wallet. Would you like to register?',
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: const Text('Cancel'),
+                        ),
+                        ElevatedButton(
+                          onPressed: () {
+                            Navigator.pop(context);
+                            context.push('/non-cafe-register', extra: lounge);
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primaryBlue,
+                          ),
+                          child: const Text(
+                            'Register',
+                            style: TextStyle(color: Colors.white),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+              }
+            },
+          ),
           if (totalItems > 0)
             Stack(
               children: [
@@ -87,24 +125,32 @@ class MenuScreen extends ConsumerWidget {
         },
         child: menuAsync.when(
           loading: () => const Center(child: CircularProgressIndicator()),
-         error: (e, _) => Center(
-  child: Column(
-    mainAxisAlignment: MainAxisAlignment.center,
-    children: [
-      const Icon(Icons.wifi_off, color: AppColors.textSecondary, size: 60),
-      const SizedBox(height: 16),
-      const Text('No connection', ),
-      const SizedBox(height: 8),
-      const Text('Check your internet and try again', ),
-      const SizedBox(height: 24),
-      ElevatedButton.icon(
-        onPressed: () {           // <-- HERE
-          ref.invalidate(menuItemsProvider(lounge.id)) ;
-           ref.read(menuItemsProvider(lounge.id).future);
-        },
-        icon: const Icon(Icons.refresh, color: Colors.white),
-        label: const Text('Retry', style: TextStyle(color: Colors.white)),
-        style: ElevatedButton.styleFrom(
+          error: (e, _) => Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(
+                  Icons.wifi_off,
+                  color: AppColors.textSecondary,
+                  size: 60,
+                ),
+                const SizedBox(height: 16),
+                const Text('No connection'),
+                const SizedBox(height: 8),
+                const Text('Check your internet and try again'),
+                const SizedBox(height: 24),
+                ElevatedButton.icon(
+                  onPressed: () {
+                    // <-- HERE
+                    ref.invalidate(menuItemsProvider(lounge.id));
+                    ref.read(menuItemsProvider(lounge.id).future);
+                  },
+                  icon: const Icon(Icons.refresh, color: Colors.white),
+                  label: const Text(
+                    'Retry',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                  style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primaryBlue,
                     padding: const EdgeInsets.symmetric(
                       horizontal: 30,
@@ -114,10 +160,10 @@ class MenuScreen extends ConsumerWidget {
                       borderRadius: BorderRadius.circular(30),
                     ),
                   ),
-      ),
-    ],
-  ),
-),
+                ),
+              ],
+            ),
+          ),
           data: (items) => Column(
             children: [
               Expanded(

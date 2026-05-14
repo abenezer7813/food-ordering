@@ -10,6 +10,7 @@ import '../../menu/models/menu_item_model.dart';
 import '../../menu/providers/menu_provider.dart';
 import '../../menu/screens/menu_screen.dart';
 import 'dart:async';
+import '../../lounges/providers/wallet_provider.dart';
 
 class CartScreen extends ConsumerStatefulWidget {
   final Lounge lounge;
@@ -24,7 +25,10 @@ class CartScreen extends ConsumerStatefulWidget {
 class _CartScreenState extends ConsumerState<CartScreen> {
   bool _isLoading = false;
 
-  Future<void> _placeOrder(List<MenuItem> menuItems) async {
+  Future<void> _placeOrder(
+    List<MenuItem> menuItems,
+    String paymentMethod,
+  ) async {
     final cart = ref.read(cartProvider);
     if (cart.isEmpty) return;
 
@@ -42,7 +46,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
         data: {
           'lounge_id': widget.lounge.id,
           'items': items,
-          'payment_method': widget.isNonCafe ? 'wallet' : 'chapa',
+          'payment_method':paymentMethod,
         },
       );
 
@@ -99,7 +103,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                       backgroundColor: AppColors.success,
                     ),
                   );
-                  context.go('/lounges');
+                  context.go('/menu');
                 }
               } on DioException catch (e) {
                 final errorData = e.response?.data;
@@ -112,7 +116,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
               }
             } else {
               // User cancelled — go back to lounges
-              if (mounted) context.go('/lounges');
+              if (mounted) context.go('/menu');
             }
           }
         }
@@ -152,6 +156,197 @@ class _CartScreenState extends ConsumerState<CartScreen> {
     );
     await completer.future;
   }
+
+ Future<void> _showPaymentSheet(BuildContext context, List<MenuItem> menuItems) async {
+  final isNonCafe = await ref.read(nonCafeStatusProvider(widget.lounge.id).future);
+  
+  // Calculate total
+  final cart = ref.read(cartProvider);
+  final total = menuItems.fold(0.0, (sum, item) {
+    final qty = cart[item.id] ?? 0;
+    return sum + (item.price * qty);
+  });
+
+  // Fetch wallet balance if non-cafe
+  double? walletBalance;
+  if (isNonCafe) {
+    try {
+      final wallet = await ref.read(walletProvider(widget.lounge.id).future);
+      walletBalance = double.parse(wallet['balance'].toString());
+    } catch (_) {}
+  }
+
+  if (!context.mounted) return;
+
+  showModalBottomSheet(
+    context: context,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+    ),
+    builder: (context) => Padding(
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Text(
+            'Choose Payment Method',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: AppColors.textPrimary,
+            ),
+          ),
+          const SizedBox(height: 24),
+          // Chapa option
+          GestureDetector(
+            onTap: () {
+              Navigator.pop(context);
+              _placeOrder(menuItems, 'chapa');
+            },
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: AppColors.background,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: AppColors.border),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryBlue.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Icon(Icons.credit_card,
+                        color: AppColors.primaryBlue),
+                  ),
+                  const SizedBox(width: 16),
+                  const Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Pay with Chapa',
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.textPrimary)),
+                        Text('Pay online via Chapa',
+                            style: TextStyle(
+                                fontSize: 12,
+                                color: AppColors.textSecondary)),
+                      ],
+                    ),
+                  ),
+                  const Icon(Icons.arrow_forward_ios,
+                      size: 16, color: AppColors.textSecondary),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          // Wallet option
+          Builder(builder: (context) {
+            final hasEnoughBalance = walletBalance != null && walletBalance >= total;
+            final isClickable = isNonCafe && hasEnoughBalance;
+
+            return GestureDetector(
+              onTap: isClickable
+                  ? () {
+                      Navigator.pop(context);
+                      _placeOrder(menuItems, 'wallet');
+                    }
+                  : isNonCafe && !hasEnoughBalance
+                      ? null
+                      : () {
+                          Navigator.pop(context);
+                          showDialog(
+                            context: context,
+                            builder: (context) => AlertDialog(
+                              title: const Text('Non-Café Registration Required'),
+                              content: const Text(
+                                  'You need to register as a non-café customer to pay with wallet. Would you like to register?'),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.pop(context),
+                                  child: const Text('Cancel'),
+                                ),
+                                ElevatedButton(
+                                  onPressed: () {
+                                    Navigator.pop(context);
+                                    context.push('/non-cafe-register',
+                                        extra: widget.lounge);
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: AppColors.primaryBlue,
+                                  ),
+                                  child: const Text('Register',
+                                      style: TextStyle(color: Colors.white)),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+              child: Opacity(
+                opacity: isNonCafe && !hasEnoughBalance ? 0.5 : 1.0,
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: AppColors.background,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: isClickable ? AppColors.accent : AppColors.border,
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: AppColors.accent.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Icon(Icons.account_balance_wallet,
+                            color: AppColors.accent),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text('Pay with Wallet',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.textPrimary)),
+                            Text(
+                              !isNonCafe
+                                  ? 'Register as non-café to use wallet'
+                                  : walletBalance != null && !hasEnoughBalance
+                                      ? 'Insufficient balance (ETB ${walletBalance.toStringAsFixed(2)})'
+                                      : 'Balance: ETB ${walletBalance?.toStringAsFixed(2) ?? '0.00'}',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: isNonCafe && !hasEnoughBalance
+                                    ? AppColors.error
+                                    : AppColors.textSecondary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const Icon(Icons.arrow_forward_ios,
+                          size: 16, color: AppColors.textSecondary),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          }),
+          const SizedBox(height: 16),
+        ],
+      ),
+    ),
+  );
+}
 
   @override
   Widget build(BuildContext context) {
@@ -351,7 +546,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                       child: ElevatedButton(
                         onPressed: _isLoading
                             ? null
-                            : () => _placeOrder(menuItems),
+                            : () => _showPaymentSheet(context, menuItems),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.primaryBlue,
                           padding: const EdgeInsets.symmetric(vertical: 15),
@@ -359,20 +554,14 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                             borderRadius: BorderRadius.circular(30),
                           ),
                         ),
-                        child: _isLoading
-                            ? const CircularProgressIndicator(
-                                color: Colors.white,
-                              )
-                            : Text(
-                                widget.isNonCafe
-                                    ? 'Place Order (Wallet)'
-                                    : 'Pay with Chapa',
-                                style: const TextStyle(
-                                  color: AppColors.textLight,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
+                        child: const Text(
+                          'Checkout',
+                          style: TextStyle(
+                            color: AppColors.textLight,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ),
                     ),
                   ],
