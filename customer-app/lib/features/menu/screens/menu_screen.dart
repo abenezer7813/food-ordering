@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../core/utils/cache_manager.dart';
 import '../../lounges/models/lounge_model.dart';
 import '../models/menu_item_model.dart';
 import '../providers/menu_provider.dart';
 import '../../lounges/providers/wallet_provider.dart';
-
+import 'package:cached_network_image/cached_network_image.dart';
 // Simple cart state
 final cartProvider = StateProvider<Map<String, int>>((ref) => {});
 
@@ -120,8 +121,9 @@ class MenuScreen extends ConsumerWidget {
       ),
       body: RefreshIndicator(
         onRefresh: () async {
+          await CacheManager.remove('menu_${lounge.id}');
           ref.invalidate(menuItemsProvider(lounge.id));
-          ref.read(menuItemsProvider(lounge.id).future);
+          await ref.read(menuItemsProvider(lounge.id).future);
         },
         child: menuAsync.when(
           loading: () => const Center(child: CircularProgressIndicator()),
@@ -141,7 +143,6 @@ class MenuScreen extends ConsumerWidget {
                 const SizedBox(height: 24),
                 ElevatedButton.icon(
                   onPressed: () {
-                    // <-- HERE
                     ref.invalidate(menuItemsProvider(lounge.id));
                     ref.read(menuItemsProvider(lounge.id).future);
                   },
@@ -219,16 +220,14 @@ class _MenuItemCard extends ConsumerWidget {
           // Image or placeholder
           ClipRRect(
             borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-            child:
-                item.imageUrl != null &&
-                    item.imageUrl!.startsWith('http') &&
-                    !item.imageUrl!.contains('img.com')
-                ? Image.network(
-                    item.imageUrl!,
+            child: item.imageUrl != null
+                ? CachedNetworkImage(
+                    imageUrl: item.imageUrl!,
                     height: 110,
                     width: double.infinity,
                     fit: BoxFit.cover,
-                    errorBuilder: (_, _, _) => _imagePlaceholder(),
+                    placeholder: (context, url) => _imagePlaceholder(),
+                    errorWidget: (context, url, error) => _imagePlaceholder(),
                   )
                 : _imagePlaceholder(),
           ),

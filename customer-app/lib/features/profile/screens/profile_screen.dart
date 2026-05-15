@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../core/utils/cache_manager.dart';
 import '../providers/profile_provider.dart';
 import '../../auth/providers/auth_provider.dart';
 
@@ -53,6 +54,7 @@ class ProfileScreen extends ConsumerWidget {
       ),
       body: RefreshIndicator(
         onRefresh: () async {
+           await CacheManager.remove('profile');
           ref.invalidate(profileProvider);
           ref.read(profileProvider.future);
         },

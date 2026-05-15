@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../core/utils/cache_manager.dart';
 import '../providers/lounge_provider.dart';
 import '../../auth/providers/auth_provider.dart';
 
@@ -52,10 +53,11 @@ class LoungesScreen extends ConsumerWidget {
         ],
       ),
       body: RefreshIndicator(
-        onRefresh: () async {
-          ref.invalidate(loungesProvider);
-          await ref.read(loungesProvider.future);
-        },
+         onRefresh: () async {
+    await CacheManager.remove('lounges');
+    ref.invalidate(loungesProvider);
+    await ref.read(loungesProvider.future);
+  },
         child: loungesAsync.when(
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (e, _) => Center(
