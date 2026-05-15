@@ -28,7 +28,6 @@ class OrderHistoryScreen extends ConsumerWidget {
           if (index == 0) context.go('/lounges');
           if (index == 1) context.go('/orders');
           if (index == 2) context.push('/history');
-          if (index == 3) context.go('/profile');
         },
         items: const [
           BottomNavigationBarItem(
@@ -40,7 +39,6 @@ class OrderHistoryScreen extends ConsumerWidget {
             label: 'My Orders',
           ),
           BottomNavigationBarItem(icon: Icon(Icons.history), label: 'History'),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
         ],
       ),
       body: RefreshIndicator(

@@ -22,4 +22,21 @@ class ProfileService {
 
     return data;
   }
+  
+  Future<void> updateProfile({
+  required String firstName,
+  required String lastName,
+  required String gender,
+}) async {
+  try {
+    await _dio.patch('/auth/customer/profile', data: {
+      'first_name': firstName,
+      'last_name': lastName,
+      'gender': gender,
+    });
+  } on DioException catch (e) {
+    throw e.response?.data['message'] ?? 'Failed to update profile';
+  }
+}
+  
 }
