@@ -11,7 +11,8 @@ class AppColors {
   // Background Colors
   static const Color background = Color(0xFFF5F5F5);
   static const Color scaffoldBackground = Color(0xE4C0C0C8);
-
+  static const Color mainBg = Color(0xFFF4F6F7);
+  static const Color logoContainer = Color(0xFF3F5F60);
   // Text Colors
   static const Color textPrimary = Color(0xFF212121);
   static const Color textSecondary = Color(0xFF757575);
