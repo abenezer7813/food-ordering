@@ -1,7 +1,7 @@
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import z, { email, string } from "zod";
-import { customerRegistration, getCustomerProfile, loginCustomer, loginStaff, updateDeviceToken, verifyUser } from "../services/auth.service.js";
+import { customerRegistration, getCustomerProfile, loginCustomer, loginStaff, updateCustomerProfile, updateDeviceToken, verifyUser } from "../services/auth.service.js";
 import { handleError } from "../utils/errors.js";
 import { storeOTP, verifyOTP } from "../utils/otp.js";
 import { tr } from "zod/locales";
@@ -147,6 +147,38 @@ authRoutes.patch('/device-token',
       const { device_token } = await c.req.json()
       await updateDeviceToken(customerId, device_token)
       return c.json({ message: 'Device token updated' })
+    } catch (e) {
+      return handleError(e, c)
+    }
+  }
+)
+export const updateCustomerSchema = z.object({
+  first_name: z.string().min(2).optional(),
+  last_name: z.string().min(2).optional(),
+  gender: z.string().optional(),
+ 
+})
+authRoutes.patch(
+  '/customer/profile',
+  authMiddleware,
+  zValidator('json', updateCustomerSchema),
+  async (c) => {
+    try {
+      const customer = c.get('userId')
+      const data = c.req.valid('json')
+
+      const updatedCustomer = await updateCustomerProfile(
+        customer,
+        data
+      )
+
+      return c.json(
+        {
+          message: 'Profile updated successfully',
+          customer: updatedCustomer,
+        },
+        200
+      )
     } catch (e) {
       return handleError(e, c)
     }
