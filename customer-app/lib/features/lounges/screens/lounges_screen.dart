@@ -38,8 +38,9 @@ class LoungesScreen extends ConsumerWidget {
         onTap: (index) {
           if (index == 0) context.go('/lounges');
           if (index == 1) context.go('/orders');
-          if (index == 2) context.push('/profile');
-        },
+         if (index == 2) context.push('/history');
+          if (index == 3) context.go('/profile');
+          },
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.restaurant),
@@ -50,14 +51,15 @@ class LoungesScreen extends ConsumerWidget {
             label: 'My Orders',
           ),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
+          BottomNavigationBarItem(icon: Icon(Icons.history), label: 'History'),
         ],
       ),
       body: RefreshIndicator(
-         onRefresh: () async {
-    await CacheManager.remove('lounges');
-    ref.invalidate(loungesProvider);
-    await ref.read(loungesProvider.future);
-  },
+        onRefresh: () async {
+          await CacheManager.remove('lounges');
+          ref.invalidate(loungesProvider);
+          await ref.read(loungesProvider.future);
+        },
         child: loungesAsync.when(
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (e, _) => Center(
@@ -106,10 +108,7 @@ class LoungesScreen extends ConsumerWidget {
               return GestureDetector(
                 onTap: () => context.push(
                   '/menu',
-                  extra: {
-                    'lounge': lounge,
-                    'isNonCafe': false, 
-                  },
+                  extra: {'lounge': lounge, 'isNonCafe': false},
                 ),
                 child: Container(
                   margin: const EdgeInsets.only(bottom: 16),
