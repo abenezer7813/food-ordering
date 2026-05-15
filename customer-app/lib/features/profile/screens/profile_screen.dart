@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../core/utils/cache_manager.dart';
 import '../providers/profile_provider.dart';
 import '../../auth/providers/auth_provider.dart';
 
@@ -31,14 +32,15 @@ class ProfileScreen extends ConsumerWidget {
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
-        currentIndex: 2,
+        currentIndex: 3,
         selectedItemColor: AppColors.primaryBlue,
         unselectedItemColor: AppColors.textSecondary,
         onTap: (index) {
           if (index == 0) context.go('/lounges');
           if (index == 1) context.go('/orders');
-          if (index == 2) context.push('/profile');
-        },
+         if (index == 2) context.push('/history');
+          if (index == 3) context.go('/profile');
+          },
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.restaurant),
@@ -48,11 +50,13 @@ class ProfileScreen extends ConsumerWidget {
             icon: Icon(Icons.receipt_long),
             label: 'My Orders',
           ),
+          BottomNavigationBarItem(icon: Icon(Icons.history), label: 'History'),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
-        ],
+          ],
       ),
       body: RefreshIndicator(
         onRefresh: () async {
+           await CacheManager.remove('profile');
           ref.invalidate(profileProvider);
           ref.read(profileProvider.future);
         },

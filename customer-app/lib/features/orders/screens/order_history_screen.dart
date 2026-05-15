@@ -4,8 +4,8 @@ import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../providers/order_provider.dart';
 
-class OrdersScreen extends ConsumerWidget {
-  const OrdersScreen({super.key});
+class OrderHistoryScreen extends ConsumerWidget {
+  const OrderHistoryScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -16,12 +16,12 @@ class OrdersScreen extends ConsumerWidget {
       appBar: AppBar(
         backgroundColor: AppColors.primaryBlue,
         title: const Text(
-          'My Orders',
+          'History',
           style: TextStyle(color: AppColors.textLight),
         ),
       ),
       bottomNavigationBar: BottomNavigationBar(
-        currentIndex: 1,
+        currentIndex: 2,
         selectedItemColor: AppColors.primaryBlue,
         unselectedItemColor: AppColors.textSecondary,
         onTap: (index) {
@@ -39,7 +39,7 @@ class OrdersScreen extends ConsumerWidget {
             icon: Icon(Icons.receipt_long),
             label: 'My Orders',
           ),
-           BottomNavigationBarItem(icon: Icon(Icons.history), label: 'History'),
+          BottomNavigationBarItem(icon: Icon(Icons.history), label: 'History'),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
         ],
       ),
@@ -103,10 +103,10 @@ class OrdersScreen extends ConsumerWidget {
           ),
           data: (orders) {
             final activeOrders = orders
-      .where((o) => o.status != 'collected')
-      .toList();
-  
-  if (activeOrders.isEmpty) {
+                .where((o) => o.status == 'collected')
+                .toList();
+
+            if (activeOrders.isEmpty) {
               return const SingleChildScrollView(
                 physics: AlwaysScrollableScrollPhysics(),
                 child: SizedBox(

@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/providers/core_providers.dart';
+import '../../../core/utils/cache_manager.dart';
 import '../services/auth_service.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 // 1. Provider for AuthService
@@ -130,6 +131,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
 }
 Future<void> logout() async {
   await _ref.read(tokenStorageProvider).deleteToken();
+   await CacheManager.clear();
   state = AuthState();
 }
 Future<void> resendOtp({

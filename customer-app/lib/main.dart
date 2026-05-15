@@ -4,6 +4,7 @@ import 'package:food_ordering_app/features/lounges/screens/lounges_screen.dart';
 import 'package:food_ordering_app/features/lounges/screens/non_cafe_register_screen.dart';
 import 'package:food_ordering_app/features/lounges/screens/order_type_screen.dart';
 import 'package:food_ordering_app/features/menu/screens/menu_screen.dart';
+import 'package:food_ordering_app/features/orders/screens/order_history_screen.dart';
 import 'package:food_ordering_app/features/wallet/screens/wallet_screen.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -118,6 +119,8 @@ GoRoute(
   path: '/profile',
   builder: (context, state) => const ProfileScreen(),
 ),
+GoRoute(path: '/history',
+builder: (context, state) => OrderHistoryScreen(),)
   ],
 );
 class MyApp extends ConsumerWidget { // what should this extend?
