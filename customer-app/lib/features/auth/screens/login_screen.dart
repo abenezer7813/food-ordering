@@ -5,6 +5,8 @@ import '../../../core/constants/app_colors.dart';
 import '../widgets/input_fields.dart';
 import '../validator/input_validator.dart';
 import '../providers/auth_provider.dart';
+import 'package:food_ordering_app/features/auth/widgets/cards.dart';
+import 'package:food_ordering_app/features/auth/widgets/button.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -48,33 +50,49 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final authState = ref.watch(authProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.scaffoldBackground,
+      backgroundColor: AppColors.mainBg,
       body: SafeArea(
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 25),
           child: SingleChildScrollView(
             child: Column(
               children: [
-                const SizedBox(height: 60),
-                const Center(
-                  child: Text(
+                SizedBox(height: 20),
+                Center(
+                  child: Column(
+                    children:[
+                       Cards.logoCard(
+                        marginTop: 60,
+                        horizontalPadding: 30,
+                        verticalPadding: 25,
+                        imageWidth: 60,
+                        imageHeight: 60,
+                        borderRadius: 40,
+                        cardColor: AppColors.logoContainer,
+                        imagePath: 'assets/images/logo.png',
+                      ),
+                const SizedBox(height: 20),
+                Text(
                     'Welcome Back',
                     style: TextStyle(
-                      color: AppColors.textLight,
+                      color: AppColors.textPrimary,
                       fontWeight: FontWeight.bold,
                       fontSize: 30,
                     ),
                   ),
-                ),
-                const SizedBox(height: 10),
-                const Text(
-                  'Login to your account',
-                  style: TextStyle(
-                    color: AppColors.textSecondary,
-                    fontSize: 14,
+                  Text(
+                        'Login to manage your orders',
+                        style: TextStyle(
+                          color: AppColors.textSecondary,
+                          fontWeight: FontWeight.normal,
+                          fontSize: 15,
+                        ),
+                      ),
+                    ]
                   ),
                 ),
-                const SizedBox(height: 40),
+                const SizedBox(height: 30),
+                
                 Form(
                   key: _formKey,
                   child: Column(
@@ -94,52 +112,86 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         isObscure: true,
                         validator: InputValidator.passwordValidator,
                       ),
-                      const SizedBox(height: 30),
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          onPressed: authState.isLoading ? null : _submit,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.primaryBlue,
-                            padding: const EdgeInsets.symmetric(vertical: 15),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(30),
+                      const SizedBox(height: 15),
+
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          Buttons.textButton(
+                            text: "Forget Password?",
+                            textColor: AppColors.logoContainer,
+                            onTap: () {
+                              print("Forget password tapped");
+                            },
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 15),
+
+                      Buttons.buttonsCard(
+                       text: "Login",
+                       isLoading: authState.isLoading,
+                       onTap: _submit,
+                       cardColor: AppColors.primaryBlue,
+                         ),
+                      const SizedBox(height: 25),
+                       Row(
+                        children: [
+                          Expanded(
+                            child: Divider(
+                              color: AppColors.divider,
+                              thickness: 1,
+                              indent: 20,
+                              endIndent: 10,
                             ),
                           ),
-                          child: authState.isLoading
-                              ? const CircularProgressIndicator(
-                                  color: Colors.white)
-                              : const Text(
-                                  'Login',
-                                  style: TextStyle(
-                                    color: AppColors.textLight,
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Text(
-                            "Don't have an account? ",
-                            style: TextStyle(color: AppColors.textLight),
+                          Text(
+                            "OR CONTINUE WITH",
+                            style: TextStyle(
+                              color: AppColors.divider,
+                              fontSize: 14,
+                            ),
                           ),
-                          GestureDetector(
-                            onTap: () => context.go('/register'),
-                            child: const Text(
-                              'Register',
-                              style: TextStyle(
-                                color: AppColors.primaryBlue,
-                                fontWeight: FontWeight.bold,
-                              ),
+                          Expanded(
+                            child: Divider(
+                              color: AppColors.divider,
+                              thickness: 1,
+                              indent: 10,
+                              endIndent: 20,
                             ),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 20),
+                      SizedBox(height: 25),
+                      Buttons.buttonsCard(
+                        text: "Continue with Google",
+                        icon: Image.asset(
+                          'assets/images/google_logo.png',
+                          height: 24,
+                          width: 24,
+                        ),
+                        textColor: AppColors.textPrimary,
+                        cardColor: AppColors.textLight,
+                      ),
+                      SizedBox(height: 60),
+
+Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            "Don't have an account? ",
+                            style: TextStyle(color: AppColors.textSecondary),
+                          ),
+                          Buttons.textButton(
+                            text: "Sign Up",
+                            onTap: () => context.go('/register'),
+
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ],
+                      ),
+                    
                     ],
                   ),
                 ),
