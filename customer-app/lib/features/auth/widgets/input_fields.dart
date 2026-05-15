@@ -16,14 +16,17 @@ class InputFields {
     return Container(
       decoration: BoxDecoration(
         color: AppColors.textLight,
-        borderRadius: BorderRadius.circular(30),
+        borderRadius: BorderRadius.circular(10),
       ),
       child: TextFormField(
         controller: controller,
         obscureText: isObscure,
+        style: TextStyle(color: Colors.black),
         validator: validator,
         decoration: InputDecoration(
           prefixIcon: Icon(prefixIcon),
+          prefixIconColor: Colors.grey,
+          labelStyle: TextStyle(color: Colors.grey),
           suffixIcon: suffixIcon != null ? Icon(suffixIcon) : null,
           labelText: text,
           border: InputBorder.none,
