@@ -127,3 +127,45 @@ export async function updateDeviceToken(customerId: string, deviceToken: string)
     .set({ device_token: deviceToken })
     .where(eq(customers.id, customerId))
 }
+
+
+
+
+
+
+
+
+
+
+export async function updateCustomerProfile(
+  customerId: string,
+  data: {
+    first_name?: string
+    last_name?: string
+    gender?: string
+   
+  }
+) {
+  const existingCustomer = await db.query.customers.findFirst({
+    where: eq(customers.id, customerId),
+  })
+
+  if (!existingCustomer) {
+    throw Errors.notFound('Customer')
+  }
+
+  const [updatedCustomer] = await db
+    .update(customers)
+    .set({
+      ...(data.first_name && { first_name: data.first_name }),
+      ...(data.last_name && { last_name: data.last_name }),
+      ...(data.gender && { gender: data.gender }),
+      updated_at: new Date(),
+    })
+    .where(eq(customers.id, customerId))
+    .returning()
+
+  const { password: _, ...customerWithoutPassword } = updatedCustomer
+
+  return customerWithoutPassword
+}
