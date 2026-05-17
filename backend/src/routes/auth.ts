@@ -1,7 +1,7 @@
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import z, { email, string } from "zod";
-import { customerRegistration, getCustomerProfile, loginCustomer, loginStaff, updateCustomerProfile, updateDeviceToken, verifyUser } from "../services/auth.service.js";
+import { customerRegistration, getCustomerProfile, loginCustomer, loginStaff, requestPasswordReset, resetPassword, updateCustomerProfile, updateDeviceToken, verifyUser } from "../services/auth.service.js";
 import { handleError } from "../utils/errors.js";
 import { storeOTP, verifyOTP } from "../utils/otp.js";
 import { tr } from "zod/locales";
@@ -184,3 +184,29 @@ authRoutes.patch(
     }
   }
 )
+const forgotPasswordSchema = z.object({ email: z.email() })
+const resetPasswordSchema = z.object({
+  email: z.email(),
+  otp: z.string().length(6),
+  new_password: z.string().min(6),
+})
+
+authRoutes.post('/forgot-password', zValidator('json', forgotPasswordSchema), async (c) => {
+  try {
+    const { email } = c.req.valid('json')
+    await requestPasswordReset(email)
+    return c.json({ success: true, message: 'If an account exists, an OTP has been sent.' }, 200)
+  } catch (e) {
+    return handleError(e, c)
+  }
+})
+
+authRoutes.post('/reset-password', zValidator('json', resetPasswordSchema), async (c) => {
+  try {
+    const data = c.req.valid('json')
+    await resetPassword(data)
+    return c.json({ success: true, message: 'Password reset successfully.' }, 200)
+  } catch (e) {
+    return handleError(e, c)
+  }
+})
