@@ -169,30 +169,34 @@ export async function updateCustomerProfile(
 
   return customerWithoutPassword
 }
-export async function requestPasswordReset(email: string): Promise<void> {
-  const customer = await db.query.customers.findFirst({ where: eq(customers.email, email), columns: { id: true } })
-  const staffUser = !customer ? await db.query.users.findFirst({ where: eq(users.email, email), columns: { id: true } }) : null
-
-  if (!customer && !staffUser) throw Errors.notFound('Account')
+export async function requestStaffPasswordReset(email: string): Promise<void> {
+  const staffUser = await db.query.users.findFirst({ 
+    where: eq(users.email, email), 
+    columns: { id: true } 
+  })
+  if (!staffUser) throw Errors.notFound('Account')
 
   const otp = Math.floor(100000 + Math.random() * 900000).toString()
   storeOTP(email, otp)
   await sendOTPEmail(email, otp)
 }
 
-export async function resetPassword(input: { email: string; otp: string; new_password: string }): Promise<void> {
+export async function resetStaffPassword(input: { 
+  email: string; 
+  otp: string; 
+  new_password: string 
+}): Promise<void> {
   const isValid = verifyOTP(input.email, input.otp)
   if (!isValid) throw Errors.badRequest('Invalid or expired OTP')
 
+  const staffUser = await db.query.users.findFirst({ 
+    where: eq(users.email, input.email), 
+    columns: { id: true } 
+  })
+  if (!staffUser) throw Errors.notFound('Account')
+
   const hashedPassword = await bcrypt.hash(input.new_password, 10)
-
-  const customer = await db.query.customers.findFirst({ where: eq(customers.email, input.email), columns: { id: true } })
-
-  if (customer) {
-    await db.update(customers).set({ password: hashedPassword, updated_at: new Date() }).where(eq(customers.email, input.email))
-  } else {
-    const staffUser = await db.query.users.findFirst({ where: eq(users.email, input.email), columns: { id: true } })
-    if (!staffUser) throw Errors.notFound('Account')
-    await db.update(users).set({ password: hashedPassword, updated_at: new Date() }).where(eq(users.email, input.email))
-  }
+  await db.update(users)
+    .set({ password: hashedPassword, updated_at: new Date() })
+    .where(eq(users.email, input.email))
 }
