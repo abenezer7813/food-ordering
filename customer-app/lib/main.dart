@@ -6,6 +6,7 @@ import 'package:food_ordering_app/features/lounges/screens/order_type_screen.dar
 import 'package:food_ordering_app/features/menu/screens/menu_screen.dart';
 import 'package:food_ordering_app/features/orders/screens/order_history_screen.dart';
 import 'package:food_ordering_app/features/profile/screens/about_screen.dart';
+import 'package:food_ordering_app/features/profile/screens/change_password_screen.dart';
 import 'package:food_ordering_app/features/profile/screens/edit_profile_screen.dart';
 import 'package:food_ordering_app/features/profile/screens/faq_screen.dart';
 import 'package:food_ordering_app/features/wallet/screens/wallet_screen.dart';
@@ -141,6 +142,10 @@ GoRoute(
 GoRoute(
   path: '/forgot-password',
   builder: (context, state) => const ForgotPasswordScreen(),
+),
+GoRoute(
+  path: '/change-password',
+  builder: (context, state) => const ChangePasswordScreen(),
 ),
   ],
 );
