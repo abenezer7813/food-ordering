@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../models/lounge_model.dart';
-import '../providers/wallet_provider.dart';
+import '../../wallet/providers/wallet_provider.dart';
 
 class OrderTypeScreen extends ConsumerWidget {
   final Lounge lounge;

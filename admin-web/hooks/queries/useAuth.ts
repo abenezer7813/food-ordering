@@ -15,21 +15,42 @@ export function useLogin() {
     mutationFn: ({ email, password }: { email: string; password: string }) =>
       authApi.login(email, password),
     onSuccess: (data: any) => {
-    
-      if (data.requiresOtp) {
-        router.replace(`/auth/admin-otp?email=${encodeURIComponent(data.email)}`);
-        return;
-      }
+  if (data.requiresOtp) {
+    router.replace(`/auth/admin-otp?email=${encodeURIComponent(data.email)}`);
+    return;
+  }
 
-     
-      setAuth(data.user, data.token);
-      notifySuccess("Login successfully");
-      const dashboardPath = getRoleDashboardPath(data.user.role);
-      router.replace(dashboardPath);
-    },
+  setAuth(data.user, data.token);
+
+  if (data.user.is_first_login) {
+    router.replace("/auth/change-password");
+    return;
+  }
+
+  notifySuccess("Login successfully");
+  const dashboardPath = getRoleDashboardPath(data.user.role);
+  router.replace(dashboardPath);
+},
     onError: (error) => {
       notifyError(error.message || "Invalid Credentials");
       console.error("Login error:", error);
+    },
+  });
+}
+export function useFirstTimeChangePassword() {
+  const router = useRouter();
+  const { user } = useAuthStore();
+
+  return useMutation({
+    mutationFn: ({ new_password }: { new_password: string }) =>
+      authApi.changePassword(new_password),
+    onSuccess: () => {
+      notifySuccess("Password changed successfully.");
+      const dashboardPath = getRoleDashboardPath(user?.role || "");
+      router.replace(dashboardPath);
+    },
+    onError: (error: Error) => {
+      notifyError(error.message || "Failed to change password");
     },
   });
 }
@@ -94,7 +115,7 @@ export function useChangePassword() {
     }: {
       current_password: string;
       new_password: string;
-    }) => authApi.changePassword(current_password, new_password),
+    }) => authApi.changePassword(current_password),
     onSuccess: () => {
       notifySuccess("Password changed successfully.");
     },

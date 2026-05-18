@@ -3,9 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../models/lounge_model.dart';
-import '../services/wallet_service.dart';
+import '../../wallet/services/wallet_service.dart';
 import '../../../core/providers/core_providers.dart';
-import '../../lounges/providers/wallet_provider.dart';
+import '../../wallet/providers/wallet_provider.dart';
 class NonCafeRegisterScreen extends ConsumerStatefulWidget {
   final Lounge lounge;
   const NonCafeRegisterScreen({super.key, required this.lounge});
