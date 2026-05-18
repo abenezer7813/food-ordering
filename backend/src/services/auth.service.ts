@@ -222,3 +222,34 @@ export async function verifyAdminOtp(email: string, otp: string) {
   const { password: _, ...userWithoutPassword } = user
   return { token, user: userWithoutPassword }
 }
+export async function requestCustomerPasswordReset(email: string): Promise<void> {
+  const customer = await db.query.customers.findFirst({
+    where: eq(customers.email, email),
+    columns: { id: true }
+  })
+  if (!customer) throw Errors.notFound('Account')
+
+  const otp = Math.floor(100000 + Math.random() * 900000).toString()
+  storeOTP(email, otp)
+  await sendOTPEmail(email, otp)
+}
+
+export async function resetCustomerPassword(input: {
+  email: string
+  otp: string
+  new_password: string
+}): Promise<void> {
+  const isValid = verifyOTP(input.email, input.otp)
+  if (!isValid) throw Errors.badRequest('Invalid or expired OTP')
+
+  const customer = await db.query.customers.findFirst({
+    where: eq(customers.email, input.email),
+    columns: { id: true }
+  })
+  if (!customer) throw Errors.notFound('Account')
+
+  const hashedPassword = await bcrypt.hash(input.new_password, 10)
+  await db.update(customers)
+    .set({ password: hashedPassword, updated_at: new Date() })
+    .where(eq(customers.email, input.email))
+}
