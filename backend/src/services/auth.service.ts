@@ -17,11 +17,16 @@ export async function loginStaff(email:string,password:string){
 
   if(!user.is_active) return null
    
-  //compare password
+
    const isValidPassword=await bcrypt.compare(password,user.password)
    if(!isValidPassword)return null;
 
-   //generate token
+    if (user.role === 'super_admin') {
+    const otp = Math.floor(100000 + Math.random() * 900000).toString()
+    storeOTP(email, otp)
+    await sendOTPEmail(email, otp)
+    return { requiresOtp: true, email: user.email }
+  }
    const token=jwt.sign({
     id:user.id,
     role:user.role,
@@ -199,4 +204,21 @@ export async function resetStaffPassword(input: {
   await db.update(users)
     .set({ password: hashedPassword, updated_at: new Date() })
     .where(eq(users.email, input.email))
+}
+export async function verifyAdminOtp(email: string, otp: string) {
+  const isValid = verifyOTP(email, otp)
+  if (!isValid) throw Errors.badRequest('Invalid or expired OTP')
+
+  const user = await db.query.users.findFirst({
+    where: eq(users.email, email)
+  })
+  if (!user) throw Errors.notFound('User')
+
+  const token = jwt.sign({
+    id: user.id,
+    role: user.role,
+  }, process.env.JWT_SECRET!, { expiresIn: '24h' })
+
+  const { password: _, ...userWithoutPassword } = user
+  return { token, user: userWithoutPassword }
 }

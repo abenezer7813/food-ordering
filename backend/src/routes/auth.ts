@@ -1,12 +1,13 @@
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import z, { email, string } from "zod";
-import { customerRegistration, getCustomerProfile, loginCustomer, loginStaff, requestStaffPasswordReset, resetStaffPassword, updateCustomerProfile, updateDeviceToken, verifyUser } from "../services/auth.service.js";
+import { customerRegistration, getCustomerProfile, loginCustomer, loginStaff, requestStaffPasswordReset, resetStaffPassword, updateCustomerProfile, updateDeviceToken, verifyAdminOtp, verifyUser } from "../services/auth.service.js";
 import { handleError } from "../utils/errors.js";
 import { storeOTP, verifyOTP } from "../utils/otp.js";
 import { tr } from "zod/locales";
 import { authMiddleware, requireRole } from "../middleware/auth.js";
 import { sendOTPEmail } from "../utils/email.js";
+import { users } from "../db/schema.js";
 
 
 type Variables = {
@@ -44,8 +45,13 @@ async (c)=>{
       return c.json({ error: 'Invalid email or password' }, 401)
     }
 
+ if ('requiresOtp' in result) {
+      return c.json({ requiresOtp: true, email: result.email }, 200)
+    }
+
+    
     return c.json({ token: result.token, user: result.user })
-  }
+  }  
 
   
 )
@@ -212,6 +218,23 @@ authRoutes.post('/reset-password',
       const data = c.req.valid('json')
       await resetStaffPassword(data)
       return c.json({ success: true, message: 'Password reset successfully.' }, 200)
+    } catch (e) {
+      return handleError(e, c)
+    }
+  }
+)
+const staffOtpSchema = z.object({
+  email: z.email(),
+  otp: z.string().length(6),
+})
+
+authRoutes.post('/admin/verify-otp',
+  zValidator('json', staffOtpSchema),
+  async (c) => {
+    try {
+      const { email, otp } = c.req.valid('json')
+      const result = await verifyAdminOtp(email, otp)
+      return c.json({ token: result.token, user: result.user })
     } catch (e) {
       return handleError(e, c)
     }
