@@ -1,7 +1,7 @@
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import z, { email, string } from "zod";
-import { changePassword, customerRegistration, getCustomerProfile, loginCustomer, loginStaff, requestCustomerPasswordReset, requestStaffPasswordReset, resetCustomerPassword, resetStaffPassword, updateCustomerProfile, updateDeviceToken, verifyAdminOtp, verifyUser } from "../services/auth.service.js";
+import { changePassword, changeStaffPassword, customerRegistration, getCustomerProfile, loginCustomer, loginStaff, requestCustomerPasswordReset, requestStaffPasswordReset, resetCustomerPassword, resetStaffPassword, updateCustomerProfile, updateDeviceToken, verifyAdminOtp, verifyUser } from "../services/auth.service.js";
 import { handleError } from "../utils/errors.js";
 import { storeOTP, verifyOTP } from "../utils/otp.js";
 import { tr } from "zod/locales";
@@ -273,6 +273,20 @@ authRoutes.patch('/customer/change-password',
       const customerId = c.get('userId')
       const { new_password } = c.req.valid('json')
       await changePassword(customerId, new_password)
+      return c.json({ success: true, message: 'Password changed successfully.' })
+    } catch (e) {
+      return handleError(e, c)
+    }
+  }
+)
+authRoutes.patch('/staff/change-password',
+  authMiddleware,
+  zValidator('json', z.object({ new_password: z.string().min(6) })),
+  async (c) => {
+    try {
+      const staffId = c.get('userId')
+      const { new_password } = c.req.valid('json')
+      await changeStaffPassword(staffId, new_password)
       return c.json({ success: true, message: 'Password changed successfully.' })
     } catch (e) {
       return handleError(e, c)

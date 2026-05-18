@@ -43,6 +43,13 @@
       "when": 1778098918897,
       "tag": "0005_big_garia",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1779099679134,
+      "tag": "0006_light_morlun",
+      "breakpoints": true
     }
   ]
 }
