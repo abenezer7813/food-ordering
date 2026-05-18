@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:food_ordering_app/features/auth/widgets/input_fields.dart';
@@ -6,6 +7,8 @@ import '../../../core/constants/app_colors.dart';
 import '../validator/input_validator.dart';
 import '../providers/auth_provider.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:food_ordering_app/features/auth/widgets/cards.dart';
+import 'package:food_ordering_app/features/auth/widgets/button.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
   const RegisterScreen({super.key});
@@ -34,7 +37,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     final messaging = FirebaseMessaging.instance;
     await messaging.requestPermission();
     final token = await messaging.getToken();
-     print('FCM Token: $token');
+    print('FCM Token: $token');
     setState(() {
       _deviceToken = token;
     });
@@ -54,56 +57,78 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     if (!_formKey.currentState!.validate()) return;
 
     if (_passwordController.text != _confirmPasswordController.text) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Passwords do not match')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Passwords do not match')));
       return;
     }
 
-    await ref.read(authProvider.notifier).register(
-      firstName: _firstNameController.text.trim(),
-      lastName: _lastNameController.text.trim(),
-      email: _emailController.text.trim(),
-      password: _passwordController.text,
-      gender: _selectedGender,
-      deviceToken: _deviceToken,
-    );
+    await ref
+        .read(authProvider.notifier)
+        .register(
+          firstName: _firstNameController.text.trim(),
+          lastName: _lastNameController.text.trim(),
+          email: _emailController.text.trim(),
+          password: _passwordController.text,
+          gender: _selectedGender,
+          deviceToken: _deviceToken,
+        );
 
     final authState = ref.read(authProvider);
     if (authState.isSuccess) {
-      context.go('/otp', extra: _emailController.text.trim());
+      context.push('/otp', extra: _emailController.text.trim());
     } else if (authState.error != null) {
       print(authState.error);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(authState.error!)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(authState.error!)));
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authProvider);
-
-    return Scaffold(
-      backgroundColor: AppColors.scaffoldBackground,
+return AnnotatedRegion<SystemUiOverlayStyle>(
+  value: const SystemUiOverlayStyle(
+    statusBarColor: Colors.transparent,
+    statusBarIconBrightness: Brightness.dark,
+    statusBarBrightness: Brightness.light,
+  ),
+  child: Scaffold(
+      backgroundColor: AppColors.mainBg,
       body: SafeArea(
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 25),
           child: SingleChildScrollView(
             child: Column(
               children: [
-                const SizedBox(height: 20),
-                const Center(
-                  child: Text(
-                    'Create Your Account',
-                    style: TextStyle(
-                      color: AppColors.textLight,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 30,
-                    ),
+                Center(
+                  child: Column(
+                    children: [
+                      Cards.logoCard(
+                        marginTop: 20,
+                        horizontalPadding: 25,
+                        verticalPadding: 20,
+                        imageWidth: 30,
+                        imageHeight: 30,
+                        borderRadius: 27,
+                        cardColor: AppColors.logoContainer,
+                        imagePath: 'assets/images/logo.png',
+                      ),
+                      const SizedBox(height: 20),
+
+                      Text(
+                        'Create Your Account',
+                        style: TextStyle(
+                          color: AppColors.textPrimary,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 30,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(height: 30),
+                const SizedBox(height: 20),
                 Form(
                   key: _formKey,
                   child: Column(
@@ -114,21 +139,21 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                         text: 'First Name',
                         validator: InputValidator.nameValidator,
                       ),
-                      const SizedBox(height: 25),
+                      const SizedBox(height: 15),
                       InputFields.textInput(
                         controller: _lastNameController,
                         prefixIcon: Icons.person_2,
                         text: 'Last Name',
                         validator: InputValidator.nameValidator,
                       ),
-                      const SizedBox(height: 25),
+                      const SizedBox(height: 15),
                       InputFields.textInput(
                         controller: _emailController,
                         prefixIcon: Icons.email,
                         text: 'Email',
                         validator: InputValidator.emailValidator,
                       ),
-                      const SizedBox(height: 25),
+                      const SizedBox(height: 15),
                       InputFields.textInput(
                         controller: _passwordController,
                         prefixIcon: Icons.lock,
@@ -137,7 +162,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                         isObscure: true,
                         validator: InputValidator.passwordValidator,
                       ),
-                      const SizedBox(height: 25),
+                      const SizedBox(height: 15),
                       InputFields.textInput(
                         controller: _confirmPasswordController,
                         prefixIcon: Icons.password,
@@ -146,66 +171,106 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                         isObscure: true,
                         validator: InputValidator.passwordValidator,
                       ),
-                      const SizedBox(height: 25),
+                      const SizedBox(height: 15),
 
                       // Gender toggle
                       Container(
-                        decoration: BoxDecoration(
-                          color: AppColors.textLight,
-                          borderRadius: BorderRadius.circular(30),
-                        ),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: TextButton(
-                                onPressed: () {
-                                  setState(() => _selectedGender = 'male');
-                                },
-                                style: TextButton.styleFrom(
-                                  backgroundColor: _selectedGender == 'male'
-                                      ? AppColors.primaryBlue
-                                      : Colors.transparent,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(30),
-                                  ),
-                                ),
-                                child: Text(
-                                  'Male',
-                                  style: TextStyle(
-                                    color: _selectedGender == 'male'
-                                        ? AppColors.textLight
-                                        : AppColors.textPrimary,
-                                  ),
-                                ),
-                              ),
-                            ),
-                            Expanded(
-                              child: TextButton(
-                                onPressed: () {
-                                  setState(() => _selectedGender = 'female');
-                                },
-                                style: TextButton.styleFrom(
-                                  backgroundColor: _selectedGender == 'female'
-                                      ? AppColors.primaryBlue
-                                      : Colors.transparent,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(30),
-                                  ),
-                                ),
-                                child: Text(
-                                  'Female',
-                                  style: TextStyle(
-                                    color: _selectedGender == 'female'
-                                        ? AppColors.textLight
-                                        : AppColors.textPrimary,
-                                  ),
-                                ),
-                             ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 30),
+  height: 60,
+  decoration: BoxDecoration(
+    color: AppColors.textLight,
+    borderRadius: BorderRadius.circular(30),
+    boxShadow: [
+      BoxShadow(
+        color: Colors.black.withOpacity(0.08),
+        blurRadius: 10,
+        offset: const Offset(0, 4),
+      ),
+    ],
+  ),
+  child: Row(
+    children: [
+      Expanded(
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 250),
+          margin: const EdgeInsets.all(4),
+          decoration: BoxDecoration(
+            color: _selectedGender == 'male'
+                ? AppColors.primaryBlue
+                : Colors.transparent,
+            borderRadius: BorderRadius.circular(30),
+          ),
+          child: TextButton.icon(
+            onPressed: () {
+              setState(() => _selectedGender = 'male');
+            },
+            icon: Icon(
+              Icons.male,
+              color: _selectedGender == 'male'
+                  ? AppColors.textLight
+                  : AppColors.textPrimary,
+            ),
+            label: Text(
+              'Male',
+              style: TextStyle(
+                fontWeight: FontWeight.w600,
+                fontSize: 16,
+                color: _selectedGender == 'male'
+                    ? AppColors.textLight
+                    : AppColors.textPrimary,
+              ),
+            ),
+            style: TextButton.styleFrom(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(30),
+              ),
+            ),
+          ),
+        ),
+      ),
+
+      Expanded(
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 250),
+          margin: const EdgeInsets.all(4),
+          decoration: BoxDecoration(
+            color: _selectedGender == 'female'
+                ? AppColors.primaryBlue
+                : Colors.transparent,
+            borderRadius: BorderRadius.circular(30),
+          ),
+          child: TextButton.icon(
+            onPressed: () {
+              setState(() => _selectedGender = 'female');
+            },
+            icon: Icon(
+              Icons.female,
+              color: _selectedGender == 'female'
+                  ? AppColors.textLight
+                  : AppColors.textPrimary,
+            ),
+            label: Text(
+              'Female',
+              style: TextStyle(
+                fontWeight: FontWeight.w600,
+                fontSize: 16,
+                color: _selectedGender == 'female'
+                    ? AppColors.textLight
+                    : AppColors.textPrimary,
+              ),
+            ),
+            style: TextButton.styleFrom(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(30),
+              ),
+            ),
+          ),
+        ),
+      ),
+    ],
+  ),
+),
+
+const SizedBox(height: 15),
 
                       // Submit button
                       SizedBox(
@@ -220,7 +285,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                             ),
                           ),
                           child: authState.isLoading
-                              ? const CircularProgressIndicator(color: Colors.white)
+                              ? const CircularProgressIndicator(
+                                  color: Colors.white,
+                                )
                               : const Text(
                                   'Register',
                                   style: TextStyle(
@@ -233,13 +300,54 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       ),
                       const SizedBox(height: 20),
 
+                           Row(
+                        children: [
+                          Expanded(
+                            child: Divider(
+                              color: AppColors.divider,
+                              thickness: 1,
+                              indent: 20,
+                              endIndent: 10,
+                            ),
+                          ),
+                          Text(
+                            "OR CONTINUE WITH",
+                            style: TextStyle(
+                              color: AppColors.divider,
+                              fontSize: 14,
+                            ),
+                          ),
+                          Expanded(
+                            child: Divider(
+                              color: AppColors.divider,
+                              thickness: 1,
+                              indent: 10,
+                              endIndent: 20,
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 25),
+                      Buttons.buttonsCard(
+                        text: "Continue with Google",
+                        icon: Image.asset(
+                          'assets/images/google_logo.png',
+                          height: 24,
+                          width: 24,
+                        ),
+                        textColor: AppColors.textPrimary,
+                        cardColor: AppColors.textLight,
+                      ),
+                      SizedBox(height: 30),
+
+
                       // Login link
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           const Text(
                             'Already have an account? ',
-                            style: TextStyle(color: AppColors.textLight),
+                            style: TextStyle(color: AppColors.textSecondary),
                           ),
                           GestureDetector(
                             onTap: () => context.go('/login'),
@@ -261,7 +369,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             ),
           ),
         ),
-      ),
+      ),)
     );
   }
 }
