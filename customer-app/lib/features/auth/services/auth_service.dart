@@ -98,4 +98,33 @@ Future<Map<String, dynamic>> resendOtp({
 
   return response.data['message'];
 }
+Future<Map<String, dynamic>> forgotPassword({
+  required String email,
+}) async {
+  try {
+    final response = await _dio.post('/auth/customer/forgot-password', data: {
+      'email': email,
+    });
+    return response.data;
+  } on DioException catch (e) {
+    throw e.response?.data['message'] ?? 'Failed to send OTP';
+  }
+}
+
+Future<Map<String, dynamic>> resetPassword({
+  required String email,
+  required String otp,
+  required String newPassword,
+}) async {
+  try {
+    final response = await _dio.post('/auth/customer/reset-password', data: {
+      'email': email,
+      'otp': otp,
+      'new_password': newPassword,
+    });
+    return response.data;
+  } on DioException catch (e) {
+    throw e.response?.data['message'] ?? 'Password reset failed';
+  }
+}
 }

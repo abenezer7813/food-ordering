@@ -253,3 +253,9 @@ export async function resetCustomerPassword(input: {
     .set({ password: hashedPassword, updated_at: new Date() })
     .where(eq(customers.email, input.email))
 }
+export async function changePassword(customerId: string, newPassword: string) {
+  const hashed = await bcrypt.hash(newPassword, 10)
+  await db.update(customers)
+    .set({ password: hashed, updated_at: new Date() })
+    .where(eq(customers.id, customerId))
+}
