@@ -6,7 +6,7 @@ import '../../../core/utils/cache_manager.dart';
 import '../../lounges/models/lounge_model.dart';
 import '../models/menu_item_model.dart';
 import '../providers/menu_provider.dart';
-import '../../lounges/providers/wallet_provider.dart';
+import '../../wallet/providers/wallet_provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 // Simple cart state
 final cartProvider = StateProvider<Map<String, int>>((ref) => {});

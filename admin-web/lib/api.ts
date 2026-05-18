@@ -49,6 +49,7 @@ export interface LoginResponse {
     email: string;
     role: string;
     is_active: boolean;
+    is_first_login: boolean;
     created_at: string;
     updated_at: string;
   };
@@ -73,15 +74,20 @@ export const authApi = {
       body: JSON.stringify({ email, otp, new_password }),
     }),
 
-  changePassword: (current_password: string, new_password: string) =>
-    fetcher<{ success: boolean; message: string }>("/auth/change-password", {
-      method: "PATCH",
-      body: JSON.stringify({ current_password, new_password }),
-    }),
+changePassword: (new_password: string) =>
+  fetcher<{ success: boolean }>("/auth/staff/change-password", {
+    method: "PATCH",
+    body: JSON.stringify({ new_password }),
+  }),
     verifyAdminOtp: (email: string, otp: string) =>
   fetcher<LoginResponse>("/auth/admin/verify-otp", {
     method: "POST",
     body: JSON.stringify({ email, otp }),
+  }),
+  firstTimeChangePassword: (new_password: string) =>
+  fetcher<{ success: boolean; message: string }>("/auth/staff/change-password", {
+    method: "PATCH",
+    body: JSON.stringify({ new_password }),
   }),
 };
 

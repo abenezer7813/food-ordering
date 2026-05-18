@@ -16,3 +16,7 @@ final walletProvider = FutureProvider.family<Map<String, dynamic>, String>((ref,
   final walletService = ref.watch(walletServiceProvider);
   return walletService.getWallet(loungeId);
 });
+final myTopUpRequestsProvider = FutureProvider.family<List<dynamic>, String>((ref, loungeId) async {
+  final walletService = ref.watch(walletServiceProvider);
+  return walletService.getMyTopUpRequests(loungeId);
+});
