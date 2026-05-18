@@ -235,3 +235,29 @@ export const loungesRelations = relations(lounges, ({ one }) => ({
     references: [users.id],
   }),
 }));
+export const topUpStatusEnum = pgEnum('top_up_status', [
+  'pending',
+  'cashier_approved', 
+  'manager_approved',
+  'rejected'
+])
+
+export const paymentMethodEnum2 = pgEnum('top_up_payment_method', [
+  'cash',
+  'bank_transfer'
+])
+
+export const top_up_requests = pgTable('top_up_requests', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  customer_id: uuid('customer_id').notNull().references(() => customers.id),
+  lounge_id: uuid('lounge_id').notNull().references(() => lounges.id),
+  amount: varchar('amount', { length: 20 }).notNull(),
+  payment_method: paymentMethodEnum2('payment_method').notNull(),
+  receipt_image_url: varchar('receipt_image_url', { length: 500 }),
+  status: topUpStatusEnum('status').notNull().default('pending'),
+  cashier_id: uuid('cashier_id').references(() => users.id),
+  manager_id: uuid('manager_id').references(() => users.id),
+  rejection_reason: varchar('rejection_reason', { length: 500 }),
+  created_at: timestamp('created_at').notNull().defaultNow(),
+  updated_at: timestamp('updated_at').notNull().defaultNow(),
+})

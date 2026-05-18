@@ -1,6 +1,6 @@
 import z, { date } from "zod";
 import { db } from "../db/index.js";
-import { customers, lounges, non_cafe_customers, wallet_transactions, wallets } from "../db/schema.js";
+import { customers, lounges, non_cafe_customers, top_up_requests, wallet_transactions, wallets } from "../db/schema.js";
 import { eq, and } from "drizzle-orm";
 import { Errors } from "../utils/errors.js";
 import { findCustomer, findLounge } from "./common.js";
@@ -122,4 +122,141 @@ export async function getTransactionHistory(loungeId:string,customerId:string) {
 where:eq(wallet_transactions.wallet_id,wallet.id)})
 return transaction
   
+}
+export async function createTopUpRequest(data: {
+  customer_id: string
+  lounge_id: string
+  amount: number
+  payment_method: 'cash' | 'bank_transfer'
+  receipt_image_url?: string
+}) {
+  const wallet = await db.query.wallets.findFirst({
+    where: and(
+      eq(wallets.customer_id, data.customer_id),
+      eq(wallets.lounge_id, data.lounge_id)
+    )
+  })
+  if (!wallet) throw Errors.notFound('Wallet')
+
+  const [request] = await db.insert(top_up_requests).values({
+    customer_id: data.customer_id,
+    lounge_id: data.lounge_id,
+    amount: String(data.amount),
+    payment_method: data.payment_method,
+    receipt_image_url: data.receipt_image_url,
+    status: 'pending',
+  }).returning()
+
+  return request
+}
+
+export async function cashierApproveTopUp(requestId: string, cashierId: string) {
+  const request = await db.query.top_up_requests.findFirst({
+    where: eq(top_up_requests.id, requestId)
+  })
+  if (!request) throw Errors.notFound('Top up request')
+  if (request.status !== 'pending') throw Errors.badRequest('Request is not pending')
+
+  if (request.payment_method === 'cash') {
+    // Cash — update wallet immediately
+    const wallet = await db.query.wallets.findFirst({
+      where: and(
+        eq(wallets.customer_id, request.customer_id),
+        eq(wallets.lounge_id, request.lounge_id)
+      )
+    })
+    if (!wallet) throw Errors.notFound('Wallet')
+
+    await db.transaction(async (tx) => {
+      await tx.update(wallets)
+        .set({ balance: String(Number(wallet.balance) + Number(request.amount)), updated_at: new Date() })
+        .where(eq(wallets.id, wallet.id))
+
+      await tx.update(top_up_requests)
+        .set({ status: 'manager_approved', cashier_id: cashierId, updated_at: new Date() })
+        .where(eq(top_up_requests.id, requestId))
+    })
+
+    
+    return { message: 'Cash top up approved and wallet updated' }
+
+  } else {
+    const [updated] = await db.update(top_up_requests)
+      .set({ status: 'cashier_approved', cashier_id: cashierId, updated_at: new Date() })
+      .where(eq(top_up_requests.id, requestId))
+      .returning()
+
+    return updated
+  }
+}
+
+export async function managerApproveTopUp(requestId: string, managerId: string) {
+  const request = await db.query.top_up_requests.findFirst({
+    where: eq(top_up_requests.id, requestId)
+  })
+  if (!request) throw Errors.notFound('Top up request')
+  if (request.status !== 'cashier_approved') throw Errors.badRequest('Request must be cashier approved first')
+
+  // Update wallet balance
+  const wallet = await db.query.wallets.findFirst({
+    where: and(
+      eq(wallets.customer_id, request.customer_id),
+      eq(wallets.lounge_id, request.lounge_id)
+    )
+  })
+  if (!wallet) throw Errors.notFound('Wallet')
+
+  await db.transaction(async (tx) => {
+    await tx.update(wallets)
+      .set({ balance: String(Number(wallet.balance) + Number(request.amount)), updated_at: new Date() })
+      .where(eq(wallets.id, wallet.id))
+
+    await tx.update(top_up_requests)
+      .set({ status: 'manager_approved', manager_id: managerId, updated_at: new Date() })
+      .where(eq(top_up_requests.id, requestId))
+  })
+
+  return { message: 'Wallet topped up successfully' }
+}
+
+export async function rejectTopUpRequest(requestId: string, staffId: string, rejection_reason: string) {
+  const request = await db.query.top_up_requests.findFirst({
+    where: eq(top_up_requests.id, requestId)
+  })
+  if (!request) throw Errors.notFound('Top up request')
+  if (request.status === 'manager_approved') throw Errors.badRequest('Cannot reject an approved request')
+
+  const [updated] = await db.update(top_up_requests)
+    .set({ status: 'rejected', rejection_reason, updated_at: new Date() })
+    .where(eq(top_up_requests.id, requestId))
+    .returning()
+
+  return updated
+}
+
+export async function getTopUpRequests(loungeId: string) {
+  return await db.query.top_up_requests.findMany({
+    where: eq(top_up_requests.lounge_id, loungeId),
+    orderBy: (top_up_requests, { desc }) => [desc(top_up_requests.created_at)],
+    with: {
+      customer: {
+        columns: {
+          id: true,
+          first_name: true,
+          last_name: true,
+          email: true,
+        }
+      }
+    }
+  })
+}
+
+export async function getCustomerTopUpRequests(customerId: string, loungeId: string) {
+  return await db.query.top_up_requests.findMany({
+    where: and(
+      eq(top_up_requests.customer_id, customerId),
+      eq(top_up_requests.lounge_id, loungeId)
+    ),
+    orderBy: (top_up_requests, { desc }) => [desc(top_up_requests.created_at)],
+  })
 }
