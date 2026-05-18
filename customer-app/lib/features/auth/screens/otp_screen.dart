@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/constants/app_colors.dart';
 import '../providers/auth_provider.dart';
+import 'package:food_ordering_app/features/auth/widgets/cards.dart';
 
 class OtpScreen extends ConsumerStatefulWidget {
   final String email;
@@ -130,19 +131,36 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
     final authState = ref.watch(authProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.scaffoldBackground,
+      backgroundColor: AppColors.mainBg,
       body: SafeArea(
-        child: Padding(
+  child: SingleChildScrollView(
+    keyboardDismissBehavior:
+        ScrollViewKeyboardDismissBehavior.onDrag,
+    child: Padding(
           padding: const EdgeInsets.symmetric(
-            horizontal: 25,
+            horizontal: 35,
+            vertical: 130,
           ),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.start,
+            
             children: [
-              const Text(
+               Column(children: [
+                  Cards.logoCard(
+                        marginTop: 0,
+                        horizontalPadding: 30,
+                        verticalPadding: 25,
+                        imageWidth: 60,
+                        imageHeight: 60,
+                        borderRadius: 40,
+                        cardColor: AppColors.logoContainer,
+                        imagePath: 'assets/images/logo.png',
+                      ),
+                const SizedBox(height: 40),
+                   const Text(
                 'Verify Your Email',
                 style: TextStyle(
-                  color: AppColors.textLight,
+                  color: AppColors.textPrimary,
                   fontWeight: FontWeight.bold,
                   fontSize: 30,
                 ),
@@ -151,20 +169,31 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
               const SizedBox(height: 15),
 
               Text(
-                'We sent a code to ${widget.email}',
+                'We sent a 6-digit code to',
                 style: const TextStyle(
                   color: AppColors.textSecondary,
-                  fontSize: 14,
+                  fontSize: 15,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              Text(
+                '${widget.email}',
+                style: const TextStyle(
+                  color: AppColors.logoContainer,
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold,
                 ),
                 textAlign: TextAlign.center,
               ),
 
               const SizedBox(height: 40),
+              
 
               Container(
                 decoration: BoxDecoration(
                   color: AppColors.textLight,
-                  borderRadius: BorderRadius.circular(30),
+                  
+                  borderRadius: BorderRadius.circular(20),
                 ),
                 child: TextField(
                   controller: _otpController,
@@ -175,6 +204,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
                     hintText: 'Enter OTP',
                     border: InputBorder.none,
                     counterText: '',
+
                     contentPadding: EdgeInsets.symmetric(
                       vertical: 15,
                     ),
@@ -182,7 +212,36 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
                 ),
               ),
 
-              const SizedBox(height: 30),
+              const SizedBox(height: 40),
+              Padding(padding: EdgeInsets.symmetric(horizontal: 35),
+              child: Row(
+  mainAxisAlignment: MainAxisAlignment.center,
+  crossAxisAlignment: CrossAxisAlignment.start,
+
+  children: [
+    const Icon(
+      Icons.verified_user_outlined,
+      size: 18,
+      color: AppColors.textSecondary,
+    ),
+
+    const SizedBox(width: 8),
+
+    Expanded(
+      child: Text(
+        'Enter the 6-digit code to verify your email and continue',
+        style: const TextStyle(
+          color: AppColors.textSecondary,
+          fontSize: 13,
+          height: 1.5,
+        ),
+        textAlign: TextAlign.center,
+      ),
+    ),
+  ],
+),),
+              const SizedBox(height: 20),
+
 
               SizedBox(
                 width: double.infinity,
@@ -251,9 +310,13 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
                         ),
                       ),
                     ),
-            ],
+           
+                ],)
+              
+              
+              ],
           ),
-        ),
+        ),)
       ),
     );
   }
