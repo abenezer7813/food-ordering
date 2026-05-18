@@ -128,30 +128,40 @@ class AuthNotifier extends StateNotifier<AuthState> {
       state = state.copyWith(isLoading: false, error: e.toString());
     }
   }
-  Future<void> forgotPassword({
-  required String email,
-}) async {
-  state = state.copyWith(isLoading: true, error: null, isSuccess: false);
-  try {
-    await _authService.forgotPassword(email: email);
-    state = state.copyWith(isLoading: false, isSuccess: true);
-  } catch (e) {
-    state = state.copyWith(isLoading: false, error: e.toString());
-  }
-}
 
-Future<void> resetPassword({
-  required String email,
-  required String otp,
+  Future<void> forgotPassword({required String email}) async {
+    state = state.copyWith(isLoading: true, error: null, isSuccess: false);
+    try {
+      await _authService.forgotPassword(email: email);
+      state = state.copyWith(isLoading: false, isSuccess: true);
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString());
+    }
+  }
+
+  Future<void> resetPassword({
+    required String email,
+    required String otp,
+    required String newPassword,
+  }) async {
+    state = state.copyWith(isLoading: true, error: null, isSuccess: false);
+    try {
+      await _authService.resetPassword(
+        email: email,
+        otp: otp,
+        newPassword: newPassword,
+      );
+      state = state.copyWith(isLoading: false, isSuccess: true);
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString());
+    }
+  }
+  Future<void> changePassword({
   required String newPassword,
 }) async {
   state = state.copyWith(isLoading: true, error: null, isSuccess: false);
   try {
-    await _authService.resetPassword(
-      email: email,
-      otp: otp,
-      newPassword: newPassword,
-    );
+    await _authService.changePassword(newPassword: newPassword);
     state = state.copyWith(isLoading: false, isSuccess: true);
   } catch (e) {
     state = state.copyWith(isLoading: false, error: e.toString());

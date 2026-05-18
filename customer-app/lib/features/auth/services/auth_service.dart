@@ -127,4 +127,16 @@ Future<Map<String, dynamic>> resetPassword({
     throw e.response?.data['message'] ?? 'Password reset failed';
   }
 }
+Future<Map<String, dynamic>> changePassword({
+  required String newPassword,
+}) async {
+  try {
+    final response = await _dio.patch('/auth/customer/change-password', data: {
+      'new_password': newPassword,
+    });
+    return response.data;
+  } on DioException catch (e) {
+    throw e.response?.data['message'] ?? 'Failed to change password';
+  }
+}
 }
