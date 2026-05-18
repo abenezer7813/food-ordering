@@ -1,4 +1,5 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
+//const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL_LOCAL|| "http://localhost:4001";
 
 // Helper to get token
 const getToken = (): string | null => {
@@ -77,6 +78,11 @@ export const authApi = {
       method: "PATCH",
       body: JSON.stringify({ current_password, new_password }),
     }),
+    verifyAdminOtp: (email: string, otp: string) =>
+  fetcher<LoginResponse>("/auth/admin/verify-otp", {
+    method: "POST",
+    body: JSON.stringify({ email, otp }),
+  }),
 };
 
 // ============ LOUNGES ============

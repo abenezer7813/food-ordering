@@ -6,9 +6,9 @@ import { error } from "console";
 async function seed() {
     const hashedPassword=await bcrypt.hash('admin123',10)
     await db.insert(users).values({
-        first_name :'super',
+        first_name :'abeni',
         last_name:'admin',
-        email:'admin@test.com',
+        email:'abenidev7@gmail.com',
         password:hashedPassword,
         role:'super_admin',
         is_active:true

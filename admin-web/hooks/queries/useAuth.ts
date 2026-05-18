@@ -14,23 +14,40 @@ export function useLogin() {
   return useMutation({
     mutationFn: ({ email, password }: { email: string; password: string }) =>
       authApi.login(email, password),
-    onSuccess: (data) => {
+    onSuccess: (data: any) => {
+    
+      if (data.requiresOtp) {
+        router.replace(`/auth/admin-otp?email=${encodeURIComponent(data.email)}`);
+        return;
+      }
 
-      console.log("Login success:", data); // DEBUG
-
-      // Set auth in store and localStorage
+     
       setAuth(data.user, data.token);
-      notifySuccess("Login successfuly")
-      // Get the dashboard path
+      notifySuccess("Login successfully");
       const dashboardPath = getRoleDashboardPath(data.user.role);
-      console.log("Redirecting to:", dashboardPath); // DEBUG
-
-      // Force redirect with replace
       router.replace(dashboardPath);
     },
     onError: (error) => {
-      notifyError(error.message || "Invalid Credintials")
-      console.error("Login error:", error); // DEBUG
+      notifyError(error.message || "Invalid Credentials");
+      console.error("Login error:", error);
+    },
+  });
+}
+export function useVerifyAdminOtp() {
+  const router = useRouter();
+  const { setAuth } = useAuthStore();
+
+  return useMutation({
+    mutationFn: ({ email, otp }: { email: string; otp: string }) =>
+      authApi.verifyAdminOtp(email, otp),
+    onSuccess: (data) => {
+      setAuth(data.user, data.token);
+      notifySuccess("Login successfully");
+      const dashboardPath = getRoleDashboardPath(data.user.role);
+      router.replace(dashboardPath);
+    },
+    onError: (error) => {
+      notifyError(error.message || "Invalid OTP");
     },
   });
 }
