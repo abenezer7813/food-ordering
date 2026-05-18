@@ -16,6 +16,7 @@ import {
   Box,
   SimpleGrid,
   Card,
+  Anchor,
 } from "@mantine/core";
 import {
   IconSun,
@@ -25,6 +26,7 @@ import {
   IconAlertCircle,
 } from "@tabler/icons-react";
 import { useLogin } from "@/hooks/queries/useAuth";
+import { useRouter } from "next/navigation";
 
 const demoAccounts = [
   { role: "Super Admin", email: "admin@test.com", color: "violet" },
@@ -38,7 +40,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState({ email: "", password: "" });
-
+  const router = useRouter();
   const loginMutation = useLogin();
 
   const validateEmail = (email: string) => {
@@ -235,6 +237,17 @@ export default function LoginPage() {
                   error={errors.password}
                   size="md"
                 />
+
+                <Group justify="flex-end">
+                  <Anchor
+                    size="sm"
+                    component="button"
+                    type="button"
+                    onClick={() => router.push("/auth/forgot-password")}
+                  >
+                    Forgot password?
+                  </Anchor>
+                </Group>
 
                 {loginMutation.isError && (
                   <Alert

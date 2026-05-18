@@ -31,18 +31,20 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
 
-    await ref.read(authProvider.notifier).login(
-      email: _emailController.text.trim(),
-      password: _passwordController.text,
-    );
+    await ref
+        .read(authProvider.notifier)
+        .login(
+          email: _emailController.text.trim(),
+          password: _passwordController.text,
+        );
 
     final authState = ref.read(authProvider);
     if (authState.isSuccess) {
       context.go('/lounges');
     } else if (authState.error != null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(authState.error!)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(authState.error!)));
     }
     
   }
@@ -68,8 +70,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 SizedBox(height: 20),
                 Center(
                   child: Column(
-                    children:[
-                       Cards.logoCard(
+                    children: [
+                      Cards.logoCard(
                         marginTop: 60,
                         horizontalPadding: 30,
                         verticalPadding: 25,
@@ -79,16 +81,16 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         cardColor: AppColors.logoContainer,
                         imagePath: 'assets/images/logo.png',
                       ),
-                const SizedBox(height: 20),
-                Text(
-                    'Welcome Back',
-                    style: TextStyle(
-                      color: AppColors.textPrimary,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 30,
-                    ),
-                  ),
-                  Text(
+                      const SizedBox(height: 20),
+                      Text(
+                        'Welcome Back',
+                        style: TextStyle(
+                          color: AppColors.textPrimary,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 30,
+                        ),
+                      ),
+                      Text(
                         'Login to manage your orders',
                         style: TextStyle(
                           color: AppColors.textSecondary,
@@ -96,11 +98,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           fontSize: 15,
                         ),
                       ),
-                    ]
+                    ],
                   ),
                 ),
                 const SizedBox(height: 30),
-                
+
                 Form(
                   key: _formKey,
                   child: Column(
@@ -128,22 +130,22 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           Buttons.textButton(
                             text: "Forget Password?",
                             textColor: AppColors.logoContainer,
-                            onTap: () {
-                              print("Forget password tapped");
-                            },
+                            onTap: () => {context.go(
+                              '/forgot-password',
+                            ), print('tapppppped')}
                           ),
                         ],
                       ),
                       SizedBox(height: 15),
 
                       Buttons.buttonsCard(
-                       text: "Login",
-                       isLoading: authState.isLoading,
-                       onTap: _submit,
-                       cardColor: AppColors.primaryBlue,
-                         ),
+                        text: "Login",
+                        isLoading: authState.isLoading,
+                        onTap: _submit,
+                        cardColor: AppColors.primaryBlue,
+                      ),
                       const SizedBox(height: 25),
-                       Row(
+                      Row(
                         children: [
                           Expanded(
                             child: Divider(
@@ -183,7 +185,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       ),
                       SizedBox(height: 60),
 
-Row(
+                      Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Text(
@@ -199,7 +201,6 @@ Row(
                           ),
                         ],
                       ),
-                    
                     ],
                   ),
                 ),

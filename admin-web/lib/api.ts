@@ -1,4 +1,5 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
+//const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL_LOCAL|| "http://localhost:4001";
 
 // Helper to get token
 const getToken = (): string | null => {
@@ -59,6 +60,29 @@ export const authApi = {
       method: "POST",
       body: JSON.stringify({ email, password }),
     }),
+
+  forgotPassword: (email: string) =>
+    fetcher<{ success: boolean; message: string }>("/auth/forgot-password", {
+      method: "POST",
+      body: JSON.stringify({ email }),
+    }),
+
+  resetPassword: (email: string, otp: string, new_password: string) =>
+    fetcher<{ success: boolean; message: string }>("/auth/reset-password", {
+      method: "POST",
+      body: JSON.stringify({ email, otp, new_password }),
+    }),
+
+  changePassword: (current_password: string, new_password: string) =>
+    fetcher<{ success: boolean; message: string }>("/auth/change-password", {
+      method: "PATCH",
+      body: JSON.stringify({ current_password, new_password }),
+    }),
+    verifyAdminOtp: (email: string, otp: string) =>
+  fetcher<LoginResponse>("/auth/admin/verify-otp", {
+    method: "POST",
+    body: JSON.stringify({ email, otp }),
+  }),
 };
 
 // ============ LOUNGES ============

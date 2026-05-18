@@ -22,9 +22,7 @@ class LoungesScreen extends ConsumerWidget {
           'Lounges',
           style: TextStyle(color: AppColors.textLight),
         ),
-        actions: [
-          
-        ],
+        actions: [],
       ),
       drawer: _AppDrawer(),
       bottomNavigationBar: BottomNavigationBar(
@@ -225,17 +223,24 @@ class _AppDrawer extends ConsumerWidget {
 
             // Menu items
             ListTile(
-              leading: const Icon(
-                Icons.edit,
-                color: AppColors.primaryBlue,
-              ),
+              leading: const Icon(Icons.edit, color: AppColors.primaryBlue),
               title: const Text('Edit Profile'),
               onTap: () {
                 Navigator.pop(context);
                 context.push('/edit-profile');
               },
             ),
-
+            ListTile(
+              leading: const Icon(
+                Icons.lock_outline,
+                color: AppColors.primaryBlue,
+              ),
+              title: const Text('Change Password'),
+              onTap: () {
+                Navigator.pop(context);
+                context.push('/change-password');
+              },
+            ),
             ListTile(
               leading: const Icon(
                 Icons.help_outline,
@@ -265,10 +270,7 @@ class _AppDrawer extends ConsumerWidget {
             const Divider(),
 
             ListTile(
-              leading: const Icon(
-                Icons.logout,
-                color: AppColors.error,
-              ),
+              leading: const Icon(Icons.logout, color: AppColors.error),
               title: const Text(
                 'Logout',
                 style: TextStyle(color: AppColors.error),

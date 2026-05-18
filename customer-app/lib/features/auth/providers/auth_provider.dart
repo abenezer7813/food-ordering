@@ -3,6 +3,7 @@ import '../../../core/providers/core_providers.dart';
 import '../../../core/utils/cache_manager.dart';
 import '../services/auth_service.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+
 // 1. Provider for AuthService
 final authServiceProvider = Provider<AuthService>((ref) {
   final dio = ref.watch(apiClientProvider).dio;
@@ -15,17 +16,9 @@ class AuthState {
   final String? error;
   final bool isSuccess;
 
-  AuthState({
-    this.isLoading = false,
-    this.error,
-    this.isSuccess = false,
-  });
+  AuthState({this.isLoading = false, this.error, this.isSuccess = false});
 
-  AuthState copyWith({
-    bool? isLoading,
-    String? error,
-    bool? isSuccess,
-  }) {
+  AuthState copyWith({bool? isLoading, String? error, bool? isSuccess}) {
     return AuthState(
       isLoading: isLoading ?? this.isLoading,
       error: error ?? this.error,
@@ -65,97 +58,113 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
-  Future<void> login({
-  required String email,
-  required String password,
-}) async {
-  state = state.copyWith(isLoading: true, error: null);
-  try {
-    final response = await _authService.login(email: email, password: password);
-    final token = response['token'];
-    await _ref.read(tokenStorageProvider).saveToken(token);
-
-
-    final messaging = FirebaseMessaging.instance;
-    final deviceToken = await messaging.getToken();
-    if (deviceToken != null) {
-      await _authService.updateDeviceToken(deviceToken);
-    }
-
-    state = state.copyWith(isLoading: false, isSuccess: true);
-  } catch (e) {
-    state = state.copyWith(isLoading: false, error: e.toString());
-  }
-}
-
-  
-  Future<void> verifyOtp({
-  required String email,
-  required String otp,
-}) async {
-  state = state.copyWith(isLoading: true, error: null);
-
-  try {
-    final response = await _authService.verifyOtp(
-      email: email,
-      otp: otp,
-    );
-
-    final token = response['token'];
-
-    // SUCCESS
-    if (token != null) {
+  Future<void> login({required String email, required String password}) async {
+    state = state.copyWith(isLoading: true, error: null);
+    try {
+      final response = await _authService.login(
+        email: email,
+        password: password,
+      );
+      final token = response['token'];
       await _ref.read(tokenStorageProvider).saveToken(token);
 
-      state = state.copyWith(
-        isLoading: false,
-        isSuccess: true,
-        error: null,
-      );
-    } 
-    // FAILED
-    else {
+      final messaging = FirebaseMessaging.instance;
+      final deviceToken = await messaging.getToken();
+      if (deviceToken != null) {
+        await _authService.updateDeviceToken(deviceToken);
+      }
+
+      state = state.copyWith(isLoading: false, isSuccess: true);
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString());
+    }
+  }
+
+  Future<void> verifyOtp({required String email, required String otp}) async {
+    state = state.copyWith(isLoading: true, error: null);
+
+    try {
+      final response = await _authService.verifyOtp(email: email, otp: otp);
+
+      final token = response['token'];
+
+      // SUCCESS
+      if (token != null) {
+        await _ref.read(tokenStorageProvider).saveToken(token);
+
+        state = state.copyWith(isLoading: false, isSuccess: true, error: null);
+      }
+      // FAILED
+      else {
+        state = state.copyWith(
+          isLoading: false,
+          isSuccess: false,
+          error: response['error'] ?? 'Invalid OTP',
+        );
+      }
+    } catch (e) {
       state = state.copyWith(
         isLoading: false,
         isSuccess: false,
-        error: response['error'] ?? 'Invalid OTP',
+        error: e.toString(),
       );
     }
-  } catch (e) {
-    state = state.copyWith(
-      isLoading: false,
-      isSuccess: false,
-      error: e.toString(),
-    );
   }
-}
-Future<void> logout() async {
-  await _ref.read(tokenStorageProvider).deleteToken();
-   await CacheManager.clear();
-  state = AuthState();
-}
-Future<void> resendOtp({
-  required String email,
+
+  Future<void> logout() async {
+    await _ref.read(tokenStorageProvider).deleteToken();
+    await CacheManager.clear();
+    state = AuthState();
+  }
+
+  Future<void> resendOtp({required String email}) async {
+    state = state.copyWith(isLoading: true, error: null);
+
+    try {
+      final response = await _authService.resendOtp(email: email);
+
+      state = state.copyWith(isLoading: false, error: null);
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString());
+    }
+  }
+
+  Future<void> forgotPassword({required String email}) async {
+    state = state.copyWith(isLoading: true, error: null, isSuccess: false);
+    try {
+      await _authService.forgotPassword(email: email);
+      state = state.copyWith(isLoading: false, isSuccess: true);
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString());
+    }
+  }
+
+  Future<void> resetPassword({
+    required String email,
+    required String otp,
+    required String newPassword,
+  }) async {
+    state = state.copyWith(isLoading: true, error: null, isSuccess: false);
+    try {
+      await _authService.resetPassword(
+        email: email,
+        otp: otp,
+        newPassword: newPassword,
+      );
+      state = state.copyWith(isLoading: false, isSuccess: true);
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString());
+    }
+  }
+  Future<void> changePassword({
+  required String newPassword,
 }) async {
-  state = state.copyWith(
-    isLoading: true,
-    error: null,
-  );
-
+  state = state.copyWith(isLoading: true, error: null, isSuccess: false);
   try {
-    final response = await _authService.resendOtp(
-      email: email,
-    );
-
-    state = state.copyWith(
-      isLoading: false,
-      error: null,
-    );
+    await _authService.changePassword(newPassword: newPassword);
+    state = state.copyWith(isLoading: false, isSuccess: true);
   } catch (e) {
-    state = state.copyWith(
-      isLoading: false,
-      error: e.toString(),
-    );
+    state = state.copyWith(isLoading: false, error: e.toString());
   }
 }
 }

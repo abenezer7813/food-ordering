@@ -1,12 +1,13 @@
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import z, { email, string } from "zod";
-import { customerRegistration, getCustomerProfile, loginCustomer, loginStaff, updateCustomerProfile, updateDeviceToken, verifyUser } from "../services/auth.service.js";
+import { changePassword, customerRegistration, getCustomerProfile, loginCustomer, loginStaff, requestCustomerPasswordReset, requestStaffPasswordReset, resetCustomerPassword, resetStaffPassword, updateCustomerProfile, updateDeviceToken, verifyAdminOtp, verifyUser } from "../services/auth.service.js";
 import { handleError } from "../utils/errors.js";
 import { storeOTP, verifyOTP } from "../utils/otp.js";
 import { tr } from "zod/locales";
 import { authMiddleware, requireRole } from "../middleware/auth.js";
 import { sendOTPEmail } from "../utils/email.js";
+import { users } from "../db/schema.js";
 
 
 type Variables = {
@@ -44,8 +45,13 @@ async (c)=>{
       return c.json({ error: 'Invalid email or password' }, 401)
     }
 
+ if ('requiresOtp' in result) {
+      return c.json({ requiresOtp: true, email: result.email }, 200)
+    }
+
+    
     return c.json({ token: result.token, user: result.user })
-  }
+  }  
 
   
 )
@@ -179,6 +185,95 @@ authRoutes.patch(
         },
         200
       )
+    } catch (e) {
+      return handleError(e, c)
+    }
+  }
+)
+const forgotPasswordSchema = z.object({ email: z.email() })
+const resetPasswordSchema = z.object({
+  email: z.email(),
+  otp: z.string().length(6),
+  new_password: z.string().min(6),
+})
+
+// Staff forgot password
+authRoutes.post('/forgot-password', 
+  zValidator('json', forgotPasswordSchema), 
+  async (c) => {
+    try {
+      const { email } = c.req.valid('json')
+      await requestStaffPasswordReset(email)
+      return c.json({ success: true, message: 'If an account exists, an OTP has been sent.' }, 200)
+    } catch (e) {
+      return handleError(e, c)
+    }
+  }
+)
+
+authRoutes.post('/reset-password', 
+  zValidator('json', resetPasswordSchema), 
+  async (c) => {
+    try {
+      const data = c.req.valid('json')
+      await resetStaffPassword(data)
+      return c.json({ success: true, message: 'Password reset successfully.' }, 200)
+    } catch (e) {
+      return handleError(e, c)
+    }
+  }
+)
+const staffOtpSchema = z.object({
+  email: z.email(),
+  otp: z.string().length(6),
+})
+
+authRoutes.post('/admin/verify-otp',
+  zValidator('json', staffOtpSchema),
+  async (c) => {
+    try {
+      const { email, otp } = c.req.valid('json')
+      const result = await verifyAdminOtp(email, otp)
+      return c.json({ token: result.token, user: result.user })
+    } catch (e) {
+      return handleError(e, c)
+    }
+  }
+)
+authRoutes.post('/customer/forgot-password',
+  zValidator('json', forgotPasswordSchema),
+  async (c) => {
+    try {
+      const { email } = c.req.valid('json')
+      await requestCustomerPasswordReset(email)
+      return c.json({ success: true, message: 'If an account exists, an OTP has been sent.' }, 200)
+    } catch (e) {
+      return handleError(e, c)
+    }
+  }
+)
+
+authRoutes.post('/customer/reset-password',
+  zValidator('json', resetPasswordSchema),
+  async (c) => {
+    try {
+      const data = c.req.valid('json')
+      await resetCustomerPassword(data)
+      return c.json({ success: true, message: 'Password reset successfully.' }, 200)
+    } catch (e) {
+      return handleError(e, c)
+    }
+  }
+)
+authRoutes.patch('/customer/change-password',
+  authMiddleware,
+  zValidator('json', z.object({ new_password: z.string().min(6) })),
+  async (c) => {
+    try {
+      const customerId = c.get('userId')
+      const { new_password } = c.req.valid('json')
+      await changePassword(customerId, new_password)
+      return c.json({ success: true, message: 'Password changed successfully.' })
     } catch (e) {
       return handleError(e, c)
     }

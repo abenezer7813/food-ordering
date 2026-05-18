@@ -17,11 +17,16 @@ export async function loginStaff(email:string,password:string){
 
   if(!user.is_active) return null
    
-  //compare password
+
    const isValidPassword=await bcrypt.compare(password,user.password)
    if(!isValidPassword)return null;
 
-   //generate token
+    if (user.role === 'super_admin') {
+    const otp = Math.floor(100000 + Math.random() * 900000).toString()
+    storeOTP(email, otp)
+    await sendOTPEmail(email, otp)
+    return { requiresOtp: true, email: user.email }
+  }
    const token=jwt.sign({
     id:user.id,
     role:user.role,
@@ -168,4 +173,89 @@ export async function updateCustomerProfile(
   const { password: _, ...customerWithoutPassword } = updatedCustomer
 
   return customerWithoutPassword
+}
+export async function requestStaffPasswordReset(email: string): Promise<void> {
+  const staffUser = await db.query.users.findFirst({ 
+    where: eq(users.email, email), 
+    columns: { id: true } 
+  })
+  if (!staffUser) throw Errors.notFound('Account')
+
+  const otp = Math.floor(100000 + Math.random() * 900000).toString()
+  storeOTP(email, otp)
+  await sendOTPEmail(email, otp)
+}
+
+export async function resetStaffPassword(input: { 
+  email: string; 
+  otp: string; 
+  new_password: string 
+}): Promise<void> {
+  const isValid = verifyOTP(input.email, input.otp)
+  if (!isValid) throw Errors.badRequest('Invalid or expired OTP')
+
+  const staffUser = await db.query.users.findFirst({ 
+    where: eq(users.email, input.email), 
+    columns: { id: true } 
+  })
+  if (!staffUser) throw Errors.notFound('Account')
+
+  const hashedPassword = await bcrypt.hash(input.new_password, 10)
+  await db.update(users)
+    .set({ password: hashedPassword, updated_at: new Date() })
+    .where(eq(users.email, input.email))
+}
+export async function verifyAdminOtp(email: string, otp: string) {
+  const isValid = verifyOTP(email, otp)
+  if (!isValid) throw Errors.badRequest('Invalid or expired OTP')
+
+  const user = await db.query.users.findFirst({
+    where: eq(users.email, email)
+  })
+  if (!user) throw Errors.notFound('User')
+
+  const token = jwt.sign({
+    id: user.id,
+    role: user.role,
+  }, process.env.JWT_SECRET!, { expiresIn: '24h' })
+
+  const { password: _, ...userWithoutPassword } = user
+  return { token, user: userWithoutPassword }
+}
+export async function requestCustomerPasswordReset(email: string): Promise<void> {
+  const customer = await db.query.customers.findFirst({
+    where: eq(customers.email, email),
+    columns: { id: true }
+  })
+  if (!customer) throw Errors.notFound('Account')
+
+  const otp = Math.floor(100000 + Math.random() * 900000).toString()
+  storeOTP(email, otp)
+  await sendOTPEmail(email, otp)
+}
+
+export async function resetCustomerPassword(input: {
+  email: string
+  otp: string
+  new_password: string
+}): Promise<void> {
+  const isValid = verifyOTP(input.email, input.otp)
+  if (!isValid) throw Errors.badRequest('Invalid or expired OTP')
+
+  const customer = await db.query.customers.findFirst({
+    where: eq(customers.email, input.email),
+    columns: { id: true }
+  })
+  if (!customer) throw Errors.notFound('Account')
+
+  const hashedPassword = await bcrypt.hash(input.new_password, 10)
+  await db.update(customers)
+    .set({ password: hashedPassword, updated_at: new Date() })
+    .where(eq(customers.email, input.email))
+}
+export async function changePassword(customerId: string, newPassword: string) {
+  const hashed = await bcrypt.hash(newPassword, 10)
+  await db.update(customers)
+    .set({ password: hashed, updated_at: new Date() })
+    .where(eq(customers.id, customerId))
 }
