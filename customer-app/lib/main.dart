@@ -24,6 +24,7 @@ import 'package:food_ordering_app/features/profile/screens/profile_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'core/services/notification_service.dart';
+import 'package:food_ordering_app/features/auth/screens/forgot_password_screen.dart';
 final goRouter = GoRouter(
   initialLocation: '/register',
   redirect: (context, state) async {
@@ -31,7 +32,8 @@ final goRouter = GoRouter(
     final isLoggedIn = token != null;
     final isAuthRoute = state.matchedLocation == '/login' ||
         state.matchedLocation == '/register' ||
-        state.matchedLocation == '/otp';
+        state.matchedLocation == '/otp'||
+        state.matchedLocation=='/forgot-password';
 
     if (!isLoggedIn && !isAuthRoute) return '/login';
     if (isLoggedIn && isAuthRoute) return '/lounges';
@@ -135,6 +137,10 @@ GoRoute(
 GoRoute(
   path: '/about',
   builder: (context, state) => const AboutScreen(),
+),
+GoRoute(
+  path: '/forgot-password',
+  builder: (context, state) => const ForgotPasswordScreen(),
 ),
   ],
 );
