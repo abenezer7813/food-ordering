@@ -1,5 +1,5 @@
 "use client";
-import { ReactNode, useState } from "react";
+import { ReactNode, useEffect } from "react";
 import {
   AppShell,
   Burger,
@@ -14,13 +14,15 @@ import {
   Badge,
   ActionIcon,
   useMantineColorScheme,
+  Indicator,
+  Tooltip,
+  Select,
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import {
   IconBolt,
   IconLayoutDashboard,
   IconShoppingCart,
-  IconChefHat,
   IconUsers,
   IconReportAnalytics,
   IconSettings,
@@ -32,10 +34,14 @@ import {
   IconChevronDown,
   IconWallet,
   IconMessage,
+  IconBell,
 } from "@tabler/icons-react";
 import { useRouter, usePathname } from "next/navigation";
 import { useAuthStore } from "@/lib/auth-store";
 import { useLogout } from "@/hooks/queries/useAuth";
+import { useMyLounge, useMyLounges } from "@/hooks/queries/useStaff";
+import { useTopUpRequests } from "@/hooks/queries/useWallet";
+import { useActiveLoungeStore } from "@/lib/active-lounge-store";
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -49,28 +55,65 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   const { user } = useAuthStore();
   const logoutMutation = useLogout();
 
+  const role = user?.role;
+  const showLounge = ["cashier", "cook", "lounge_manager"].includes(role ?? "");
+  const showNotifications = ["cashier", "lounge_manager"].includes(role ?? "");
+  const isManager = role === "lounge_manager";
+
+  // For cashier/cook: single lounge
+  const { data: myLounge } = useMyLounge();
+
+  // For manager: multiple lounges
+  const { data: myLounges } = useMyLounges();
+  const { activeLoungeId, setActiveLounge } = useActiveLoungeStore();
+
+  // Initialize active lounge for manager on first load
+  useEffect(() => {
+    if (isManager && myLounges && myLounges.length > 0 && !activeLoungeId) {
+      setActiveLounge(myLounges[0].id, myLounges[0].name);
+    }
+  }, [isManager, myLounges, activeLoungeId, setActiveLounge]);
+
+  // Pending top-up count for notification bell
+  const loungeIdForNotifications = isManager ? activeLoungeId : myLounge?.lounge_id;
+  const { data: topUpRequests } = useTopUpRequests(
+    showNotifications ? (loungeIdForNotifications ?? null) : null
+  );
+
+  const pendingCount =
+    role === "cashier"
+      ? (topUpRequests?.filter((r) => r.status === "pending").length ?? 0)
+      : role === "lounge_manager"
+      ? (topUpRequests?.filter(
+          (r) => r.status === "cashier_approved" && r.payment_method === "bank_transfer"
+        ).length ?? 0)
+      : 0;
+
+  const notificationHref =
+    role === "cashier"
+      ? "/dashboard/cashier/topup"
+      : "/dashboard/provider/topup";
+
   const handleLogout = () => {
     logoutMutation.mutate();
   };
 
-  // Navigation items based on role
-  const getNavigationItems = () => {
-    const role = user?.role;
-
-const getRolePath = (role: string) => {
-  const paths: Record<string, string> = {
-    super_admin: "super-admin",
-    lounge_manager: "provider",
-    cashier: "cashier",
-    cook: "cook",
+  const getRolePath = (role: string) => {
+    const paths: Record<string, string> = {
+      super_admin: "super-admin",
+      lounge_manager: "provider",
+      cashier: "cashier",
+      cook: "cook",
+    };
+    return paths[role] || role;
   };
-  return paths[role] || role;
-};
+
+  const getNavigationItems = () => {
     const commonItems = [
       {
         icon: IconLayoutDashboard,
         label: "Dashboard",
-        href: `/dashboard/${getRolePath(role||"")}`,
+        href: `/dashboard/${getRolePath(role || "")}`,
       },
     ];
 
@@ -84,17 +127,17 @@ const getRolePath = (role: string) => {
         { icon: IconMessage, label: "Feedback", href: "/dashboard/provider/feedback" },
         { icon: IconShoppingCart, label: "Orders", href: "/dashboard/provider/orders" },
         { icon: IconUsers, label: "Staff", href: "/dashboard/provider/staff" },
+        { icon: IconWallet, label: "Top-up Requests", href: "/dashboard/provider/topup" },
         { icon: IconReportAnalytics, label: "Reports", href: "/dashboard/provider/reports" },
       ],
       cashier: [
         { icon: IconShoppingCart, label: "Orders", href: "/dashboard/cashier/orders" },
         { icon: IconMenuOrder, label: "Menu", href: "/dashboard/cashier/menu" },
-      
+        { icon: IconWallet, label: "Top-up Requests", href: "/dashboard/cashier/topup" },
         { icon: IconReportAnalytics, label: "Reports", href: "/dashboard/cashier/reports" },
       ],
       cook: [
         { icon: IconShoppingCart, label: "Orders", href: "/dashboard/cook/orders" },
-      
       ],
     };
 
@@ -116,6 +159,7 @@ const getRolePath = (role: string) => {
       {/* Header */}
       <AppShell.Header>
         <Group h="100%" px="md" justify="space-between">
+          {/* Left: logo + lounge name */}
           <Group>
             <Burger opened={opened} onClick={toggle} hiddenFrom="sm" size="sm" />
             <Group gap="xs">
@@ -132,13 +176,38 @@ const getRolePath = (role: string) => {
               >
                 <IconBolt size={18} color="white" />
               </Box>
-              <Text fw={700} size="lg">
-                UniLounge
+              <Text fw={700} size="lg" tt="capitalize">
+                {showLounge && !isManager && myLounge?.lounge_name
+                  ? myLounge.lounge_name
+                  : "UniLounge"}
               </Text>
             </Group>
+
+            {/* Lounge switcher for managers */}
+            {isManager && myLounges && myLounges.length > 0 && (
+              <Select
+                placeholder="Select lounge"
+                data={myLounges.map((l) => ({ value: l.id, label: l.name }))}
+                value={activeLoungeId}
+                onChange={(value) => {
+                  if (value) {
+                    const lounge = myLounges.find((l) => l.id === value);
+                    if (lounge) {
+                      setActiveLounge(lounge.id, lounge.name);
+                    }
+                  }
+                }}
+                w={200}
+                styles={{
+                  input: { textTransform: "capitalize" },
+                }}
+              />
+            )}
           </Group>
 
+          {/* Right: dark mode + notification bell + user menu */}
           <Group gap="sm">
+            {/* Dark/light toggle */}
             <ActionIcon
               variant="default"
               onClick={() => toggleColorScheme()}
@@ -146,6 +215,33 @@ const getRolePath = (role: string) => {
             >
               {colorScheme === "dark" ? <IconSun size={18} /> : <IconMoon size={18} />}
             </ActionIcon>
+
+            {/* Notification bell — cashier & manager only */}
+            {showNotifications && (
+              <Tooltip
+                label={
+                  pendingCount > 0
+                    ? `${pendingCount} top-up request${pendingCount > 1 ? "s" : ""} pending`
+                    : "No pending top-up requests"
+                }
+              >
+                <Indicator
+                  color="red"
+                  size={16}
+                  label={pendingCount > 9 ? "9+" : pendingCount}
+                  disabled={pendingCount === 0}
+                  processing={pendingCount > 0}
+                >
+                  <ActionIcon
+                    variant="default"
+                    size="lg"
+                    onClick={() => router.push(notificationHref)}
+                  >
+                    <IconBell size={18} />
+                  </ActionIcon>
+                </Indicator>
+              </Tooltip>
+            )}
 
             {/* User Menu */}
             <Menu shadow="md" width={200} position="bottom-end">
@@ -242,6 +338,16 @@ const getRolePath = (role: string) => {
             <Text size="xs" c="dimmed">
               {user?.email}
             </Text>
+            {showLounge && !isManager && myLounge?.lounge_name && (
+              <Text size="xs" c="dimmed" mt={4}>
+                📍 {myLounge.lounge_name}
+              </Text>
+            )}
+            {isManager && activeLoungeId && (
+              <Text size="xs" c="dimmed" mt={4} tt="capitalize">
+                📍 {myLounges?.find((l) => l.id === activeLoungeId)?.name}
+              </Text>
+            )}
           </Box>
         </AppShell.Section>
       </AppShell.Navbar>

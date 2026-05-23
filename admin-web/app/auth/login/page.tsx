@@ -79,7 +79,7 @@ export default function LoginPage() {
       style={{
         minHeight: "100vh",
         display: "flex",
-        background: colorScheme === "dark" ? "#1a1b1e" : "#f8f9fa",
+        background: "var(--mantine-color-body)",
       }}
     >
       {/* Left Panel */}

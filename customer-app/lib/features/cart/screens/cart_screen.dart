@@ -10,7 +10,7 @@ import '../../menu/models/menu_item_model.dart';
 import '../../menu/providers/menu_provider.dart';
 import '../../menu/screens/menu_screen.dart';
 import 'dart:async';
-import '../../lounges/providers/wallet_provider.dart';
+import '../../wallet/providers/wallet_provider.dart';
 
 class CartScreen extends ConsumerStatefulWidget {
   final Lounge lounge;

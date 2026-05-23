@@ -36,7 +36,7 @@ export function StatCard({
             style={{
               width: 80,
               height: 24,
-              background: "var(--mantine-color-gray-2)",
+              background: "var(--mantine-color-default-hover)",
               borderRadius: 4,
               animation: "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
             }}

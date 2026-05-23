@@ -17,13 +17,16 @@ const reportSchema=z.object({
     period:z.enum(['daily','weekly','monthly'])
 })
 reportRoutes.get('/',
-    requireRole('cashier','manager'),
-    zValidator('query',reportSchema),
+    requireRole('cashier','lounge_manager'),
+    zValidator('query', z.object({
+      period: z.enum(['daily','weekly','monthly']),
+      lounge_id: z.string().optional(),
+    })),
     async (c)=>{
         try{
          const staffId=c.get('userId')as string
-         const data=c.req.valid('query')
-         const report=await generateReport(staffId,data.period)
+         const { period, lounge_id } = c.req.valid('query')
+         const report=await generateReport(staffId, period, lounge_id)
          return c.json({data:{...report,total_sales:Number(report.total_sales)}})
         }catch(e){
             return handleError(e,c)

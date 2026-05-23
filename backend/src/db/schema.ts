@@ -55,6 +55,29 @@ export const periodTypeEnum = pgEnum("period_type", [
   "monthly"
 ])
 
+export const menuCategoryEnum = pgEnum('menu_category', [
+  'food',
+  'drink',
+])
+
+export const mealTypeEnum = pgEnum('meal_type', [
+  'breakfast',
+  'lunch',
+  'dinner',
+  'all_day',
+])
+
+export const drinkTypeEnum = pgEnum('drink_type', [
+  'juice',
+  'coffee',
+  'tea',
+  'water',
+  'soda',
+  'smoothie',
+  'other',
+])
+
+
 export const users = pgTable('users', {
   id: uuid("id").primaryKey().defaultRandom(),
   first_name: varchar("first_name", { length: 100 }).notNull(),
@@ -63,6 +86,7 @@ export const users = pgTable('users', {
   password: varchar("password", { length: 255 }).notNull(),
   role: userRoleEnum("role").notNull(),
   is_active: boolean("is_active").notNull().default(true),
+  is_first_login: boolean("is_first_login").notNull().default(true),
   created_at: timestamp("created_at").notNull().defaultNow(),
   updated_at: timestamp("updated_at").notNull().defaultNow(),
 })
@@ -90,12 +114,11 @@ export const customers = pgTable("customers", {
   last_name: varchar("last_name", { length: 100 }).notNull(),
   gender: varchar('gender', { length: 10 }),
   email: varchar("email", { length: 255 }).unique().notNull(),
-  //for google regigistration passseword can be null
   password: varchar("password", { length: 255 }),
   registration_method: registrationMethodEnum("registration_method").notNull(),
   is_active: boolean("is_active").notNull().default(true),
   is_verified: boolean("is_verified").notNull().default(false),
-  device_token: varchar('device_token', { length: 255 }),//for push notification
+  device_token: varchar('device_token', { length: 255 }),
   created_at: timestamp("created_at").notNull().defaultNow(),
   updated_at: timestamp("updated_at").notNull().defaultNow()
 
@@ -129,9 +152,11 @@ export const menu_items = pgTable("menu_items", {
   price: decimal("price", { precision: 10, scale: 2 }).notNull(),
   is_available: boolean("is_available").notNull().default(true),
   estimated_preparation_time: integer("estimated_preparation_time").notNull(),
+  category: menuCategoryEnum("category"),
+  meal_type: mealTypeEnum("meal_type"),
+  drink_type: drinkTypeEnum("drink_type"),
   created_at: timestamp("created_at").notNull().defaultNow(),
   updated_at: timestamp("updated_at").notNull().defaultNow(),
-
 })
 export const orders = pgTable("orders", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -234,3 +259,37 @@ export const loungesRelations = relations(lounges, ({ one }) => ({
     references: [users.id],
   }),
 }));
+
+export const topUpStatusEnum = pgEnum('top_up_status', [
+  'pending',
+  'cashier_approved',
+  'manager_approved',
+  'rejected'
+])
+
+export const paymentMethodEnum2 = pgEnum('top_up_payment_method', [
+  'cash',
+  'bank_transfer'
+])
+
+export const top_up_requests = pgTable('top_up_requests', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  customer_id: uuid('customer_id').notNull().references(() => customers.id),
+  lounge_id: uuid('lounge_id').notNull().references(() => lounges.id),
+  amount: varchar('amount', { length: 20 }).notNull(),
+  payment_method: paymentMethodEnum2('payment_method').notNull(),
+  receipt_image_url: varchar('receipt_image_url', { length: 500 }),
+  status: topUpStatusEnum('status').notNull().default('pending'),
+  cashier_id: uuid('cashier_id').references(() => users.id),
+  manager_id: uuid('manager_id').references(() => users.id),
+  rejection_reason: varchar('rejection_reason', { length: 500 }),
+  created_at: timestamp('created_at').notNull().defaultNow(),
+  updated_at: timestamp('updated_at').notNull().defaultNow(),
+})
+
+export const top_up_requests_relations = relations(top_up_requests, ({ one }) => ({
+  customer: one(customers, {
+    fields: [top_up_requests.customer_id],
+    references: [customers.id],
+  }),
+}))

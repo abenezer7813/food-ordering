@@ -7,6 +7,7 @@ interface User {
   email: string;
   role: string;
   is_active: boolean;
+  is_first_login: boolean; 
   created_at: string;
   updated_at: string;
 }
@@ -28,12 +29,21 @@ export const useAuthStore = create<AuthState>((set) => ({
   setAuth: (user, token) => {
     localStorage.setItem("token", token);
     localStorage.setItem("user", JSON.stringify(user));
+
+    document.cookie = `token=${token}; path=/`;
+    document.cookie = `is_first_login=${user.is_first_login}; path=/`;
+
     set({ user, token, isAuthenticated: true });
   },
 
   logout: () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
+
+    // 👇 clear cookies
+    document.cookie = "token=; path=/; max-age=0";
+    document.cookie = "is_first_login=; path=/; max-age=0";
+
     set({ user: null, token: null, isAuthenticated: false });
   },
 
@@ -42,6 +52,11 @@ export const useAuthStore = create<AuthState>((set) => ({
     const userStr = localStorage.getItem("user");
     if (token && userStr) {
       const user = JSON.parse(userStr);
+
+     
+      document.cookie = `token=${token}; path=/`;
+      document.cookie = `is_first_login=${user.is_first_login}; path=/`;
+
       set({ user, token, isAuthenticated: true });
     }
   },

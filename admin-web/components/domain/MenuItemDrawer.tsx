@@ -14,8 +14,7 @@ import {
   Group,
   ActionIcon,
   Box,
-  Loader,
-  Center,
+  Select,
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { IconUpload, IconX, IconPhoto } from "@tabler/icons-react";
@@ -30,12 +29,10 @@ async function uploadToCloudinary(file: File): Promise<string> {
   const formData = new FormData();
   formData.append("file", file);
   formData.append("upload_preset", UPLOAD_PRESET!);
-
   const res = await fetch(
     `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,
     { method: "POST", body: formData }
   );
-
   if (!res.ok) throw new Error("Image upload failed");
   const data = await res.json();
   return data.secure_url;
@@ -63,6 +60,9 @@ export function MenuItemDrawer({ opened, onClose, editItem }: MenuItemDrawerProp
       price: 0,
       estimated_preparation_time: 10,
       image_url: "",
+      category: null as "food" | "drink" | null,
+      meal_type: null as "breakfast" | "lunch" | "dinner" | "all_day" | null,
+      drink_type: null as "juice" | "coffee" | "tea" | "water" | "soda" | "smoothie" | "other" | null,
     },
     validate: {
       name: (v) => (v.trim() ? null : "Name is required"),
@@ -71,7 +71,6 @@ export function MenuItemDrawer({ opened, onClose, editItem }: MenuItemDrawerProp
     },
   });
 
-  // Reset form when editItem changes
   useEffect(() => {
     if (opened) {
       if (editItem) {
@@ -81,6 +80,9 @@ export function MenuItemDrawer({ opened, onClose, editItem }: MenuItemDrawerProp
           price: parseFloat(editItem.price),
           estimated_preparation_time: editItem.estimated_preparation_time,
           image_url: editItem.image_url || "",
+          category: editItem.category ?? null,
+          meal_type: editItem.meal_type ?? null,
+          drink_type: editItem.drink_type ?? null,
         });
         setImagePreview(editItem.image_url || null);
       } else {
@@ -94,8 +96,6 @@ export function MenuItemDrawer({ opened, onClose, editItem }: MenuItemDrawerProp
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
-    // Preview
     const reader = new FileReader();
     reader.onload = () => setImagePreview(reader.result as string);
     reader.readAsDataURL(file);
@@ -112,17 +112,12 @@ export function MenuItemDrawer({ opened, onClose, editItem }: MenuItemDrawerProp
   const handleSubmit = form.onSubmit(async (values) => {
     let imageUrl = values.image_url;
 
-    // Upload to Cloudinary if new file selected
     if (imageFile) {
       setUploading(true);
       try {
         imageUrl = await uploadToCloudinary(imageFile);
       } catch (err) {
-        notifications.show({
-          title: "Upload Failed",
-          message: "Could not upload image. Try again.",
-          color: "red",
-        });
+        notifications.show({ title: "Upload Failed", message: "Could not upload image. Try again.", color: "red" });
         setUploading(false);
         return;
       }
@@ -135,6 +130,9 @@ export function MenuItemDrawer({ opened, onClose, editItem }: MenuItemDrawerProp
       price: values.price,
       estimated_preparation_time: values.estimated_preparation_time,
       image_url: imageUrl || undefined,
+      category: values.category ?? undefined,
+      meal_type: values.category === "food" ? (values.meal_type ?? undefined) : undefined,
+      drink_type: values.category === "drink" ? (values.drink_type ?? undefined) : undefined,
     };
 
     if (editItem) {
@@ -165,6 +163,7 @@ export function MenuItemDrawer({ opened, onClose, editItem }: MenuItemDrawerProp
   });
 
   const isLoading = uploading || createMutation.isPending || updateMutation.isPending;
+  const category = form.values.category;
 
   return (
     <Drawer
@@ -218,25 +217,66 @@ export function MenuItemDrawer({ opened, onClose, editItem }: MenuItemDrawerProp
             />
           </Group>
 
+          <Divider label="Classification" labelPosition="left" />
+
+          <Select
+            label="Category"
+            placeholder="Select category"
+            data={[
+              { value: "food", label: "🍽️ Food" },
+              { value: "drink", label: "🥤 Drink" },
+            ]}
+            clearable
+            {...form.getInputProps("category")}
+            onChange={(v) => {
+              form.setFieldValue("category", v as any);
+              // clear the conditional field when switching
+              form.setFieldValue("meal_type", null);
+              form.setFieldValue("drink_type", null);
+            }}
+          />
+
+          {category === "food" && (
+            <Select
+              label="Meal Type"
+              placeholder="When is it served?"
+              data={[
+                { value: "breakfast", label: "🌅 Breakfast" },
+                { value: "lunch", label: "☀️ Lunch" },
+                { value: "dinner", label: "🌙 Dinner" },
+                { value: "all_day", label: "🕐 All Day" },
+              ]}
+              clearable
+              {...form.getInputProps("meal_type")}
+            />
+          )}
+
+          {category === "drink" && (
+            <Select
+              label="Drink Type"
+              placeholder="Type of drink"
+              data={[
+                { value: "juice", label: "🍊 Juice" },
+                { value: "coffee", label: "☕ Coffee" },
+                { value: "tea", label: "🍵 Tea" },
+                { value: "water", label: "💧 Water" },
+                { value: "soda", label: "🥤 Soda" },
+                { value: "smoothie", label: "🥛 Smoothie" },
+                { value: "other", label: "🫙 Other" },
+              ]}
+              clearable
+              {...form.getInputProps("drink_type")}
+            />
+          )}
+
           <Divider label="Image" labelPosition="left" />
 
-          {/* Image preview */}
           {imagePreview ? (
             <Box pos="relative">
-              <Image
-                src={imagePreview}
-                alt="Preview"
-                radius="md"
-                h={180}
-                fit="cover"
-              />
+              <Image src={imagePreview} alt="Preview" radius="md" h={180} fit="cover" />
               <ActionIcon
-                pos="absolute"
-                top={8}
-                right={8}
-                color="red"
-                variant="filled"
-                size="sm"
+                pos="absolute" top={8} right={8}
+                color="red" variant="filled" size="sm"
                 onClick={handleRemoveImage}
               >
                 <IconX size={14} />
@@ -246,7 +286,7 @@ export function MenuItemDrawer({ opened, onClose, editItem }: MenuItemDrawerProp
             <Box
               onClick={() => fileInputRef.current?.click()}
               style={(theme) => ({
-                border: `2px dashed ${theme.colors.gray[4]}`,
+                border: `2px dashed var(--mantine-color-default-border)`,
                 borderRadius: theme.radius.md,
                 padding: theme.spacing.xl,
                 cursor: "pointer",
@@ -255,17 +295,12 @@ export function MenuItemDrawer({ opened, onClose, editItem }: MenuItemDrawerProp
             >
               <Stack align="center" gap="xs">
                 <IconPhoto size={32} color="gray" />
-                <Text size="sm" c="dimmed">
-                  Click to select an image
-                </Text>
-                <Text size="xs" c="dimmed">
-                  PNG, JPG up to 5MB
-                </Text>
+                <Text size="sm" c="dimmed">Click to select an image</Text>
+                <Text size="xs" c="dimmed">PNG, JPG up to 5MB</Text>
               </Stack>
             </Box>
           )}
 
-          {/* Hidden file input */}
           <input
             ref={fileInputRef}
             type="file"
@@ -275,11 +310,7 @@ export function MenuItemDrawer({ opened, onClose, editItem }: MenuItemDrawerProp
           />
 
           {!imagePreview && (
-            <Button
-              variant="outline"
-              leftSection={<IconUpload size={16} />}
-              onClick={() => fileInputRef.current?.click()}
-            >
+            <Button variant="outline" leftSection={<IconUpload size={16} />} onClick={() => fileInputRef.current?.click()}>
               Upload Image
             </Button>
           )}
@@ -287,11 +318,7 @@ export function MenuItemDrawer({ opened, onClose, editItem }: MenuItemDrawerProp
           <Divider />
 
           <Button type="submit" fullWidth loading={isLoading}>
-            {uploading
-              ? "Uploading image..."
-              : editItem
-              ? "Save Changes"
-              : "Add Item"}
+            {uploading ? "Uploading image..." : editItem ? "Save Changes" : "Add Item"}
           </Button>
           <Button variant="subtle" fullWidth onClick={onClose} disabled={isLoading}>
             Cancel
@@ -301,3 +328,4 @@ export function MenuItemDrawer({ opened, onClose, editItem }: MenuItemDrawerProp
     </Drawer>
   );
 }
+

@@ -3,7 +3,7 @@ import { users,customers,non_cafe_customers } from "../db/schema.js";
 import {eq} from "drizzle-orm"
 import bcrypt from "bcryptjs";
 import  jwt  from "jsonwebtoken";
-import { Errors } from "../utils/errors.js";
+import { AppError, Errors } from "../utils/errors.js";
 import { storeOTP, verifyOTP } from '../utils/otp.js'
 import { sendOTPEmail } from '../utils/email.js'
 import { bytes } from "drizzle-orm/gel-core";
@@ -258,4 +258,24 @@ export async function changePassword(customerId: string, newPassword: string) {
   await db.update(customers)
     .set({ password: hashed, updated_at: new Date() })
     .where(eq(customers.id, customerId))
+}
+export async function changeStaffPassword(staffId: string, new_password: string) {
+  const user = await db
+    .select()
+    .from(users)
+    .where(eq(users.id, staffId))
+    .limit(1)
+    .then(r => r[0])
+
+  if (!user) throw new AppError('User not found', 404)
+
+  const hashed = await bcrypt.hash(new_password, 12)
+
+  await db
+    .update(users)
+    .set({
+      password: hashed,
+      is_first_login: false,   
+    })
+    .where(eq(users.id, staffId))
 }

@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { balanceTopUp, getNonCafeUser, getTransactionHistory, getWalletBalance, nonCafeRegistration, verifyTopUp } from "../services/wallet.service.js";
+import { balanceTopUp, cashierApproveTopUp, createTopUpRequest, getCustomerTopUpRequests, getNonCafeUser, getTopUpRequests, getTransactionHistory, getWalletBalance, managerApproveTopUp, nonCafeRegistration, rejectTopUpRequest, verifyTopUp } from "../services/wallet.service.js";
 import z, { string } from "zod";
 import { authMiddleware, requireRole } from "../middleware/auth.js";
 import { zValidator } from "@hono/zod-validator";
@@ -106,6 +106,108 @@ walletRoutes.get('/:loungeId/transaction',
     return c.json({transactions})
     }catch(e){
       return handleError(e,c)
+    }
+  }
+)
+// Customer creates top up request
+walletRoutes.post('/:loungeId/topup-request',
+  requireRole('customer'),
+  zValidator('json', z.object({
+    amount: z.number().positive().min(10),
+    payment_method: z.enum(['cash', 'bank_transfer']),
+    receipt_image_url: z.string().optional(),
+  })),
+  async (c) => {
+    try {
+      const customerId = c.get('userId') as string
+      const loungeId = c.req.param('loungeId')
+      const data = c.req.valid('json')
+      const request = await createTopUpRequest({
+        customer_id: customerId,
+        lounge_id: loungeId,
+        ...data,
+      })
+      return c.json({ request }, 201)
+    } catch (e) {
+      return handleError(e, c)
+    }
+  }
+)
+
+// Customer gets their top up requests
+walletRoutes.get('/:loungeId/topup-requests/my',
+  requireRole('customer'),
+  async (c) => {
+    try {
+      const customerId = c.get('userId') as string
+      const loungeId = c.req.param('loungeId')as string
+      const requests = await getCustomerTopUpRequests(customerId, loungeId)
+      return c.json({ requests })
+    } catch (e) {
+      return handleError(e, c)
+    }
+  }
+)
+
+// Staff gets all top up requests for a lounge
+walletRoutes.get('/:loungeId/topup-requests',
+  requireRole('cashier', 'lounge_manager'),
+  async (c) => {
+    try {
+      const loungeId = c.req.param('loungeId')as string
+      const requests = await getTopUpRequests(loungeId)
+      return c.json({ requests })
+    } catch (e) {
+      return handleError(e, c)
+    }
+  }
+)
+
+// Cashier approves top up request
+walletRoutes.patch('/:loungeId/topup-requests/:requestId/cashier-approve',
+  requireRole('cashier'),
+  async (c) => {
+    try {
+      const cashierId = c.get('userId') as string
+      const requestId = c.req.param('requestId')as string
+      const request = await cashierApproveTopUp(requestId, cashierId)
+      return c.json({ request })
+    } catch (e) {
+      return handleError(e, c)
+    }
+  }
+)
+
+// Manager approves top up request
+walletRoutes.patch('/:loungeId/topup-requests/:requestId/manager-approve',
+  requireRole('lounge_manager'),
+  async (c) => {
+    try {
+      const managerId = c.get('userId') as string
+      const requestId = c.req.param('requestId')as string 
+      const result = await managerApproveTopUp(requestId, managerId)
+      return c.json(result)
+    } catch (e) {
+      return handleError(e, c)
+    }
+  }
+)
+
+// Reject top up request (cashier or manager)
+walletRoutes.patch('/:loungeId/topup-requests/:requestId/reject',
+  requireRole('cashier', 'lounge_manager'),
+  zValidator('json', z.object({
+    rejection_reason: z.string().min(1),
+  })),
+  async (c) => {
+    try {
+      const staffId = c.get('userId') as string
+      const requestId = c.req.param('requestId')
+      const { rejection_reason } = c.req.valid('json')
+      const request = await rejectTopUpRequest(requestId, staffId, rejection_reason)
+      return c.json({ request })
+    } catch (e) {
+      return handleError(e, c)
     }
   }
 )
