@@ -1,7 +1,9 @@
 "use client";
+import { useState } from "react";
 import { DashboardShell } from "@/components/layout/DashboardShell";
 import { StatCard } from "@/components/domain/StatCard";
 import { OrderCard } from "@/components/domain/OrderCard";
+import { WalkInOrderDrawer } from "@/components/domain/WalkinOrderDrawer";
 import { useOrders, useMarkOrderCollected } from "@/hooks/queries/useOrders";
 import { useSalesReport } from "@/hooks/queries/useReports";
 import {
@@ -21,9 +23,12 @@ import {
   IconPlus,
 } from "@tabler/icons-react";
 import { notifications } from "@mantine/notifications";
+import { useRouter } from "next/navigation";
 
 export default function CashierDashboard() {
-  // Fetch data
+  const [drawerOpened, setDrawerOpened] = useState(false);
+  const router = useRouter();
+
   const { data: orders, isLoading: ordersLoading } = useOrders();
   const { data: todayReport, isLoading: reportLoading } = useSalesReport("daily");
   const markCollectedMutation = useMarkOrderCollected();
@@ -49,12 +54,15 @@ export default function CashierDashboard() {
     }
   };
 
-  // Calculate stats
-  console.log(orders)
   const readyOrders = orders?.filter((o) => o.status === "ready").length || 0;
 
   return (
     <DashboardShell allowedRoles={["cashier"]}>
+      <WalkInOrderDrawer
+        opened={drawerOpened}
+        onClose={() => setDrawerOpened(false)}
+      />
+
       <Container size="xl">
         <Stack gap="xl">
           {/* Header */}
@@ -65,7 +73,11 @@ export default function CashierDashboard() {
                 Manage orders and transactions
               </Text>
             </div>
-            <Button leftSection={<IconPlus size={16} />} size="sm">
+            <Button
+              leftSection={<IconPlus size={16} />}
+              size="sm"
+              onClick={() => setDrawerOpened(true)}
+            >
               New Walk-in Order
             </Button>
           </Group>
@@ -98,7 +110,11 @@ export default function CashierDashboard() {
           <Paper shadow="sm" p="md" radius="md" withBorder>
             <Group justify="space-between" mb="md">
               <Title order={4}>Recent Orders</Title>
-              <Button variant="light" size="xs">
+              <Button
+                variant="light"
+                size="xs"
+                onClick={() => router.push("/dashboard/cashier/orders")}
+              >
                 View All
               </Button>
             </Group>

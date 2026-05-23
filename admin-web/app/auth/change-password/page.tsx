@@ -39,7 +39,7 @@ export default function ChangePasswordPage() {
         minHeight: "100vh",
         display: "flex",
         alignItems: "center",
-        background: "#f8f9fa",
+        background: "var(--mantine-color-body)",
       }}
     >
       <Container size="xs" style={{ width: "100%" }}>

@@ -5,6 +5,7 @@ import { eq, and } from "drizzle-orm";
 import { Errors } from "../utils/errors.js";
 import { findCustomer, findLounge } from "./common.js";
 import { initializeChapaPayment, verifyChapaPayment } from "../utils/chapa.js";
+import { sendPushNotification } from "../utils/fcm.js";
 
 
 
@@ -177,7 +178,19 @@ export async function cashierApproveTopUp(requestId: string, cashierId: string) 
         .where(eq(top_up_requests.id, requestId))
     })
 
-    
+    // Notify customer
+    const customer = await db.query.customers.findFirst({
+      where: eq(customers.id, request.customer_id)
+    })
+    if (customer?.device_token) {
+      await sendPushNotification({
+        device_token: customer.device_token,
+        title: 'Wallet Topped Up 💰',
+        body: `Your wallet has been credited with ${Number(request.amount).toFixed(2)} ETB (cash). New balance updated.`,
+        order_id: requestId,
+      })
+    }
+
     return { message: 'Cash top up approved and wallet updated' }
 
   } else {
@@ -216,6 +229,19 @@ export async function managerApproveTopUp(requestId: string, managerId: string) 
       .where(eq(top_up_requests.id, requestId))
   })
 
+  // Notify customer
+  const customer = await db.query.customers.findFirst({
+    where: eq(customers.id, request.customer_id)
+  })
+  if (customer?.device_token) {
+    await sendPushNotification({
+      device_token: customer.device_token,
+      title: 'Wallet Topped Up 💰',
+      body: `Your wallet has been credited with ${Number(request.amount).toFixed(2)} ETB (bank transfer). New balance updated.`,
+      order_id: requestId,
+    })
+  }
+
   return { message: 'Wallet topped up successfully' }
 }
 
@@ -230,6 +256,19 @@ export async function rejectTopUpRequest(requestId: string, staffId: string, rej
     .set({ status: 'rejected', rejection_reason, updated_at: new Date() })
     .where(eq(top_up_requests.id, requestId))
     .returning()
+
+  // Notify customer
+  const customer = await db.query.customers.findFirst({
+    where: eq(customers.id, request.customer_id)
+  })
+  if (customer?.device_token) {
+    await sendPushNotification({
+      device_token: customer.device_token,
+      title: 'Top-up Request Rejected ❌',
+      body: `Your top-up request of ${Number(request.amount).toFixed(2)} ETB was rejected. Reason: ${rejection_reason}`,
+      order_id: requestId,
+    })
+  }
 
   return updated
 }

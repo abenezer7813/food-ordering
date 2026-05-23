@@ -6,23 +6,28 @@ import { Errors } from "../utils/errors.js";
 
 export async function generateReport(
   staffId: string,
-  period: 'daily' | 'weekly' | 'monthly'
+  period: 'daily' | 'weekly' | 'monthly',
+  loungeIdParam?: string
 ){
   const  staffEntry=await findStaff(staffId)
- let loungeId: string
+  let loungeId: string
 
-
-
-if (staffEntry) {
-  loungeId = staffEntry.lounge_id
-} else {
- 
-  const lounge = await db.query.lounges.findFirst({
-    where: eq(lounges.manager_id, staffId)
-  })
-  if (!lounge) throw Errors.notFound('Lounge')
-  loungeId = lounge.id
-}
+  if (loungeIdParam) {
+    // Validate manager owns this lounge
+    const lounge = await db.query.lounges.findFirst({
+      where: eq(lounges.id, loungeIdParam)
+    })
+    if (!lounge || lounge.manager_id !== staffId) throw Errors.notFound('Lounge')
+    loungeId = lounge.id
+  } else if (staffEntry) {
+    loungeId = staffEntry.lounge_id
+  } else {
+    const lounge = await db.query.lounges.findFirst({
+      where: eq(lounges.manager_id, staffId)
+    })
+    if (!lounge) throw Errors.notFound('Lounge')
+    loungeId = lounge.id
+  }
 
 const now = new Date()
 let period_start: Date

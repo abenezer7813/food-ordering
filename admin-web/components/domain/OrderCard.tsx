@@ -19,6 +19,7 @@ export function OrderCard({
     preparing: "blue",
     ready: "green",
     collected: "gray",
+    confirmed: "indigo",
   } as const;
 
   const orderTypeColor = order.order_type === "online" ? "violet" : "gray";
@@ -31,7 +32,7 @@ export function OrderCard({
             <Text size="sm" c="dimmed" ff="monospace">
               #{order.id.slice(0, 8)}
             </Text>
-            <Badge color={statusColor[order.status]} size="sm">
+            <Badge color={statusColor[order.status] ?? "gray"} size="sm">
               {order.status}
             </Badge>
             <Badge color={orderTypeColor} size="sm">
@@ -56,28 +57,10 @@ export function OrderCard({
 
         {showActions && (
           <Group gap="xs">
-            {order.status === "pending" && onAction && (
-              <Button
-                size="sm"
-                onClick={() => onAction(order.id, "start-preparing")}
-                loading={actionLoading}
-              >
-                Start Preparing
-              </Button>
-            )}
-            {order.status === "preparing" && onAction && (
-              <Button
-                size="sm"
-                onClick={() => onAction(order.id, "mark-ready")}
-                loading={actionLoading}
-              >
-                Mark Ready
-              </Button>
-            )}
             {order.status === "ready" && onAction && (
               <Button
                 size="sm"
-                color="green"
+                color="teal"
                 onClick={() => onAction(order.id, "mark-collected")}
                 loading={actionLoading}
               >

@@ -19,6 +19,7 @@ import {
   IconShoppingCart,
   IconUsers,
   IconCash,
+  IconCurrencyDollar,
   IconArrowRight,
 } from "@tabler/icons-react";
 import { useRouter } from "next/navigation";
@@ -63,7 +64,8 @@ export default function ManagerDashboard() {
   const router = useRouter();
   const { data: orders, isLoading: ordersLoading } = useOrders();
   const { data: staff, isLoading: staffLoading } = useStaff();
-  const { data: report, isLoading: reportLoading } = useSalesReport("daily");
+  const { data: dailyReport, isLoading: dailyLoading } = useSalesReport("daily");
+  const { data: monthlyReport, isLoading: monthlyLoading } = useSalesReport("monthly");
 
   const activeOrders =
     orders?.filter((o) =>
@@ -71,8 +73,13 @@ export default function ManagerDashboard() {
     ).length || 0;
 
   const totalStaff = staff?.length || 0;
-  const todaySales = report
-    ? `${parseFloat(report.total_sales).toFixed(2)} ETB`
+
+  const todaySales = dailyReport
+    ? `${parseFloat(dailyReport.total_sales).toFixed(2)} ETB`
+    : "0.00 ETB";
+
+  const monthlySales = monthlyReport
+    ? `${parseFloat(monthlyReport.total_sales).toFixed(2)} ETB`
     : "0.00 ETB";
 
   return (
@@ -88,7 +95,7 @@ export default function ManagerDashboard() {
             </div>
           </Group>
 
-          <SimpleGrid cols={{ base: 1, sm: 3 }} spacing="lg">
+          <SimpleGrid cols={{ base: 1, sm: 2, lg: 4 }} spacing="lg">
             <StatBox
               label="Active Orders"
               value={activeOrders}
@@ -108,7 +115,14 @@ export default function ManagerDashboard() {
               value={todaySales}
               icon={<IconCash size={22} />}
               color="teal"
-              isLoading={reportLoading}
+              isLoading={dailyLoading}
+            />
+            <StatBox
+              label="Monthly Revenue"
+              value={monthlySales}
+              icon={<IconCurrencyDollar size={22} />}
+              color="orange"
+              isLoading={monthlyLoading}
             />
           </SimpleGrid>
 

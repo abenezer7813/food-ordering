@@ -26,13 +26,25 @@ export async function submitFeedback(data: {
   return feedback
 }
 
-export async function getLoungeFeedback(managerId: string) {
-  const lounge = await db.query.lounges.findFirst({
-    where: eq(lounges.manager_id, managerId)
-  })
-  if (!lounge) throw Errors.notFound('Lounge')
+export async function getLoungeFeedback(managerId: string, loungeId?: string) {
+  let resolvedLoungeId: string
+
+  if (loungeId) {
+    // Validate manager owns this lounge
+    const lounge = await db.query.lounges.findFirst({
+      where: eq(lounges.id, loungeId)
+    })
+    if (!lounge || lounge.manager_id !== managerId) throw Errors.notFound('Lounge')
+    resolvedLoungeId = lounge.id
+  } else {
+    const lounge = await db.query.lounges.findFirst({
+      where: eq(lounges.manager_id, managerId)
+    })
+    if (!lounge) throw Errors.notFound('Lounge')
+    resolvedLoungeId = lounge.id
+  }
 
   return await db.query.customer_feedback.findMany({
-    where: eq(customer_feedback.lounge_id, lounge.id)
+    where: eq(customer_feedback.lounge_id, resolvedLoungeId)
   })
 }

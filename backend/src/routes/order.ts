@@ -4,6 +4,9 @@ import { authMiddleware, requireRole } from "../middleware/auth.js";
 import { zValidator } from "@hono/zod-validator";
 import { handleError } from "../utils/errors.js";
 import { collectOrder, createOrder, createWalkInOrder, getCustomerOrders, getLoungeOrders, updateOrderStatus } from "../services/order.service.js";
+import { db } from "../db/index.js";
+import { orders } from "../db/schema.js";
+import { eq } from "drizzle-orm";
 
 type Variables = {
   userId: string
@@ -60,33 +63,6 @@ orderRoutes.post('/walk-in',
   }
 )
 
-// GET /orders — cashier + cook
-orderRoutes.get('/',
-  requireRole('cashier', 'cook'),
-  async (c) => {
-    try {
-      const staffId = c.get('userId') as string
-      const orders = await getLoungeOrders(staffId)
-      return c.json({ orders })
-    } catch (e) {
-      return handleError(e, c)
-    }
-  }
-)
-
-// GET /orders/my-orders — customer
-orderRoutes.get('/my-orders',
-  requireRole('customer'),
-  async (c) => {
-    try {
-      const customerId = c.get('userId') as string
-      const orders = await getCustomerOrders(customerId)
-      return c.json({ orders })
-    } catch (e) {
-      return handleError(e, c)
-    }
-  }
-)
 //update status only cook
 const updateStatusSchema=z.object({
   status:z.enum(['preparing','ready'])
@@ -124,14 +100,34 @@ orderRoutes.patch('/:id/collect',
 
 )
 
-// GET /order — cashier + cook
+// GET /order — cashier + cook + manager
 orderRoutes.get('/',
-  requireRole('cashier', 'cook'),
+  requireRole('cashier', 'cook', 'lounge_manager'),
   async (c) => {
     try {
       const staffId = c.get('userId') as string
-      const orders = await getLoungeOrders(staffId)
-      return c.json({ orders })
+      const loungeIdParam = c.req.query('lounge_id')
+      
+      // For manager with lounge_id param, get orders for that lounge
+      // For cashier/cook, get orders from their assigned lounge
+      if (loungeIdParam) {
+        // Manager case: get orders for specified lounge
+        const loungeOrders = await db.query.orders.findMany({
+          where: eq(orders.lounge_id, loungeIdParam),
+          with: {
+            order_items: {
+              with: {
+                menu_item: true
+              }
+            }
+          }
+        })
+        return c.json({ orders: loungeOrders })
+      } else {
+        // Cashier/cook case: get orders from their assigned lounge
+        const loungeOrders = await getLoungeOrders(staffId)
+        return c.json({ orders: loungeOrders })
+      }
     } catch (e) {
       return handleError(e, c)
     }

@@ -12,15 +12,14 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* Use Mantine's color scheme attribute so the toggle drives these variables */
+[data-mantine-color-scheme="dark"] {
+  --background: #0a0a0a;
+  --foreground: #ededed;
 }
 
 body {
   background: var(--background);
-  color: var(--foreground);
+  /* Let Mantine control text color — avoid overriding its color tokens */
   font-family: Arial, Helvetica, sans-serif;
 }

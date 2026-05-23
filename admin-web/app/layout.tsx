@@ -1,18 +1,12 @@
-"use client";
-import { QueryClientProvider } from "@tanstack/react-query";
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import { MantineProvider, createTheme } from "@mantine/core";
-import { Notifications } from "@mantine/notifications";
-import { queryClient } from "@/lib/query-client";
-import "@mantine/core/styles.css";
-import "@mantine/notifications/styles.css";
+import type { Metadata } from "next";
+import { ColorSchemeScript } from "@mantine/core";
+import { Providers } from "./providers";
 import "./globals.css";
 
-const theme = createTheme({
-  primaryColor: "indigo",
-  fontFamily: "var(--font-geist-sans), sans-serif",
-  defaultRadius: "md",
-});
+export const metadata: Metadata = {
+  title: "Admin Dashboard",
+  description: "Food ordering admin panel",
+};
 
 export default function RootLayout({
   children,
@@ -20,15 +14,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        {/* Injects the correct color scheme before hydration — prevents flash */}
+        <ColorSchemeScript localStorageKey="admin-color-scheme" />
+      </head>
       <body>
-        <MantineProvider theme={theme}>
-          <Notifications position="bottom-right" />
-          <QueryClientProvider client={queryClient}>
-            {children}
-            <ReactQueryDevtools initialIsOpen={false} />
-          </QueryClientProvider>
-        </MantineProvider>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );
