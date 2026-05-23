@@ -1,12 +1,7 @@
 "use client";
 import { useState } from "react";
 import { DashboardShell } from "@/components/layout/DashboardShell";
-import {
-  useOrders,
-  useMarkOrderCollected,
-  useCreateWalkInOrder,
-} from "@/hooks/queries/useOrders";
-import { useMenu } from "@/hooks/queries/useMenu";
+import { useOrders, useMarkOrderCollected } from "@/hooks/queries/useOrders";
 import {
   Container,
   Title,
@@ -17,26 +12,23 @@ import {
   Button,
   Badge,
   Table,
-  Modal,
-  Select,
-  NumberInput,
-  ActionIcon,
-  Divider,
   ScrollArea,
   Tabs,
   Loader,
   Center,
-  TextInput,
+  ActionIcon,
+  Box,
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import {
   IconPlus,
-  IconTrash,
   IconShoppingCart,
   IconCheck,
+  IconChevronDown,
+  IconChevronRight,
 } from "@tabler/icons-react";
 import { notifications } from "@mantine/notifications";
-import { Order, OrderItem } from "@/lib/api";
+import { Order } from "@/lib/api";
 import { WalkInOrderDrawer } from "@/components/domain/WalkinOrderDrawer";
 
 const STATUS_COLORS: Record<string, string> = {
@@ -47,56 +39,148 @@ const STATUS_COLORS: Record<string, string> = {
   collected: "gray",
 };
 
+function ExpandedItems({
+  order,
+  onCollect,
+  collectLoading,
+}: {
+  order: Order;
+  onCollect?: (orderId: string) => void;
+  collectLoading?: boolean;
+}) {
+  const hasItems = order.order_items && order.order_items.length > 0;
+  return (
+    <Box
+      p="md"
+      style={(theme) => ({
+        background: "var(--mantine-color-default-hover)",
+        borderRadius: theme.radius.sm,
+      })}
+    >
+      <Stack gap="md">
+        {!hasItems ? (
+          <Text size="sm" c="dimmed" fs="italic">
+            No item details available
+          </Text>
+        ) : (
+          <Stack gap="xs">
+            <Text size="xs" fw={600} tt="uppercase" c="dimmed">
+              Items
+            </Text>
+            <Table withTableBorder withColumnBorders fz="sm">
+              <Table.Thead>
+                <Table.Tr>
+                  <Table.Th>Item</Table.Th>
+                  <Table.Th ta="center">Qty</Table.Th>
+                  <Table.Th ta="right">Subtotal</Table.Th>
+                </Table.Tr>
+              </Table.Thead>
+              <Table.Tbody>
+                {order.order_items!.map((item, idx) => (
+                  <Table.Tr key={idx}>
+                    <Table.Td fw={500}>
+                      {item.menu_item?.name || "Unknown"}
+                    </Table.Td>
+                    <Table.Td ta="center">{item.quantity}</Table.Td>
+                    <Table.Td ta="right">
+                      {item.menu_item?.price
+                        ? (parseFloat(item.menu_item.price) * item.quantity).toFixed(2)
+                        : item.unit_price
+                        ? (parseFloat(item.unit_price) * item.quantity).toFixed(2)
+                        : "—"}{" "}
+                      ETB
+                    </Table.Td>
+                  </Table.Tr>
+                ))}
+              </Table.Tbody>
+            </Table>
+            <Group justify="flex-end">
+              <Text size="sm" fw={700}>
+                Total: {parseFloat(order.total_amount).toFixed(2)} ETB
+              </Text>
+            </Group>
+          </Stack>
+        )}
 
-  
+        {/* Collect button inside the detail — only for ready orders */}
+        {order.status === "ready" && onCollect && (
+          <Group justify="flex-end">
+            <Button
+              size="sm"
+              color="teal"
+              leftSection={<IconCheck size={14} />}
+              loading={collectLoading}
+              onClick={() => onCollect(order.id)}
+            >
+              Collect Order
+            </Button>
+          </Group>
+        )}
+      </Stack>
+    </Box>
+  );
+}
 
-export default function CashierOrdersPage() {
-  const [activeTab, setActiveTab] = useState<string>("active");
-  const [opened, { open, close }] = useDisclosure(false);
+function OrdersTable({
+  data,
+  onCollect,
+  collectLoading,
+}: {
+  data: Order[];
+  onCollect?: (orderId: string) => void;
+  collectLoading?: boolean;
+}) {
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const toggle = (id: string) =>
+    setExpandedId((prev) => (prev === id ? null : id));
 
-  const { data: orders, isLoading } = useOrders();
-  const markCollectedMutation = useMarkOrderCollected();
+  if (data.length === 0) {
+    return (
+      <Text ta="center" c="dimmed" py="xl">
+        No orders found
+      </Text>
+    );
+  }
 
-  const activeOrders = orders?.filter((o) =>
-    ["pending", "confirmed", "preparing", "ready"].includes(o.status)
-  ) || [];
-
-  const collectedOrders = orders?.filter((o) => o.status === "collected") || [];
-
-  const handleCollect = (orderId: string) => {
-    markCollectedMutation.mutate(orderId, {
-      onSuccess: () =>
-        notifications.show({ title: "Success", message: "Order marked as collected", color: "green" }),
-      onError: (err: any) =>
-        notifications.show({ title: "Error", message: err.message, color: "red" }),
-    });
-  };
-
-  const renderTable = (data: Order[]) => (
+  return (
     <ScrollArea>
-      <Table striped highlightOnHover withTableBorder>
+      <Table striped withTableBorder highlightOnHover={false}>
         <Table.Thead>
           <Table.Tr>
+            <Table.Th w={32} />
             <Table.Th>Order ID</Table.Th>
             <Table.Th>Type</Table.Th>
             <Table.Th>Amount</Table.Th>
             <Table.Th>Status</Table.Th>
             <Table.Th>Time</Table.Th>
-            <Table.Th>Action</Table.Th>
           </Table.Tr>
         </Table.Thead>
         <Table.Tbody>
-          {data.length === 0 ? (
-            <Table.Tr>
-              <Table.Td colSpan={6}>
-                <Text ta="center" c="dimmed" py="xl">No orders found</Text>
-              </Table.Td>
-            </Table.Tr>
-          ) : (
-            data.map((order) => (
-              <Table.Tr key={order.id}>
+          {data.map((order) => (
+            <>
+              <Table.Tr
+                key={order.id}
+                style={{ cursor: "pointer" }}
+                onClick={() => toggle(order.id)}
+                bg={
+                  expandedId === order.id
+                    ? "var(--mantine-color-default-hover)"
+                    : undefined
+                }
+              >
                 <Table.Td>
-                  <Text size="xs" ff="monospace">#{order.id.slice(0, 8)}</Text>
+                  <ActionIcon variant="subtle" size="xs" color="gray">
+                    {expandedId === order.id ? (
+                      <IconChevronDown size={14} />
+                    ) : (
+                      <IconChevronRight size={14} />
+                    )}
+                  </ActionIcon>
+                </Table.Td>
+                <Table.Td>
+                  <Text size="xs" ff="monospace">
+                    #{order.id.slice(0, 8)}
+                  </Text>
                 </Table.Td>
                 <Table.Td>
                   <Badge variant="outline" size="sm">
@@ -104,7 +188,9 @@ export default function CashierOrdersPage() {
                   </Badge>
                 </Table.Td>
                 <Table.Td>
-                  <Text fw={500}>{parseFloat(order.total_amount).toFixed(2)} ETB</Text>
+                  <Text fw={500}>
+                    {parseFloat(order.total_amount).toFixed(2)} ETB
+                  </Text>
                 </Table.Td>
                 <Table.Td>
                   <Badge color={STATUS_COLORS[order.status]} variant="light">
@@ -116,26 +202,53 @@ export default function CashierOrdersPage() {
                     {new Date(order.created_at).toLocaleTimeString()}
                   </Text>
                 </Table.Td>
-                <Table.Td>
-                  {order.status === "ready" && (
-                    <Button
-                      size="xs"
-                      color="teal"
-                      leftSection={<IconCheck size={12} />}
-                      loading={markCollectedMutation.isPending}
-                      onClick={() => handleCollect(order.id)}
-                    >
-                      Collect
-                    </Button>
-                  )}
-                </Table.Td>
               </Table.Tr>
-            ))
-          )}
+
+              {expandedId === order.id && (
+                <Table.Tr key={`${order.id}-expanded`}>
+                  <Table.Td colSpan={6} p={0}>
+                    <ExpandedItems
+                      order={order}
+                      onCollect={onCollect}
+                      collectLoading={collectLoading}
+                    />
+                  </Table.Td>
+                </Table.Tr>
+              )}
+            </>
+          ))}
         </Table.Tbody>
       </Table>
     </ScrollArea>
   );
+}
+
+export default function CashierOrdersPage() {
+  const [activeTab, setActiveTab] = useState<string>("active");
+  const [opened, { open, close }] = useDisclosure(false);
+
+  const { data: orders, isLoading } = useOrders();
+  const markCollectedMutation = useMarkOrderCollected();
+
+  const activeOrders =
+    orders?.filter((o) =>
+      ["pending", "confirmed", "preparing", "ready"].includes(o.status)
+    ) || [];
+  const collectedOrders =
+    orders?.filter((o) => o.status === "collected") || [];
+
+  const handleCollect = (orderId: string) => {
+    markCollectedMutation.mutate(orderId, {
+      onSuccess: () =>
+        notifications.show({
+          title: "Success",
+          message: "Order marked as collected",
+          color: "green",
+        }),
+      onError: (err: any) =>
+        notifications.show({ title: "Error", message: err.message, color: "red" }),
+    });
+  };
 
   return (
     <DashboardShell allowedRoles={["cashier"]}>
@@ -144,7 +257,9 @@ export default function CashierOrdersPage() {
           <Group justify="space-between">
             <div>
               <Title order={2}>Orders</Title>
-              <Text c="dimmed" size="sm">Manage walk-in and online orders</Text>
+              <Text c="dimmed" size="sm">
+                Manage walk-in and online orders
+              </Text>
             </div>
             <Button leftSection={<IconPlus size={16} />} onClick={open}>
               New Walk-in Order
@@ -152,9 +267,15 @@ export default function CashierOrdersPage() {
           </Group>
 
           <Paper shadow="sm" radius="md" withBorder>
-            <Tabs value={activeTab} onChange={(v) => setActiveTab(v || "active")}>
+            <Tabs
+              value={activeTab}
+              onChange={(v) => setActiveTab(v || "active")}
+            >
               <Tabs.List px="md" pt="xs">
-                <Tabs.Tab value="active" leftSection={<IconShoppingCart size={16} />}>
+                <Tabs.Tab
+                  value="active"
+                  leftSection={<IconShoppingCart size={16} />}
+                >
                   Active ({activeOrders.length})
                 </Tabs.Tab>
                 <Tabs.Tab value="collected">
@@ -164,14 +285,26 @@ export default function CashierOrdersPage() {
 
               <Tabs.Panel value="active" p="md">
                 {isLoading ? (
-                  <Center py="xl"><Loader /></Center>
-                ) : renderTable(activeOrders)}
+                  <Center py="xl">
+                    <Loader />
+                  </Center>
+                ) : (
+                  <OrdersTable
+                    data={activeOrders}
+                    onCollect={handleCollect}
+                    collectLoading={markCollectedMutation.isPending}
+                  />
+                )}
               </Tabs.Panel>
 
               <Tabs.Panel value="collected" p="md">
                 {isLoading ? (
-                  <Center py="xl"><Loader /></Center>
-                ) : renderTable(collectedOrders)}
+                  <Center py="xl">
+                    <Loader />
+                  </Center>
+                ) : (
+                  <OrdersTable data={collectedOrders} />
+                )}
               </Tabs.Panel>
             </Tabs>
           </Paper>

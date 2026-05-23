@@ -124,13 +124,11 @@ export const loungeApi = {
     fetcher<{ message: string }>(`/lounges/${loungeId}`, {
       method: "PATCH",
     }),
-    addNewManager:(data:{first_name:string,last_name:string,email:string,password:string})=>{
-      fetcher<{message:string}>(`/lounges/managers`,{
-        method:"POST",
-        body:JSON.stringify(data)
-      
-    })
-  }
+    addNewManager: (data: { first_name: string; last_name: string; email: string; password: string }) =>
+    fetcher<{ message: string }>(`/lounges/managers`, {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
 };
 
 // ============ STAFF ============
@@ -143,28 +141,44 @@ export interface Staff {
   is_active: boolean;
 }
 
+export interface MyLounge {
+  id: string;
+  name: string;
+  is_active: boolean;
+}
+
 export const staffApi = {
-  getAll: () => fetcher<{ staff: Staff[] }>("/staff"),
+  getAll: (loungeId?: string) => {
+    const params = loungeId ? `?lounge_id=${loungeId}` : "";
+    return fetcher<{ staff: Staff[] }>(`/staff${params}`);
+  },
   getAllmanager: () => fetcher<{ managers: Staff[] }>("/staff/managers"),
+  getMyLounge: () => fetcher<{ lounge_id: string; lounge_name: string }>("/staff/my-lounge"),
+  getMyLounges: () => fetcher<{ lounges: MyLounge[] }>("/staff/my-lounges"),
 
-  
-
-  createStaff: (data: {
-    first_name: string;
-    last_name: string;
-    email: string;
-    password: string;
-    role:"cashier"|"cook"
-  }) =>
-    fetcher<{ cook: Staff }>("/staff", {
+  createStaff: (
+    data: {
+      first_name: string;
+      last_name: string;
+      email: string;
+      password: string;
+      role: "cashier" | "cook";
+    },
+    loungeId?: string
+  ) => {
+    const params = loungeId ? `?lounge_id=${loungeId}` : "";
+    return fetcher<{ cook: Staff }>(`/staff${params}`, {
       method: "POST",
       body: JSON.stringify(data),
-    }),
+    });
+  },
 
-  deactivate: (staffId: string) =>
-    fetcher<{ message: string }>(`/staff/${staffId}/deactivate`, {
+  deactivate: (staffId: string, loungeId?: string) => {
+    const params = loungeId ? `?lounge_id=${loungeId}` : "";
+    return fetcher<{ message: string }>(`/staff/${staffId}/deactivate${params}`, {
       method: "PATCH",
-    }),
+    });
+  },
 };
 
 // ============ MENU ============
@@ -176,11 +190,16 @@ export interface MenuItem {
   image_url: string | null;
   is_available: boolean;
   estimated_preparation_time: number;
+  category: "food" | "drink" | null;
+  meal_type: "breakfast" | "lunch" | "dinner" | "all_day" | null;
+  drink_type: "juice" | "coffee" | "tea" | "water" | "soda" | "smoothie" | "other" | null;
 }
 
 export const menuApi = {
-  getByLounge: () =>
-    fetcher<{ menuItems: MenuItem[] }>(`/menu/manage`),
+  getByLounge: (loungeId?: string) => {
+    const params = loungeId ? `?lounge_id=${loungeId}` : "";
+    return fetcher<{ menuItems: MenuItem[] }>(`/menu/manage${params}`);
+  },
 
   create: (data: {
     name: string;
@@ -188,17 +207,24 @@ export const menuApi = {
     price: number;
     image_url?: string;
     estimated_preparation_time: number;
-  }) =>
-    fetcher<{ item: MenuItem }>("/menu", {
+    category?: "food" | "drink";
+    meal_type?: "breakfast" | "lunch" | "dinner" | "all_day";
+    drink_type?: "juice" | "coffee" | "tea" | "water" | "soda" | "smoothie" | "other";
+  }, loungeId?: string) => {
+    const params = loungeId ? `?lounge_id=${loungeId}` : "";
+    return fetcher<{ item: MenuItem }>(`/menu${params}`, {
       method: "POST",
       body: JSON.stringify(data),
-    }),
+    });
+  },
 
-  toggleAvailability: (itemId: string, isAvailable: boolean) =>
-    fetcher<{ item: MenuItem }>(`/menu/${itemId}/availability`, {
+  toggleAvailability: (itemId: string, isAvailable: boolean, loungeId?: string) => {
+    const params = loungeId ? `?lounge_id=${loungeId}` : "";
+    return fetcher<{ item: MenuItem }>(`/menu/${itemId}/availability${params}`, {
       method: "PATCH",
       body: JSON.stringify({ is_available: isAvailable }),
-    }),
+    });
+  },
 
   update: (
     itemId: string,
@@ -207,12 +233,18 @@ export const menuApi = {
       price?: number;
       description?: string;
       estimated_preparation_time?: number;
-    }
-  ) =>
-    fetcher<{ item: MenuItem }>(`/menu/${itemId}`, {
+      category?: "food" | "drink" | null;
+      meal_type?: "breakfast" | "lunch" | "dinner" | "all_day" | null;
+      drink_type?: "juice" | "coffee" | "tea" | "water" | "soda" | "smoothie" | "other" | null;
+    },
+    loungeId?: string
+  ) => {
+    const params = loungeId ? `?lounge_id=${loungeId}` : "";
+    return fetcher<{ item: MenuItem }>(`/menu/${itemId}${params}`, {
       method: "PATCH",
       body: JSON.stringify(data),
-    }),
+    });
+  },
 };
 
 // ============ ORDERS ============
@@ -224,36 +256,55 @@ export interface OrderItem {
 
 export interface Order {
   id: string;
-  status: "pending" | "preparing" | "ready" | "collected"|"confirmed";
+  status: "pending" | "preparing" | "ready" | "collected" | "confirmed";
   order_type: "online" | "walk_in";
   total_amount: string;
   estimated_ready_time?: number;
   created_at: string;
-  items?: any[];
+  order_items?: {
+    id?: string;
+    quantity: number;
+    unit_price?: string;
+    special_instructions?: string;
+    menu_item?: {
+      id: string;
+      name: string;
+      price: string;
+    };
+  }[];
 }
 
 export const orderApi = {
-  getAll: (status?: string) => {
-    const params = status ? `?status=${status}` : "";
-    return fetcher<{ orders: Order[] }>(`/order${params}`);
+  getAll: (status?: string, loungeId?: string) => {
+    const params = new URLSearchParams();
+    if (status) params.append("status", status);
+    if (loungeId) params.append("lounge_id", loungeId);
+    const queryString = params.toString();
+    return fetcher<{ orders: Order[] }>(`/order${queryString ? `?${queryString}` : ""}`);
   },
 
-  updateStatus: (orderId: string, status: "preparing" | "ready") =>
-    fetcher<{ order: Order }>(`/order/${orderId}/status`, {
+  updateStatus: (orderId: string, status: "preparing" | "ready", loungeId?: string) => {
+    const params = loungeId ? `?lounge_id=${loungeId}` : "";
+    return fetcher<{ order: Order }>(`/order/${orderId}/status${params}`, {
       method: "PATCH",
       body: JSON.stringify({ status }),
-    }),
+    });
+  },
 
-  markCollected: (orderId: string) =>
-    fetcher<{ order: Order }>(`/order/${orderId}/collect`, {
+  markCollected: (orderId: string, loungeId?: string) => {
+    const params = loungeId ? `?lounge_id=${loungeId}` : "";
+    return fetcher<{ order: Order }>(`/order/${orderId}/collect${params}`, {
       method: "PATCH",
-    }),
+    });
+  },
 
-  createWalkIn: (data: { items: OrderItem[]; payment_method: string }) =>
-    fetcher<{ order: Order }>("/order/walk-in", {
+  createWalkIn: (data: { items: OrderItem[]; payment_method: string }, loungeId?: string) => {
+    const params = loungeId ? `?lounge_id=${loungeId}` : "";
+    return fetcher<{ order: Order }>(`/order/walk-in${params}`, {
       method: "POST",
       body: JSON.stringify(data),
-    }),
+    });
+  },
 };
 
 // ============ REPORTS ============
@@ -266,9 +317,10 @@ export interface SalesReport {
 }
 
 export const reportApi = {
-  getSales: (period: "daily" | "weekly" | "monthly", date?: string) => {
+  getSales: (period: "daily" | "weekly" | "monthly", loungeId?: string, date?: string) => {
     const params = new URLSearchParams({ period });
     if (date) params.append("date", date);
+    if (loungeId) params.append("lounge_id", loungeId);
     return fetcher<{ data: SalesReport }>(`/reports?${params}`);
   },
 };
@@ -285,10 +337,56 @@ export interface Feedback {
 }
 
 export const feedbackApi = {
-  getAll: () => fetcher<{ feedback: Feedback[] }>("/feedback"),
+  getAll: (loungeId?: string) => {
+    const params = loungeId ? `?lounge_id=${loungeId}` : "";
+    return fetcher<{ feedback: Feedback[] }>(`/feedback${params}`);
+  },
 };
 
-// ============ LEGACY (for backward compatibility) ============
+// ============ WALLET TOP-UP REQUESTS ============
+export interface TopUpRequest {
+  id: string;
+  customer_id: string;
+  lounge_id: string;
+  amount: string;
+  payment_method: "cash" | "bank_transfer";
+  receipt_image_url: string | null;
+  status: "pending" | "cashier_approved" | "manager_approved" | "rejected";
+  cashier_id: string | null;
+  manager_id: string | null;
+  rejection_reason: string | null;
+  created_at: string;
+  updated_at: string;
+  customer?: {
+    id: string;
+    first_name: string;
+    last_name: string;
+    email: string;
+  };
+}
+
+export const walletApi = {
+  getTopUpRequests: (loungeId: string) =>
+    fetcher<{ requests: TopUpRequest[] }>(`/wallet/${loungeId}/topup-requests`),
+
+  cashierApprove: (loungeId: string, requestId: string) =>
+    fetcher<{ request: TopUpRequest }>(`/wallet/${loungeId}/topup-requests/${requestId}/cashier-approve`, {
+      method: "PATCH",
+    }),
+
+  managerApprove: (loungeId: string, requestId: string) =>
+    fetcher<{ message: string }>(`/wallet/${loungeId}/topup-requests/${requestId}/manager-approve`, {
+      method: "PATCH",
+    }),
+
+  reject: (loungeId: string, requestId: string, rejection_reason: string) =>
+    fetcher<{ request: TopUpRequest }>(`/wallet/${loungeId}/topup-requests/${requestId}/reject`, {
+      method: "PATCH",
+      body: JSON.stringify({ rejection_reason }),
+    }),
+};
+
+
 export const api = {
   login: authApi.login,
   logout: () => {

@@ -15,6 +15,8 @@ import {
   Center,
   ThemeIcon,
   Divider,
+  Button,
+  Badge,
 } from "@mantine/core";
 import { DatePickerInput } from "@mantine/dates";
 import {
@@ -22,16 +24,9 @@ import {
   IconCash,
   IconShoppingCart,
   IconCalendar,
+  IconFileTypePdf,
+  IconTrendingUp,
 } from "@tabler/icons-react";
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-  CartesianGrid,
-} from "recharts";
 
 type Period = "daily" | "weekly" | "monthly";
 
@@ -65,38 +60,130 @@ function StatBox({
   );
 }
 
+async function generatePDF(report: {
+  period_type: string;
+  period_start: string;
+  period_end: string;
+  total_sales: string;
+  total_orders: number;
+}) {
+  const { default: jsPDF } = await import("jspdf");
+  const { default: autoTable } = await import("jspdf-autotable");
+
+  const doc = new jsPDF();
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const now = new Date();
+
+  doc.setFillColor(99, 102, 241);
+  doc.rect(0, 0, pageWidth, 28, "F");
+
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(18);
+  doc.setFont("helvetica", "bold");
+  doc.text("UniLounge — Sales Report", 14, 18);
+
+  doc.setFontSize(9);
+  doc.setFont("helvetica", "normal");
+  doc.text(`Generated: ${now.toLocaleString()}`, pageWidth - 14, 18, { align: "right" });
+
+  doc.setTextColor(60, 60, 60);
+  doc.setFontSize(11);
+  doc.setFont("helvetica", "bold");
+  doc.text(
+    `Period: ${report.period_type.charAt(0).toUpperCase() + report.period_type.slice(1)}`,
+    14,
+    40
+  );
+
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(10);
+  doc.text(
+    `From: ${new Date(report.period_start).toLocaleDateString()}   →   To: ${new Date(report.period_end).toLocaleDateString()}`,
+    14,
+    50
+  );
+
+  autoTable(doc, {
+    startY: 60,
+    head: [["Metric", "Value"]],
+    body: [
+      ["Total Sales", `${parseFloat(report.total_sales).toFixed(2)} ETB`],
+      ["Total Orders", String(report.total_orders)],
+      [
+        "Average Order Value",
+        report.total_orders > 0
+          ? `${(parseFloat(report.total_sales) / report.total_orders).toFixed(2)} ETB`
+          : "—",
+      ],
+    ],
+    headStyles: { fillColor: [99, 102, 241], textColor: 255, fontStyle: "bold" },
+    alternateRowStyles: { fillColor: [245, 245, 255] },
+    styles: { fontSize: 11, cellPadding: 6 },
+    columnStyles: {
+      0: { fontStyle: "bold", cellWidth: 80 },
+      1: { cellWidth: 80 },
+    },
+  });
+
+  const finalY = (doc as any).lastAutoTable.finalY + 16;
+  doc.setFontSize(8);
+  doc.setTextColor(150, 150, 150);
+  doc.text("UniLounge Admin Dashboard — Confidential", 14, finalY);
+
+  const periodLabel =
+    report.period_type === "daily"
+      ? new Date(report.period_start).toLocaleDateString().replace(/\//g, "-")
+      : `${new Date(report.period_start).toLocaleDateString().replace(/\//g, "-")}_${new Date(report.period_end).toLocaleDateString().replace(/\//g, "-")}`;
+
+  doc.save(`sales-report-${report.period_type}-${periodLabel}.pdf`);
+}
+
 export default function ManagerReportsPage() {
   const [period, setPeriod] = useState<Period>("daily");
   const [date, setDate] = useState<Date | null>(null);
+  const [exporting, setExporting] = useState(false);
 
   const dateStr = date ? date.toISOString().split("T")[0] : undefined;
   const { data: report, isLoading } = useSalesReport(period, dateStr);
 
-  const chartData = report
-    ? [
-        {
-          name:
-            period === "daily"
-              ? "Today"
-              : period === "weekly"
-              ? "This Week"
-              : "This Month",
-          sales: parseFloat(report.total_sales || "0"),
-          orders: report.total_orders,
-        },
-      ]
-    : [];
+  const handleExport = async () => {
+    if (!report) return;
+    setExporting(true);
+    try {
+      await generatePDF(report);
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  const avgOrderValue =
+    report && report.total_orders > 0
+      ? (parseFloat(report.total_sales) / report.total_orders).toFixed(2)
+      : "0.00";
 
   return (
     <DashboardShell allowedRoles={["lounge_manager"]}>
       <Container size="xl">
         <Stack gap="xl">
-          <div>
-            <Title order={2}>Sales Reports</Title>
-            <Text c="dimmed" size="sm">
-              View sales performance for your lounge
-            </Text>
-          </div>
+          <Group justify="space-between">
+            <div>
+              <Title order={2}>Sales Reports</Title>
+              <Text c="dimmed" size="sm">
+                View and export sales performance for your lounge
+              </Text>
+            </div>
+            {report && (
+              <Button
+                leftSection={<IconFileTypePdf size={16} />}
+                color="red"
+                variant="light"
+                loading={exporting}
+                onClick={handleExport}
+              >
+                Export PDF
+              </Button>
+            )}
+          </Group>
 
           {/* Controls */}
           <Paper withBorder p="md" radius="md">
@@ -145,7 +232,7 @@ export default function ManagerReportsPage() {
             </Center>
           ) : (
             <>
-              <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="lg">
+              <SimpleGrid cols={{ base: 1, sm: 3 }} spacing="lg">
                 <StatBox
                   label="Total Sales"
                   value={`${parseFloat(report.total_sales).toFixed(2)} ETB`}
@@ -158,56 +245,64 @@ export default function ManagerReportsPage() {
                   icon={<IconShoppingCart size={22} />}
                   color="blue"
                 />
+                <StatBox
+                  label="Avg. Order Value"
+                  value={`${avgOrderValue} ETB`}
+                  icon={<IconTrendingUp size={22} />}
+                  color="violet"
+                />
               </SimpleGrid>
 
               <Paper withBorder p="lg" radius="md">
-                <Text fw={600} mb="md">
-                  Overview
-                </Text>
+                <Group justify="space-between" mb="md">
+                  <Text fw={600}>Report Details</Text>
+                  <Badge variant="light" color="indigo" tt="capitalize">
+                    {report.period_type}
+                  </Badge>
+                </Group>
                 <Divider mb="md" />
-                <ResponsiveContainer width="100%" height={220}>
-                  <BarChart data={chartData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="name" />
-                    <YAxis />
-                    <Tooltip
-                      formatter={(value, name) =>
-                        name === "sales"
-                          ? [`${Number(value).toFixed(2)} ETB`, "Sales"]
-                          : [value, "Orders"]
-                      }
-                    />
-                    <Bar
-                      dataKey="sales"
-                      fill="#12b886"
-                      radius={[4, 4, 0, 0]}
-                      name="sales"
-                    />
-                    <Bar
-                      dataKey="orders"
-                      fill="#228be6"
-                      radius={[4, 4, 0, 0]}
-                      name="orders"
-                    />
-                  </BarChart>
-                </ResponsiveContainer>
-              </Paper>
 
-              <Paper withBorder p="md" radius="md">
-                <Group justify="space-between">
-                  <Text size="sm" c="dimmed">Period</Text>
-                  <Text size="sm" fw={500} tt="capitalize">{report.period_type}</Text>
-                </Group>
-                <Divider my="xs" />
-                <Group justify="space-between">
-                  <Text size="sm" c="dimmed">From</Text>
-                  <Text size="sm">{new Date(report.period_start).toLocaleDateString()}</Text>
-                </Group>
-                <Divider my="xs" />
-                <Group justify="space-between">
-                  <Text size="sm" c="dimmed">To</Text>
-                  <Text size="sm">{new Date(report.period_end).toLocaleDateString()}</Text>
-                </Group>
+                <Stack gap="sm">
+                  <Group justify="space-between">
+                    <Text size="sm" c="dimmed">Period</Text>
+                    <Text size="sm" fw={500} tt="capitalize">{report.period_type}</Text>
+                  </Group>
+                  <Divider />
+                  <Group justify="space-between">
+                    <Text size="sm" c="dimmed">From</Text>
+                    <Text size="sm">
+                      {new Date(report.period_start).toLocaleDateString(undefined, {
+                        weekday: "short", year: "numeric", month: "short", day: "numeric",
+                      })}
+                    </Text>
+                  </Group>
+                  <Divider />
+                  <Group justify="space-between">
+                    <Text size="sm" c="dimmed">To</Text>
+                    <Text size="sm">
+                      {new Date(report.period_end).toLocaleDateString(undefined, {
+                        weekday: "short", year: "numeric", month: "short", day: "numeric",
+                      })}
+                    </Text>
+                  </Group>
+                  <Divider />
+                  <Group justify="space-between">
+                    <Text size="sm" c="dimmed">Total Revenue</Text>
+                    <Text size="sm" fw={700} c="teal">
+                      {parseFloat(report.total_sales).toFixed(2)} ETB
+                    </Text>
+                  </Group>
+                  <Divider />
+                  <Group justify="space-between">
+                    <Text size="sm" c="dimmed">Total Orders</Text>
+                    <Text size="sm" fw={700} c="blue">{report.total_orders}</Text>
+                  </Group>
+                  <Divider />
+                  <Group justify="space-between">
+                    <Text size="sm" c="dimmed">Average Order Value</Text>
+                    <Text size="sm" fw={700} c="violet">{avgOrderValue} ETB</Text>
+                  </Group>
+                </Stack>
               </Paper>
             </>
           )}

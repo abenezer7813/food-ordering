@@ -15,8 +15,12 @@ import {
   Loader,
   Center,
   Tabs,
+  Collapse,
+  ActionIcon,
+  Divider,
+  Box,
 } from "@mantine/core";
-import { IconShoppingCart, IconCheck } from "@tabler/icons-react";
+import { IconShoppingCart, IconCheck, IconChevronDown, IconChevronRight } from "@tabler/icons-react";
 import { Order } from "@/lib/api";
 
 const STATUS_COLORS: Record<string, string> = {
@@ -27,23 +31,69 @@ const STATUS_COLORS: Record<string, string> = {
   collected: "gray",
 };
 
-export default function ManagerOrdersPage() {
-  const [activeTab, setActiveTab] = useState("active");
-  const { data: orders, isLoading } = useOrders();
+function ExpandedItems({ order }: { order: Order }) {
+  const hasItems = order.order_items && order.order_items.length > 0;
+  return (
+    <Box p="md" style={(theme) => ({ background: "var(--mantine-color-default-hover)", borderRadius: theme.radius.sm })}>
+      {!hasItems ? (
+        <Text size="sm" c="dimmed" fs="italic">No item details available</Text>
+      ) : (
+        <Stack gap="xs">
+          <Text size="xs" fw={600} tt="uppercase" c="dimmed">Items</Text>
+          <Table withTableBorder withColumnBorders fz="sm">
+            <Table.Thead>
+              <Table.Tr>
+                <Table.Th>Item</Table.Th>
+                <Table.Th ta="center">Qty</Table.Th>
+                <Table.Th ta="right">Subtotal</Table.Th>
+              </Table.Tr>
+            </Table.Thead>
+            <Table.Tbody>
+              {order.order_items!.map((item, idx) => (
+                <Table.Tr key={idx}>
+                  <Table.Td>{item.menu_item?.name || "Unknown"}</Table.Td>
+                  <Table.Td ta="center">{item.quantity}</Table.Td>
+                  <Table.Td ta="right">
+                    {item.menu_item?.price
+                      ? (parseFloat(item.menu_item.price) * item.quantity).toFixed(2)
+                      : item.unit_price
+                      ? (parseFloat(item.unit_price) * item.quantity).toFixed(2)
+                      : "—"}{" "}ETB
+                  </Table.Td>
+                </Table.Tr>
+              ))}
+            </Table.Tbody>
+          </Table>
+          <Group justify="flex-end">
+            <Text size="sm" fw={700}>
+              Total: {parseFloat(order.total_amount).toFixed(2)} ETB
+            </Text>
+          </Group>
+        </Stack>
+      )}
+    </Box>
+  );
+}
 
-  const activeOrders =
-    orders?.filter((o) =>
-      ["pending", "confirmed", "preparing", "ready"].includes(o.status)
-    ) || [];
+function OrdersTable({ data, colSpan = 5 }: { data: Order[]; colSpan?: number }) {
+  const [expandedId, setExpandedId] = useState<string | null>(null);
 
-  const collectedOrders =
-    orders?.filter((o) => o.status === "collected") || [];
+  const toggle = (id: string) => setExpandedId((prev) => (prev === id ? null : id));
 
-  const renderTable = (data: Order[]) => (
+  if (data.length === 0) {
+    return (
+      <Text ta="center" c="dimmed" py="xl">
+        No orders found
+      </Text>
+    );
+  }
+
+  return (
     <ScrollArea>
-      <Table striped highlightOnHover withTableBorder>
+      <Table striped withTableBorder highlightOnHover={false}>
         <Table.Thead>
           <Table.Tr>
+            <Table.Th w={32} />
             <Table.Th>Order ID</Table.Th>
             <Table.Th>Type</Table.Th>
             <Table.Th>Amount</Table.Th>
@@ -52,21 +102,23 @@ export default function ManagerOrdersPage() {
           </Table.Tr>
         </Table.Thead>
         <Table.Tbody>
-          {data.length === 0 ? (
-            <Table.Tr>
-              <Table.Td colSpan={5}>
-                <Text ta="center" c="dimmed" py="xl">
-                  No orders found
-                </Text>
-              </Table.Td>
-            </Table.Tr>
-          ) : (
-            data.map((order) => (
-              <Table.Tr key={order.id}>
+          {data.map((order) => (
+            <>
+              <Table.Tr
+                key={order.id}
+                style={{ cursor: "pointer" }}
+                onClick={() => toggle(order.id)}
+                bg={expandedId === order.id ? "var(--mantine-color-default-hover)" : undefined}
+              >
                 <Table.Td>
-                  <Text size="xs" ff="monospace">
-                    #{order.id.slice(0, 8)}
-                  </Text>
+                  <ActionIcon variant="subtle" size="xs" color="gray">
+                    {expandedId === order.id
+                      ? <IconChevronDown size={14} />
+                      : <IconChevronRight size={14} />}
+                  </ActionIcon>
+                </Table.Td>
+                <Table.Td>
+                  <Text size="xs" ff="monospace">#{order.id.slice(0, 8)}</Text>
                 </Table.Td>
                 <Table.Td>
                   <Badge variant="outline" size="sm">
@@ -74,9 +126,7 @@ export default function ManagerOrdersPage() {
                   </Badge>
                 </Table.Td>
                 <Table.Td>
-                  <Text fw={500}>
-                    {parseFloat(order.total_amount).toFixed(2)} ETB
-                  </Text>
+                  <Text fw={500}>{parseFloat(order.total_amount).toFixed(2)} ETB</Text>
                 </Table.Td>
                 <Table.Td>
                   <Badge color={STATUS_COLORS[order.status]} variant="light">
@@ -89,12 +139,32 @@ export default function ManagerOrdersPage() {
                   </Text>
                 </Table.Td>
               </Table.Tr>
-            ))
-          )}
+
+              {expandedId === order.id && (
+                <Table.Tr key={`${order.id}-expanded`}>
+                  <Table.Td colSpan={6} p={0}>
+                    <ExpandedItems order={order} />
+                  </Table.Td>
+                </Table.Tr>
+              )}
+            </>
+          ))}
         </Table.Tbody>
       </Table>
     </ScrollArea>
   );
+}
+
+export default function ManagerOrdersPage() {
+  const [activeTab, setActiveTab] = useState("active");
+  const { data: orders, isLoading } = useOrders();
+
+  const activeOrders =
+    orders?.filter((o) =>
+      ["pending", "confirmed", "preparing", "ready"].includes(o.status)
+    ) || [];
+
+  const collectedOrders = orders?.filter((o) => o.status === "collected") || [];
 
   return (
     <DashboardShell allowedRoles={["lounge_manager"]}>
@@ -102,49 +172,26 @@ export default function ManagerOrdersPage() {
         <Stack gap="xl">
           <div>
             <Title order={2}>Orders</Title>
-            <Text c="dimmed" size="sm">
-              View all orders for your lounge
-            </Text>
+            <Text c="dimmed" size="sm">View all orders for your lounge</Text>
           </div>
 
           <Paper shadow="sm" radius="md" withBorder>
-            <Tabs
-              value={activeTab}
-              onChange={(v) => setActiveTab(v || "active")}
-            >
+            <Tabs value={activeTab} onChange={(v) => setActiveTab(v || "active")}>
               <Tabs.List px="md" pt="xs">
-                <Tabs.Tab
-                  value="active"
-                  leftSection={<IconShoppingCart size={16} />}
-                >
+                <Tabs.Tab value="active" leftSection={<IconShoppingCart size={16} />}>
                   Active ({activeOrders.length})
                 </Tabs.Tab>
-                <Tabs.Tab
-                  value="collected"
-                  leftSection={<IconCheck size={16} />}
-                >
+                <Tabs.Tab value="collected" leftSection={<IconCheck size={16} />}>
                   Collected ({collectedOrders.length})
                 </Tabs.Tab>
               </Tabs.List>
 
               <Tabs.Panel value="active" p="md">
-                {isLoading ? (
-                  <Center py="xl">
-                    <Loader />
-                  </Center>
-                ) : (
-                  renderTable(activeOrders)
-                )}
+                {isLoading ? <Center py="xl"><Loader /></Center> : <OrdersTable data={activeOrders} />}
               </Tabs.Panel>
 
               <Tabs.Panel value="collected" p="md">
-                {isLoading ? (
-                  <Center py="xl">
-                    <Loader />
-                  </Center>
-                ) : (
-                  renderTable(collectedOrders)
-                )}
+                {isLoading ? <Center py="xl"><Loader /></Center> : <OrdersTable data={collectedOrders} />}
               </Tabs.Panel>
             </Tabs>
           </Paper>
