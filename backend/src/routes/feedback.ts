@@ -42,7 +42,8 @@ feedbackRoutes.get('/',
   async (c) => {
     try {
       const managerId = c.get('userId') as string
-      const feedback  = await getLoungeFeedback(managerId)
+      const loungeId  = c.req.query('lounge_id')
+      const feedback  = await getLoungeFeedback(managerId, loungeId)
       return c.json({ feedback })
     } catch (e) {
       return handleError(e, c)

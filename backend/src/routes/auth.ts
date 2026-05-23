@@ -8,6 +8,8 @@ import { tr } from "zod/locales";
 import { authMiddleware, requireRole } from "../middleware/auth.js";
 import { sendOTPEmail } from "../utils/email.js";
 import { users } from "../db/schema.js";
+import { db } from "../db/index.js";
+import { eq } from "drizzle-orm";
 
 
 type Variables = {
@@ -288,6 +290,97 @@ authRoutes.patch('/staff/change-password',
       const { new_password } = c.req.valid('json')
       await changeStaffPassword(staffId, new_password)
       return c.json({ success: true, message: 'Password changed successfully.' })
+    } catch (e) {
+      return handleError(e, c)
+    }
+  }
+)
+
+// Staff profile update
+const updateStaffProfileSchema = z.object({
+  first_name: z.string().min(2).optional(),
+  last_name: z.string().min(2).optional(),
+})
+
+authRoutes.patch('/profile',
+  authMiddleware,
+  zValidator('json', updateStaffProfileSchema),
+  async (c) => {
+    try {
+      const userId = c.get('userId')
+      const data = c.req.valid('json')
+      
+      // Update user profile (only first_name and last_name)
+      const [updatedUser] = await db
+        .update(users)
+        .set({
+          first_name: data.first_name,
+          last_name: data.last_name,
+        })
+        .where(eq(users.id, userId))
+        .returning()
+      
+      return c.json({ 
+        success: true, 
+        message: 'Profile updated successfully',
+        user: {
+          id: updatedUser.id,
+          first_name: updatedUser.first_name,
+          last_name: updatedUser.last_name,
+          email: updatedUser.email,
+          role: updatedUser.role,
+        }
+      })
+    } catch (e) {
+      return handleError(e, c)
+    }
+  }
+)
+
+// Staff change password with current password verification
+const changePasswordSchema = z.object({
+  current_password: z.string().min(6),
+  new_password: z.string().min(6),
+})
+
+authRoutes.patch('/change-password',
+  authMiddleware,
+  zValidator('json', changePasswordSchema),
+  async (c) => {
+    try {
+      const userId = c.get('userId')
+      const { current_password, new_password } = c.req.valid('json')
+      
+      // Get user
+      const user = await db.query.users.findFirst({
+        where: eq(users.id, userId)
+      })
+      
+      if (!user) {
+        return c.json({ error: 'User not found' }, 404)
+      }
+      
+      // Verify current password
+      const bcrypt = await import('bcrypt')
+      const isValid = await bcrypt.compare(current_password, user.password)
+      
+      if (!isValid) {
+        return c.json({ error: 'Current password is incorrect' }, 401)
+      }
+      
+      // Hash new password
+      const hashedPassword = await bcrypt.hash(new_password, 10)
+      
+      // Update password
+      await db
+        .update(users)
+        .set({ password: hashedPassword })
+        .where(eq(users.id, userId))
+      
+      return c.json({ 
+        success: true, 
+        message: 'Password changed successfully' 
+      })
     } catch (e) {
       return handleError(e, c)
     }

@@ -50,6 +50,13 @@
       "when": 1779099679134,
       "tag": "0006_light_morlun",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1779519164914,
+      "tag": "0007_brainy_doomsday",
+      "breakpoints": true
     }
   ]
 }
