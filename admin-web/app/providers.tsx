@@ -7,6 +7,7 @@ import {
   localStorageColorSchemeManager,
 } from "@mantine/core";
 import { Notifications } from "@mantine/notifications";
+import { ModalsProvider } from "@mantine/modals";
 import { queryClient } from "@/lib/query-client";
 import "@mantine/core/styles.css";
 import "@mantine/notifications/styles.css";
@@ -24,11 +25,13 @@ const colorSchemeManager = localStorageColorSchemeManager({
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <MantineProvider theme={theme} colorSchemeManager={colorSchemeManager}>
-      <Notifications position="bottom-right" />
-      <QueryClientProvider client={queryClient}>
-        {children}
-        <ReactQueryDevtools initialIsOpen={false} />
-      </QueryClientProvider>
+      <ModalsProvider>
+        <Notifications position="bottom-right" />
+        <QueryClientProvider client={queryClient}>
+          {children}
+          <ReactQueryDevtools initialIsOpen={false} />
+        </QueryClientProvider>
+      </ModalsProvider>
     </MantineProvider>
   );
 }

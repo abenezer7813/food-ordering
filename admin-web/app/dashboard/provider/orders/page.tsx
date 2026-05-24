@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { DashboardShell } from "@/components/layout/DashboardShell";
 import { useOrders } from "@/hooks/queries/useOrders";
 import {
@@ -19,8 +19,9 @@ import {
   ActionIcon,
   Divider,
   Box,
+  TextInput,
 } from "@mantine/core";
-import { IconShoppingCart, IconCheck, IconChevronDown, IconChevronRight } from "@tabler/icons-react";
+import { IconShoppingCart, IconCheck, IconChevronDown, IconChevronRight, IconSearch, IconX } from "@tabler/icons-react";
 import { Order } from "@/lib/api";
 
 const STATUS_COLORS: Record<string, string> = {
@@ -157,6 +158,7 @@ function OrdersTable({ data, colSpan = 5 }: { data: Order[]; colSpan?: number })
 
 export default function ManagerOrdersPage() {
   const [activeTab, setActiveTab] = useState("active");
+  const [searchQuery, setSearchQuery] = useState("");
   const { data: orders, isLoading } = useOrders();
 
   const activeOrders =
@@ -165,6 +167,27 @@ export default function ManagerOrdersPage() {
     ) || [];
 
   const collectedOrders = orders?.filter((o) => o.status === "collected") || [];
+
+  // Filter orders based on search query
+  const filterOrders = (ordersList: Order[]) => {
+    if (!searchQuery.trim()) return ordersList;
+    
+    const query = searchQuery.toLowerCase();
+    return ordersList.filter((order) => {
+      const orderId = order.id.toLowerCase();
+      const customerName = order.customer_name?.toLowerCase() || "";
+      return orderId.includes(query) || customerName.includes(query);
+    });
+  };
+
+  const filteredActiveOrders = useMemo(
+    () => filterOrders(activeOrders),
+    [activeOrders, searchQuery]
+  );
+  const filteredCollectedOrders = useMemo(
+    () => filterOrders(collectedOrders),
+    [collectedOrders, searchQuery]
+  );
 
   return (
     <DashboardShell allowedRoles={["lounge_manager"]}>
@@ -176,22 +199,44 @@ export default function ManagerOrdersPage() {
           </div>
 
           <Paper shadow="sm" radius="md" withBorder>
-            <Tabs value={activeTab} onChange={(v) => setActiveTab(v || "active")}>
+            <Tabs value={activeTab} onChange={(v) => {
+              setActiveTab(v || "active");
+              setSearchQuery(""); // Clear search when switching tabs
+            }}>
               <Tabs.List px="md" pt="xs">
                 <Tabs.Tab value="active" leftSection={<IconShoppingCart size={16} />}>
-                  Active ({activeOrders.length})
+                  Active ({filteredActiveOrders.length})
                 </Tabs.Tab>
                 <Tabs.Tab value="collected" leftSection={<IconCheck size={16} />}>
-                  Collected ({collectedOrders.length})
+                  Collected ({filteredCollectedOrders.length})
                 </Tabs.Tab>
               </Tabs.List>
 
+              <Box px="md" pt="md">
+                <TextInput
+                  placeholder="Search by order ID or customer name..."
+                  leftSection={<IconSearch size={16} />}
+                  rightSection={
+                    searchQuery ? (
+                      <ActionIcon
+                        variant="subtle"
+                        onClick={() => setSearchQuery("")}
+                      >
+                        <IconX size={16} />
+                      </ActionIcon>
+                    ) : null
+                  }
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.currentTarget.value)}
+                />
+              </Box>
+
               <Tabs.Panel value="active" p="md">
-                {isLoading ? <Center py="xl"><Loader /></Center> : <OrdersTable data={activeOrders} />}
+                {isLoading ? <Center py="xl"><Loader /></Center> : <OrdersTable data={filteredActiveOrders} />}
               </Tabs.Panel>
 
               <Tabs.Panel value="collected" p="md">
-                {isLoading ? <Center py="xl"><Loader /></Center> : <OrdersTable data={collectedOrders} />}
+                {isLoading ? <Center py="xl"><Loader /></Center> : <OrdersTable data={filteredCollectedOrders} />}
               </Tabs.Panel>
             </Tabs>
           </Paper>

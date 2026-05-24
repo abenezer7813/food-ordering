@@ -60,21 +60,37 @@ export default function SettingsPage() {
   const handleProfileUpdate = async (values: typeof profileForm.values) => {
     setIsUpdatingProfile(true);
     try {
-      const response = await api.patch("/auth/profile", values);
+      console.log("Updating profile with values:", values);
+      const response = await api.patch<{ success: boolean; message: string; user: any }>("/auth/profile", values);
+      console.log("Profile update response:", response);
       
-      // Update the user in the auth store
-      useAuthStore.setState({ user: response.data.user });
+      // Update the user in the auth store and localStorage
+      if (response.user) {
+        // Update localStorage first
+        localStorage.setItem("user", JSON.stringify(response.user));
+        
+        // Update Zustand store - this should trigger re-renders
+        useAuthStore.setState({ user: response.user });
+        
+        // Force update the form with new values
+        profileForm.setValues({
+          first_name: response.user.first_name,
+          last_name: response.user.last_name,
+        });
+      }
       
       notifications.show({
         title: "Success",
-        message: "Profile updated successfully",
+        message: response.message || "Profile updated successfully",
         color: "green",
         icon: <IconCheck size={18} />,
       });
     } catch (error: any) {
+      console.error("Profile update error:", error);
+      console.error("Error response:", error.response);
       notifications.show({
         title: "Error",
-        message: error.response?.data?.message || "Failed to update profile",
+        message: error.response?.data?.error || error.response?.data?.message || error.message || "Failed to update profile",
         color: "red",
         icon: <IconAlertCircle size={18} />,
       });
@@ -86,23 +102,26 @@ export default function SettingsPage() {
   const handlePasswordChange = async (values: typeof passwordForm.values) => {
     setIsChangingPassword(true);
     try {
-      await api.patch("/auth/change-password", {
+      console.log("Changing password...");
+      const response = await api.patch<{ success: boolean; message: string }>("/auth/change-password", {
         current_password: values.current_password,
         new_password: values.new_password,
       });
       
       notifications.show({
         title: "Success",
-        message: "Password changed successfully",
+        message: response.message || "Password changed successfully",
         color: "green",
         icon: <IconCheck size={18} />,
       });
       
       passwordForm.reset();
     } catch (error: any) {
+      console.error("Password change error:", error);
+      console.error("Error response:", error.response);
       notifications.show({
         title: "Error",
-        message: error.response?.data?.message || "Failed to change password",
+        message: error.response?.data?.error || error.response?.data?.message || error.message || "Failed to change password",
         color: "red",
         icon: <IconAlertCircle size={18} />,
       });
@@ -187,7 +206,7 @@ export default function SettingsPage() {
                 <Button
                   type="submit"
                   loading={isUpdatingProfile}
-                  leftSection={<IconCheck size={16} />}
+                  leftSection={<IconCheck size={18} />}
                 >
                   Update Profile
                 </Button>

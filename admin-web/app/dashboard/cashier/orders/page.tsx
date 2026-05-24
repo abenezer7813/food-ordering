@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { DashboardShell } from "@/components/layout/DashboardShell";
 import { useOrders, useMarkOrderCollected } from "@/hooks/queries/useOrders";
 import {
@@ -18,6 +18,7 @@ import {
   Center,
   ActionIcon,
   Box,
+  TextInput,
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import {
@@ -26,6 +27,8 @@ import {
   IconCheck,
   IconChevronDown,
   IconChevronRight,
+  IconSearch,
+  IconX,
 } from "@tabler/icons-react";
 import { notifications } from "@mantine/notifications";
 import { Order } from "@/lib/api";
@@ -226,6 +229,7 @@ function OrdersTable({
 export default function CashierOrdersPage() {
   const [activeTab, setActiveTab] = useState<string>("active");
   const [opened, { open, close }] = useDisclosure(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const { data: orders, isLoading } = useOrders();
   const markCollectedMutation = useMarkOrderCollected();
@@ -236,6 +240,27 @@ export default function CashierOrdersPage() {
     ) || [];
   const collectedOrders =
     orders?.filter((o) => o.status === "collected") || [];
+
+  // Filter orders based on search query
+  const filterOrders = (ordersList: Order[]) => {
+    if (!searchQuery.trim()) return ordersList;
+    
+    const query = searchQuery.toLowerCase();
+    return ordersList.filter((order) => {
+      const orderId = order.id.toLowerCase();
+      const customerName = order.customer_name?.toLowerCase() || "";
+      return orderId.includes(query) || customerName.includes(query);
+    });
+  };
+
+  const filteredActiveOrders = useMemo(
+    () => filterOrders(activeOrders),
+    [activeOrders, searchQuery]
+  );
+  const filteredCollectedOrders = useMemo(
+    () => filterOrders(collectedOrders),
+    [collectedOrders, searchQuery]
+  );
 
   const handleCollect = (orderId: string) => {
     markCollectedMutation.mutate(orderId, {
@@ -269,19 +294,41 @@ export default function CashierOrdersPage() {
           <Paper shadow="sm" radius="md" withBorder>
             <Tabs
               value={activeTab}
-              onChange={(v) => setActiveTab(v || "active")}
+              onChange={(v) => {
+                setActiveTab(v || "active");
+                setSearchQuery(""); // Clear search when switching tabs
+              }}
             >
               <Tabs.List px="md" pt="xs">
                 <Tabs.Tab
                   value="active"
                   leftSection={<IconShoppingCart size={16} />}
                 >
-                  Active ({activeOrders.length})
+                  Active ({filteredActiveOrders.length})
                 </Tabs.Tab>
                 <Tabs.Tab value="collected">
-                  Collected ({collectedOrders.length})
+                  Collected ({filteredCollectedOrders.length})
                 </Tabs.Tab>
               </Tabs.List>
+
+              <Box px="md" pt="md">
+                <TextInput
+                  placeholder="Search by order ID or customer name..."
+                  leftSection={<IconSearch size={16} />}
+                  rightSection={
+                    searchQuery ? (
+                      <ActionIcon
+                        variant="subtle"
+                        onClick={() => setSearchQuery("")}
+                      >
+                        <IconX size={16} />
+                      </ActionIcon>
+                    ) : null
+                  }
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.currentTarget.value)}
+                />
+              </Box>
 
               <Tabs.Panel value="active" p="md">
                 {isLoading ? (
@@ -290,7 +337,7 @@ export default function CashierOrdersPage() {
                   </Center>
                 ) : (
                   <OrdersTable
-                    data={activeOrders}
+                    data={filteredActiveOrders}
                     onCollect={handleCollect}
                     collectLoading={markCollectedMutation.isPending}
                   />
@@ -303,7 +350,7 @@ export default function CashierOrdersPage() {
                     <Loader />
                   </Center>
                 ) : (
-                  <OrdersTable data={collectedOrders} />
+                  <OrdersTable data={filteredCollectedOrders} />
                 )}
               </Tabs.Panel>
             </Tabs>

@@ -388,6 +388,18 @@ export const walletApi = {
 
 
 export const api = {
+  get: <T>(endpoint: string) => fetcher<T>(endpoint, { method: "GET" }),
+  post: <T>(endpoint: string, body?: any) =>
+    fetcher<T>(endpoint, {
+      method: "POST",
+      body: body ? JSON.stringify(body) : undefined,
+    }),
+  patch: <T>(endpoint: string, body?: any) =>
+    fetcher<T>(endpoint, {
+      method: "PATCH",
+      body: body ? JSON.stringify(body) : undefined,
+    }),
+  delete: <T>(endpoint: string) => fetcher<T>(endpoint, { method: "DELETE" }),
   login: authApi.login,
   logout: () => {
     localStorage.removeItem("token");
