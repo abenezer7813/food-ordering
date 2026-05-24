@@ -15,19 +15,21 @@ class LoungesScreen extends ConsumerWidget {
     final loungesAsync = ref.watch(loungesProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.scaffoldBackground,
+      backgroundColor: AppColors.mainBg,
       appBar: AppBar(
-        backgroundColor: AppColors.primaryBlue,
+        backgroundColor: AppColors.mainBg,
+        elevation: 0.6,
         title: const Text(
           'Lounges',
-          style: TextStyle(color: AppColors.textLight),
+          style: TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.bold),
+
         ),
         actions: [],
       ),
       drawer: _AppDrawer(),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: 0,
-        selectedItemColor: AppColors.primaryBlue,
+        selectedItemColor: AppColors.accent,
         unselectedItemColor: AppColors.textSecondary,
         onTap: (index) {
           if (index == 0) context.go('/lounges');
@@ -79,7 +81,7 @@ class LoungesScreen extends ConsumerWidget {
                     style: TextStyle(color: Colors.white),
                   ),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primaryBlue,
+                    backgroundColor: AppColors.accent,
                     padding: const EdgeInsets.symmetric(
                       horizontal: 30,
                       vertical: 12,
@@ -103,11 +105,11 @@ class LoungesScreen extends ConsumerWidget {
                   extra: {'lounge': lounge, 'isNonCafe': false},
                 ),
                 child: Container(
-                  margin: const EdgeInsets.only(bottom: 16),
+                  margin: const EdgeInsets.only(bottom: 10),
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
                     color: AppColors.textLight,
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(10),
                   ),
                   child: Row(
                     children: [
@@ -115,12 +117,12 @@ class LoungesScreen extends ConsumerWidget {
                         width: 50,
                         height: 50,
                         decoration: BoxDecoration(
-                          color: AppColors.primaryBlue.withOpacity(0.1),
+                          color: AppColors.accent.withOpacity(0.1),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: const Icon(
                           Icons.restaurant,
-                          color: AppColors.primaryBlue,
+                          color: AppColors.accent,
                         ),
                       ),
                       const SizedBox(width: 16),
@@ -164,7 +166,7 @@ class _AppDrawer extends ConsumerWidget {
             profileAsync.when(
               loading: () => Container(
                 width: double.infinity,
-                color: AppColors.primaryBlue,
+                color: AppColors.accent,
                 padding: const EdgeInsets.all(16),
                 child: const Center(
                   child: CircularProgressIndicator(color: Colors.white),
@@ -174,12 +176,12 @@ class _AppDrawer extends ConsumerWidget {
               error: (_, __) => Container(
                 width: double.infinity,
                 height: 150,
-                color: AppColors.primaryBlue,
+                color: AppColors.accent,
               ),
 
               data: (profile) => Container(
                 width: double.infinity,
-                color: AppColors.primaryBlue,
+                color: AppColors.accent,
                 padding: const EdgeInsets.all(16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -191,7 +193,7 @@ class _AppDrawer extends ConsumerWidget {
                         '${profile['first_name'][0]}${profile['last_name'][0]}'
                             .toUpperCase(),
                         style: const TextStyle(
-                          color: AppColors.primaryBlue,
+                          color: AppColors.accent,
                           fontSize: 22,
                           fontWeight: FontWeight.bold,
                         ),
@@ -223,7 +225,7 @@ class _AppDrawer extends ConsumerWidget {
 
             // Menu items
             ListTile(
-              leading: const Icon(Icons.edit, color: AppColors.primaryBlue),
+              leading: const Icon(Icons.edit, color: AppColors.accent),
               title: const Text('Edit Profile'),
               onTap: () {
                 Navigator.pop(context);
@@ -233,7 +235,7 @@ class _AppDrawer extends ConsumerWidget {
             ListTile(
               leading: const Icon(
                 Icons.lock_outline,
-                color: AppColors.primaryBlue,
+                color: AppColors.accent,
               ),
               title: const Text('Change Password'),
               onTap: () {
@@ -244,7 +246,7 @@ class _AppDrawer extends ConsumerWidget {
             ListTile(
               leading: const Icon(
                 Icons.help_outline,
-                color: AppColors.primaryBlue,
+                color: AppColors.accent,
               ),
               title: const Text('FAQ'),
               onTap: () {
@@ -256,7 +258,7 @@ class _AppDrawer extends ConsumerWidget {
             ListTile(
               leading: const Icon(
                 Icons.info_outline,
-                color: AppColors.primaryBlue,
+                color: AppColors.accent,
               ),
               title: const Text('About Us'),
               onTap: () {
