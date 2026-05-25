@@ -134,14 +134,6 @@ export async function updateDeviceToken(customerId: string, deviceToken: string)
 }
 
 
-
-
-
-
-
-
-
-
 export async function updateCustomerProfile(
   customerId: string,
   data: {

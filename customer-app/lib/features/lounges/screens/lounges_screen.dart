@@ -21,8 +21,10 @@ class LoungesScreen extends ConsumerWidget {
         elevation: 0.6,
         title: const Text(
           'Lounges',
-          style: TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.bold),
-
+          style: TextStyle(
+            color: AppColors.textPrimary,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         actions: [],
       ),
@@ -173,7 +175,7 @@ class _AppDrawer extends ConsumerWidget {
                 ),
               ),
 
-              error: (_, __) => Container(
+              error: (_, _) => Container(
                 width: double.infinity,
                 height: 150,
                 color: AppColors.accent,
@@ -233,10 +235,7 @@ class _AppDrawer extends ConsumerWidget {
               },
             ),
             ListTile(
-              leading: const Icon(
-                Icons.lock_outline,
-                color: AppColors.accent,
-              ),
+              leading: const Icon(Icons.lock_outline, color: AppColors.accent),
               title: const Text('Change Password'),
               onTap: () {
                 Navigator.pop(context);
@@ -244,10 +243,7 @@ class _AppDrawer extends ConsumerWidget {
               },
             ),
             ListTile(
-              leading: const Icon(
-                Icons.help_outline,
-                color: AppColors.accent,
-              ),
+              leading: const Icon(Icons.help_outline, color: AppColors.accent),
               title: const Text('FAQ'),
               onTap: () {
                 Navigator.pop(context);
@@ -256,10 +252,7 @@ class _AppDrawer extends ConsumerWidget {
             ),
 
             ListTile(
-              leading: const Icon(
-                Icons.info_outline,
-                color: AppColors.accent,
-              ),
+              leading: const Icon(Icons.info_outline, color: AppColors.accent),
               title: const Text('About Us'),
               onTap: () {
                 Navigator.pop(context);
