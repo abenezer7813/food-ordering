@@ -72,6 +72,19 @@ export function useVerifyAdminOtp() {
     },
   });
 }
+export function useResendAdminOtp() {
+  return useMutation({
+    mutationFn: ({ email }: { email: string }) =>
+      authApi.resendAdminOtp(email),
+    onSuccess: () => {
+      notifySuccess("OTP resent successfully. Please check your email.");
+    },
+    onError: (error: Error) => {
+      notifyError(error.message || "Failed to resend OTP");
+    },
+  });
+}
+
 export function useForgotPassword() {
   return useMutation({
     mutationFn: ({ email }: { email: string }) =>
