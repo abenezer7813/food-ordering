@@ -19,7 +19,7 @@ class FeedbackService {
         'comment': comment,
       });
     } on DioException catch (e) {
-      throw e.response?.data['message'] ?? 'Failed to submit feedback';
+      throw e.response?.data['error'] ?? e.response?.data['message'] ?? 'Failed to submit feedback';
     }
   }
 }

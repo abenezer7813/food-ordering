@@ -12,7 +12,7 @@ class OrderService {
       final List data = response.data['orders'];
       return data.map((json) => Order.fromJson(json)).toList();
     } on DioException catch (e) {
-      throw e.response?.data['message'] ?? 'Failed to fetch orders';
+      throw e.response?.data['error'] ?? e.response?.data['message'] ?? 'Failed to fetch orders';
     }
   }
 }
