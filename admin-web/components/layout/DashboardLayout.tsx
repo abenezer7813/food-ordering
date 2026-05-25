@@ -42,6 +42,8 @@ import { useLogout } from "@/hooks/queries/useAuth";
 import { useMyLounge, useMyLounges } from "@/hooks/queries/useStaff";
 import { useTopUpRequests } from "@/hooks/queries/useWallet";
 import { useActiveLoungeStore } from "@/lib/active-lounge-store";
+import { LanguageSwitcher } from "@/components/shared/LanguageSwitcher";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -54,6 +56,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   const pathname = usePathname();
   const { user } = useAuthStore();
   const logoutMutation = useLogout();
+  const { t } = useTranslation();
 
   const role = user?.role;
   const showLounge = ["cashier", "cook", "lounge_manager"].includes(role ?? "");
@@ -112,32 +115,32 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     const commonItems = [
       {
         icon: IconLayoutDashboard,
-        label: "Dashboard",
+        label: t("nav.dashboard"),
         href: `/dashboard/${getRolePath(role || "")}`,
       },
     ];
 
     const roleBasedItems: Record<string, any[]> = {
       super_admin: [
-        { icon: IconBuildingStore, label: "Lounges", href: "/dashboard/super-admin/lounges" },
-        { icon: IconUsers, label: "Managers", href: "/dashboard/super-admin/managers" },
+        { icon: IconBuildingStore, label: t("nav.lounges"), href: "/dashboard/super-admin/lounges" },
+        { icon: IconUsers, label: t("nav.managers"), href: "/dashboard/super-admin/managers" },
       ],
       lounge_manager: [
-        { icon: IconMenuOrder, label: "Menu", href: "/dashboard/provider/menu" },
-        { icon: IconMessage, label: "Feedback", href: "/dashboard/provider/feedback" },
-        { icon: IconShoppingCart, label: "Orders", href: "/dashboard/provider/orders" },
-        { icon: IconUsers, label: "Staff", href: "/dashboard/provider/staff" },
-        { icon: IconWallet, label: "Top-up Requests", href: "/dashboard/provider/topup" },
-        { icon: IconReportAnalytics, label: "Reports", href: "/dashboard/provider/reports" },
+        { icon: IconMenuOrder, label: t("nav.menu"), href: "/dashboard/provider/menu" },
+        { icon: IconMessage, label: t("nav.feedback"), href: "/dashboard/provider/feedback" },
+        { icon: IconShoppingCart, label: t("nav.orders"), href: "/dashboard/provider/orders" },
+        { icon: IconUsers, label: t("nav.staff"), href: "/dashboard/provider/staff" },
+        { icon: IconWallet, label: t("nav.topup"), href: "/dashboard/provider/topup" },
+        { icon: IconReportAnalytics, label: t("nav.reports"), href: "/dashboard/provider/reports" },
       ],
       cashier: [
-        { icon: IconShoppingCart, label: "Orders", href: "/dashboard/cashier/orders" },
-        { icon: IconMenuOrder, label: "Menu", href: "/dashboard/cashier/menu" },
-        { icon: IconWallet, label: "Top-up Requests", href: "/dashboard/cashier/topup" },
-        { icon: IconReportAnalytics, label: "Reports", href: "/dashboard/cashier/reports" },
+        { icon: IconShoppingCart, label: t("nav.orders"), href: "/dashboard/cashier/orders" },
+        { icon: IconMenuOrder, label: t("nav.menu"), href: "/dashboard/cashier/menu" },
+        { icon: IconWallet, label: t("nav.topup"), href: "/dashboard/cashier/topup" },
+        { icon: IconReportAnalytics, label: t("nav.reports"), href: "/dashboard/cashier/reports" },
       ],
       cook: [
-        { icon: IconShoppingCart, label: "Orders", href: "/dashboard/cook/orders" },
+        { icon: IconShoppingCart, label: t("nav.orders"), href: "/dashboard/cook/orders" },
       ],
     };
 
@@ -186,7 +189,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             {/* Lounge switcher for managers */}
             {isManager && myLounges && myLounges.length > 0 && (
               <Select
-                placeholder="Select lounge"
+                placeholder={t("header.selectLounge")}
                 data={myLounges.map((l) => ({ value: l.id, label: l.name }))}
                 value={activeLoungeId}
                 onChange={(value) => {
@@ -205,8 +208,11 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             )}
           </Group>
 
-          {/* Right: dark mode + notification bell + user menu */}
+          {/* Right: language switcher + dark mode + notification bell + user menu */}
           <Group gap="sm">
+            {/* Language switcher */}
+            <LanguageSwitcher />
+
             {/* Dark/light toggle */}
             <ActionIcon
               variant="default"
@@ -221,8 +227,8 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
               <Tooltip
                 label={
                   pendingCount > 0
-                    ? `${pendingCount} top-up request${pendingCount > 1 ? "s" : ""} pending`
-                    : "No pending top-up requests"
+                    ? `${pendingCount} ${pendingCount > 1 ? t("header.notifications.pendingPlural") : t("header.notifications.pending")}`
+                    : t("header.notifications.none")
                 }
               >
                 <Indicator
@@ -266,12 +272,12 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
               </Menu.Target>
 
               <Menu.Dropdown>
-                <Menu.Label>Account</Menu.Label>
+                <Menu.Label>{t("header.account")}</Menu.Label>
                 <Menu.Item
                   leftSection={<IconSettings size={16} />}
                   onClick={() => router.push("/dashboard/settings")}
                 >
-                  Settings
+                  {t("header.settings")}
                 </Menu.Item>
                 <Menu.Divider />
                 <Menu.Item
@@ -280,7 +286,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                   onClick={handleLogout}
                   disabled={logoutMutation.isPending}
                 >
-                  {logoutMutation.isPending ? "Logging out..." : "Logout"}
+                  {logoutMutation.isPending ? t("header.loggingOut") : t("header.logout")}
                 </Menu.Item>
               </Menu.Dropdown>
             </Menu>

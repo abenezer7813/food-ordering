@@ -1,0 +1,107 @@
+{
+  "nav": {
+    "dashboard": "Dashboard",
+    "lounges": "Lounges",
+    "managers": "Managers",
+    "menu": "Menu",
+    "orders": "Orders",
+    "staff": "Staff",
+    "topup": "Top-up Requests",
+    "reports": "Reports",
+    "feedback": "Feedback"
+  },
+  "header": {
+    "settings": "Settings",
+    "logout": "Logout",
+    "loggingOut": "Logging out...",
+    "account": "Account",
+    "selectLounge": "Select lounge",
+    "notifications": {
+      "pending": "top-up request pending",
+      "pendingPlural": "top-up requests pending",
+      "none": "No pending top-up requests"
+    }
+  },
+  "auth": {
+    "signIn": "Sign In",
+    "signOut": "Sign Out",
+    "email": "Email",
+    "password": "Password",
+    "forgotPassword": "Forgot password?",
+    "noAccount": "Don't have an account?",
+    "register": "Register"
+  },
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "add": "Add",
+    "search": "Search",
+    "loading": "Loading...",
+    "error": "Something went wrong",
+    "success": "Success",
+    "confirm": "Confirm",
+    "back": "Back",
+    "next": "Next",
+    "submit": "Submit",
+    "close": "Close",
+    "view": "View",
+    "status": "Status",
+    "actions": "Actions",
+    "name": "Name",
+    "email": "Email",
+    "phone": "Phone",
+    "address": "Address",
+    "date": "Date",
+    "total": "Total",
+    "price": "Price",
+    "quantity": "Quantity"
+  },
+  "dashboard": {
+    "welcome": "Welcome back",
+    "totalOrders": "Total Orders",
+    "totalRevenue": "Total Revenue",
+    "activeStaff": "Active Staff",
+    "pendingOrders": "Pending Orders"
+  },
+  "orders": {
+    "title": "Orders",
+    "pending": "Pending",
+    "preparing": "Preparing",
+    "ready": "Ready",
+    "delivered": "Delivered",
+    "cancelled": "Cancelled",
+    "orderNumber": "Order #",
+    "placedAt": "Placed at",
+    "items": "Items",
+    "noOrders": "No orders found"
+  },
+  "menu": {
+    "title": "Menu",
+    "addItem": "Add Item",
+    "itemName": "Item Name",
+    "description": "Description",
+    "category": "Category",
+    "available": "Available",
+    "unavailable": "Unavailable",
+    "noItems": "No menu items found"
+  },
+  "topup": {
+    "title": "Top-up Requests",
+    "approve": "Approve",
+    "reject": "Reject",
+    "pending": "Pending",
+    "approved": "Approved",
+    "rejected": "Rejected",
+    "amount": "Amount",
+    "method": "Payment Method",
+    "requestedBy": "Requested By",
+    "noRequests": "No top-up requests"
+  },
+  "language": {
+    "label": "Language",
+    "english": "English",
+    "amharic": "አማርኛ"
+  }
+}

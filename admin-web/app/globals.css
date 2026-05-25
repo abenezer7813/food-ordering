@@ -23,3 +23,20 @@ body {
   /* Let Mantine control text color — avoid overriding its color tokens */
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* ── Ge'ez / Ethiopic script typography ─────────────────────────────────────
+   Applied via the .font-ethiopic utility class on any element containing
+   Amharic text. Noto Sans Ethiopic is loaded above; system fallbacks cover
+   older environments.
+   - font-size bump: Ethiopic glyphs are visually smaller at the same px size
+   - line-height: Ethiopic has taller ascenders/descenders than Latin
+   - letter-spacing: reset to normal — Ethiopic is an abugida, not alphabetic
+   ─────────────────────────────────────────────────────────────────────────── */
+.font-ethiopic,
+:lang(am) {
+  font-family: "Noto Sans Ethiopic", "Ethiopic", "Nyala", "Kefa",
+    "Abyssinica SIL", sans-serif;
+  font-size: 1em;
+  line-height: 1.6;
+  letter-spacing: 0;
+}
