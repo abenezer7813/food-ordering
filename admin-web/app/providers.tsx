@@ -9,6 +9,7 @@ import {
 import { Notifications } from "@mantine/notifications";
 import { ModalsProvider } from "@mantine/modals";
 import { queryClient } from "@/lib/query-client";
+import { LocaleSync } from "@/components/shared/LocaleSync";
 import "@mantine/core/styles.css";
 import "@mantine/notifications/styles.css";
 
@@ -27,6 +28,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
     <MantineProvider theme={theme} colorSchemeManager={colorSchemeManager}>
       <ModalsProvider>
         <Notifications position="bottom-right" />
+        <LocaleSync />
         <QueryClientProvider client={queryClient}>
           {children}
           <ReactQueryDevtools initialIsOpen={false} />

@@ -6,7 +6,8 @@ import  jwt  from "jsonwebtoken";
 import { AppError, Errors } from "../utils/errors.js";
 import { storeOTP, verifyOTP } from '../utils/otp.js'
 import { sendOTPEmail } from '../utils/email.js'
-import { bytes } from "drizzle-orm/gel-core";
+import { OAuth2Client } from 'google-auth-library'
+
 export async function loginStaff(email:string,password:string){
     
     const user = await db.query.users.findFirst({
@@ -132,14 +133,6 @@ export async function updateDeviceToken(customerId: string, deviceToken: string)
     .set({ device_token: deviceToken })
     .where(eq(customers.id, customerId))
 }
-
-
-
-
-
-
-
-
 
 
 export async function updateCustomerProfile(
@@ -278,4 +271,57 @@ export async function changeStaffPassword(staffId: string, new_password: string)
       is_first_login: false,   
     })
     .where(eq(users.id, staffId))
+}
+
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID)
+
+export async function googleAuth(idToken: string, device_token?: string) {
+  // 1. Verify the idToken
+  const ticket = await googleClient.verifyIdToken({
+    idToken,
+    audience: process.env.GOOGLE_CLIENT_ID,
+  })
+
+  const payload = ticket.getPayload()
+  if (!payload || !payload.email) {
+    throw Errors.badRequest('Invalid Google token')
+  }
+
+  const { email, given_name, family_name } = payload
+
+  // 2. Check if customer already exists by email
+  const existing = await db.query.customers.findFirst({
+    where: eq(customers.email, email)
+  })
+
+  if (existing) {
+    // 3a. Already registered — just return a JWT
+    const token = jwt.sign(
+      { id: existing.id, role: 'customer' },
+      process.env.JWT_SECRET!,
+      { expiresIn: '7d' }
+    )
+    const { password: _, ...customerWithoutPassword } = existing
+    return { token, customer: customerWithoutPassword }
+  }
+
+  // 3b. New customer — create account
+  const [newCustomer] = await db.insert(customers).values({
+    first_name:          given_name ?? email.split('@')[0],
+    last_name:           family_name ?? '',
+    email,
+    password:            null,
+    registration_method: 'google',
+    device_token:        device_token ?? null,
+    is_verified:         true,
+  }).returning()
+
+  const token = jwt.sign(
+    { id: newCustomer.id, role: 'customer' },
+    process.env.JWT_SECRET!,
+    { expiresIn: '7d' }
+  )
+
+  const { password: _, ...customerWithoutPassword } = newCustomer
+  return { token, customer: customerWithoutPassword }
 }

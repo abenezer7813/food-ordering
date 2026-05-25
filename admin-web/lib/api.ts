@@ -1,5 +1,5 @@
-//const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL_LOCAL|| "http://localhost:4001";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
+//const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL_LOCAL|| "http://localhost:4001";
 
 // Helper to get token
 const getToken = (): string | null => {

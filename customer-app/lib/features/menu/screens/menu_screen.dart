@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:food_ordering_app/features/auth/widgets/input_fields.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/utils/cache_manager.dart';
@@ -180,21 +179,22 @@ class MenuScreen extends ConsumerWidget {
     children: [
       Row( 
         children: [
-TextField(
-        controller: TextEditingController(),
-        decoration: InputDecoration(
-          hintText: 'Search foodt...',
-          prefixIcon: const Icon(Icons.search, color: Colors.grey),
-          filled: true,
-          fillColor: Colors.white,
-          contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 16),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(30),
-            borderSide: BorderSide.none,
+          Expanded(
+            child: TextField(
+              controller: TextEditingController(),
+              decoration: InputDecoration(
+                hintText: 'Search foodt...',
+                prefixIcon: const Icon(Icons.search, color: Colors.grey),
+                filled: true,
+                fillColor: Colors.white,
+                contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 16),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(30),
+                  borderSide: BorderSide.none,
+                ),
+              ),
+            ),
           ),
-        ),
-      ),
-   
         ]),
         //Search bar
       
@@ -229,7 +229,7 @@ TextField(
                     crossAxisCount: 2,
                     crossAxisSpacing: 10,
                     mainAxisSpacing: 10,
-                    childAspectRatio: 0.61,
+                    childAspectRatio: 0.53,
                   ),
                   itemCount: items.length,
                   itemBuilder: (context, index) {
@@ -290,7 +290,7 @@ class _MenuItemCard extends ConsumerWidget {
         child: item.imageUrl != null
             ? CachedNetworkImage(
                 imageUrl: item.imageUrl!,
-                height: 130,
+                height: 110,
                 width: double.infinity,
                 fit: BoxFit.cover,
                 placeholder: (context, url) =>

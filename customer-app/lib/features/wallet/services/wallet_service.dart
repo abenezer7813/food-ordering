@@ -26,11 +26,15 @@ class WalletService {
     }
   }
 
-  Future<Map<String, dynamic>> topUpWallet(String loungeId, double amount) async {
+  Future<Map<String, dynamic>> topUpWallet(
+    String loungeId,
+    double amount,
+  ) async {
     try {
-      final response = await _dio.post('/wallet/$loungeId/topup', data: {
-        'amount': amount,
-      });
+      final response = await _dio.post(
+        '/wallet/$loungeId/topup',
+        data: {'amount': amount},
+      );
       return {
         'payment_url': response.data['payment_url'],
         'tx_ref': response.data['tx_ref'],
@@ -50,9 +54,10 @@ class WalletService {
 
   Future<Map<String, dynamic>> registerNonCafe(String loungeId) async {
     try {
-      final response = await _dio.post('/wallet/register', data: {
-        'lounge_id': loungeId,
-      });
+      final response = await _dio.post(
+        '/wallet/register',
+        data: {'lounge_id': loungeId},
+      );
       return response.data['wallet'];
     } on DioException catch (e) {
       throw e.response?.data['message'] ?? 'Failed to register as non-café';
@@ -66,11 +71,14 @@ class WalletService {
     String? receiptImageUrl,
   }) async {
     try {
-      final response = await _dio.post('/wallet/$loungeId/topup-request', data: {
-        'amount': amount,
-        'payment_method': paymentMethod,
-        if (receiptImageUrl != null) 'receipt_image_url': receiptImageUrl,
-      });
+      final response = await _dio.post(
+        '/wallet/$loungeId/topup-request',
+        data: {
+          'amount': amount,
+          'payment_method': paymentMethod,
+          'receipt_image_url': ?receiptImageUrl,
+        },
+      );
       return response.data['request'];
     } on DioException catch (e) {
       throw e.response?.data['message'] ?? 'Failed to submit top up request';
