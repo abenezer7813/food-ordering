@@ -209,7 +209,7 @@ export default function ManagerReportsPage() {
                 <DatePickerInput
                   placeholder="Pick a date"
                   value={date}
-                  onChange={setDate}
+                  onChange={(val) => setDate(val ? new Date(val) : null)}
                   clearable
                   leftSection={<IconCalendar size={16} />}
                   w={200}
