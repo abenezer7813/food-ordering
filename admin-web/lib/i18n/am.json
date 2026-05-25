@@ -1,0 +1,107 @@
+{
+  "nav": {
+    "dashboard": "ዳሽቦርድ",
+    "lounges": "ሎውንጆች",
+    "managers": "አስተዳዳሪዎች",
+    "menu": "ምናሌ",
+    "orders": "ትዕዛዞች",
+    "staff": "ሰራተኞች",
+    "topup": "የቅድሚያ ክፍያ ጥያቄዎች",
+    "reports": "ሪፖርቶች",
+    "feedback": "አስተያየት"
+  },
+  "header": {
+    "settings": "ቅንብሮች",
+    "logout": "ውጣ",
+    "loggingOut": "እየወጣ ነው...",
+    "account": "መለያ",
+    "selectLounge": "ሎውንጅ ይምረጡ",
+    "notifications": {
+      "pending": "የቅድሚያ ክፍያ ጥያቄ በመጠባበቅ ላይ",
+      "pendingPlural": "የቅድሚያ ክፍያ ጥያቄዎች በመጠባበቅ ላይ",
+      "none": "ምንም ጥያቄ የለም"
+    }
+  },
+  "auth": {
+    "signIn": "ግባ",
+    "signOut": "ውጣ",
+    "email": "ኢሜይል",
+    "password": "የይለፍ ቃል",
+    "forgotPassword": "የይለፍ ቃልዎን ረሱ?",
+    "noAccount": "መለያ የለዎትም?",
+    "register": "ይመዝገቡ"
+  },
+  "common": {
+    "save": "አስቀምጥ",
+    "cancel": "ሰርዝ",
+    "delete": "አጥፋ",
+    "edit": "አርትዕ",
+    "add": "ጨምር",
+    "search": "ፈልግ",
+    "loading": "እየጫነ ነው...",
+    "error": "ስህተት ተፈጥሯል",
+    "success": "ተሳክቷል",
+    "confirm": "አረጋግጥ",
+    "back": "ተመለስ",
+    "next": "ቀጣይ",
+    "submit": "አስገባ",
+    "close": "ዝጋ",
+    "view": "ይመልከቱ",
+    "status": "ሁኔታ",
+    "actions": "ድርጊቶች",
+    "name": "ስም",
+    "email": "ኢሜይል",
+    "phone": "ስልክ",
+    "address": "አድራሻ",
+    "date": "ቀን",
+    "total": "ጠቅላላ",
+    "price": "ዋጋ",
+    "quantity": "ብዛት"
+  },
+  "dashboard": {
+    "welcome": "እንኳን ደህና መጡ",
+    "totalOrders": "ጠቅላላ ትዕዛዞች",
+    "totalRevenue": "ጠቅላላ ገቢ",
+    "activeStaff": "ንቁ ሰራተኞች",
+    "pendingOrders": "በመጠባበቅ ላይ ያሉ ትዕዛዞች"
+  },
+  "orders": {
+    "title": "ትዕዛዞች",
+    "pending": "በመጠባበቅ ላይ",
+    "preparing": "እየተዘጋጀ ነው",
+    "ready": "ዝግጁ",
+    "delivered": "ተደርሷል",
+    "cancelled": "ተሰርዟል",
+    "orderNumber": "ትዕዛዝ #",
+    "placedAt": "የቀረበበት ጊዜ",
+    "items": "ዕቃዎች",
+    "noOrders": "ምንም ትዕዛዝ አልተገኘም"
+  },
+  "menu": {
+    "title": "ምናሌ",
+    "addItem": "ዕቃ ጨምር",
+    "itemName": "የዕቃ ስም",
+    "description": "መግለጫ",
+    "category": "ምድብ",
+    "available": "ይገኛል",
+    "unavailable": "አይገኝም",
+    "noItems": "ምንም የምናሌ ዕቃ አልተገኘም"
+  },
+  "topup": {
+    "title": "የቅድሚያ ክፍያ ጥያቄዎች",
+    "approve": "ፍቀድ",
+    "reject": "ውድቅ አድርግ",
+    "pending": "በመጠባበቅ ላይ",
+    "approved": "ፀድቋል",
+    "rejected": "ውድቅ ሆኗል",
+    "amount": "መጠን",
+    "method": "የክፍያ ዘዴ",
+    "requestedBy": "የጠየቀው",
+    "noRequests": "ምንም ጥያቄ የለም"
+  },
+  "language": {
+    "label": "ቋንቋ",
+    "english": "English",
+    "amharic": "አማርኛ"
+  }
+}
