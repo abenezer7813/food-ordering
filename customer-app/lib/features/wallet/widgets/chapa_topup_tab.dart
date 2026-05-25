@@ -86,7 +86,7 @@ class _ChapaTopUpTabState extends ConsumerState<ChapaTopUpTab> {
                 ElevatedButton(
                   onPressed: () => Navigator.pop(context, true),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primaryBlue,
+                    backgroundColor: AppColors.accent,
                   ),
                   child: const Text('Yes, Verify',
                       style: TextStyle(color: Colors.white)),
@@ -134,9 +134,9 @@ class _ChapaTopUpTabState extends ConsumerState<ChapaTopUpTab> {
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   decoration: BoxDecoration(
-                    color: AppColors.primaryBlue.withOpacity(0.1),
+                    color: AppColors.accent.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: AppColors.primaryBlue.withOpacity(0.3)),
+                    border: Border.all(color: AppColors.accent.withOpacity(0.3)),
                   ),
                   child: Text(
                     'ETB $amount',
@@ -160,7 +160,7 @@ class _ChapaTopUpTabState extends ConsumerState<ChapaTopUpTab> {
               controller: _amountController,
               keyboardType: TextInputType.number,
               decoration: const InputDecoration(
-                prefixIcon: Icon(Icons.attach_money, color: AppColors.primaryBlue),
+                prefixIcon: Icon(Icons.attach_money, color: AppColors.accent),
                 hintText: 'Enter custom amount',
                 border: InputBorder.none,
                 contentPadding: EdgeInsets.symmetric(vertical: 15),
@@ -173,7 +173,7 @@ class _ChapaTopUpTabState extends ConsumerState<ChapaTopUpTab> {
             child: ElevatedButton(
               onPressed: _isLoading ? null : _topUp,
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primaryBlue,
+                backgroundColor: AppColors.accent,
                 padding: const EdgeInsets.symmetric(vertical: 15),
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(30)),
