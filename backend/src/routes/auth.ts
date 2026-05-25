@@ -1,9 +1,9 @@
-import { zValidator } from "@hono/zod-validator";
+import { zValidator } from "../utils/validator.js";
 import { Hono } from "hono";
 import z from "zod";
 import bcrypt from "bcryptjs";
 import { changePassword, changeStaffPassword, customerRegistration, getCustomerProfile, googleAuth, loginCustomer, loginStaff, requestCustomerPasswordReset, requestStaffPasswordReset, resetCustomerPassword, resetStaffPassword, updateCustomerProfile, updateDeviceToken, verifyAdminOtp, verifyUser } from "../services/auth.service.js";
-import { handleError } from "../utils/errors.js";
+import { AppError, handleError } from "../utils/errors.js";
 import { storeOTP, verifyOTP } from "../utils/otp.js";
 import { tr } from "zod/locales";
 import { authMiddleware, requireRole } from "../middleware/auth.js";
@@ -42,21 +42,22 @@ const otpVerificationSchema = z.object({
 })
 authRoutes.post("/staff/login", zValidator('json', staffLoginSchema),
   async (c) => {
-    const { email, password } = c.req.valid('json')
-    const result = await loginStaff(email, password)
-    if (!result) {
-      return c.json({ error: 'Invalid email or password' }, 401)
+    try {
+      const { email, password } = c.req.valid('json')
+      const result = await loginStaff(email, password)
+      if (!result) {
+        throw new AppError('Invalid email or password', 401)
+      }
+
+      if ('requiresOtp' in result) {
+        return c.json({ requiresOtp: true, email: result.email }, 200)
+      }
+
+      return c.json({ token: result.token, user: result.user })
+    } catch (e) {
+      return handleError(e, c)
     }
-
-    if ('requiresOtp' in result) {
-      return c.json({ requiresOtp: true, email: result.email }, 200)
-    }
-
-
-    return c.json({ token: result.token, user: result.user })
   }
-
-
 )
 
 authRoutes.post('/customer/register',
@@ -358,14 +359,14 @@ authRoutes.patch('/change-password',
       })
 
       if (!user) {
-        return c.json({ error: 'User not found' }, 404)
+        throw new AppError('User not found', 404)
       }
 
       // Verify current password
       const isValid = await bcrypt.compare(current_password, user.password)
 
       if (!isValid) {
-        return c.json({ error: 'Current password is incorrect' }, 401)
+        throw new AppError('Current password is incorrect', 401)
       }
 
       // Hash new password

@@ -2,8 +2,8 @@ import { Hono } from "hono";
 import { balanceTopUp, cashierApproveTopUp, createTopUpRequest, getCustomerTopUpRequests, getNonCafeUser, getTopUpRequests, getTransactionHistory, getWalletBalance, managerApproveTopUp, nonCafeRegistration, rejectTopUpRequest, verifyTopUp } from "../services/wallet.service.js";
 import z, { string } from "zod";
 import { authMiddleware, requireRole } from "../middleware/auth.js";
-import { zValidator } from "@hono/zod-validator";
-import { Errors, handleError } from "../utils/errors.js";
+import { zValidator } from "../utils/validator.js";
+import { Errors, AppError, handleError } from "../utils/errors.js";
 
 type Variables = {
   userId: string
@@ -13,16 +13,19 @@ walletRoutes.use('*',authMiddleware)
 
 walletRoutes.get('/customers/non-cafe/status',
   requireRole('customer'),async(c)=>{
+    try {
+      const customerId = c.get('userId')  as string
+      const loungeId = c.req.query('lounge_id')
 
-    const customerId = c.get('userId')  as string
-  const loungeId = c.req.query('lounge_id')
+      if (!loungeId) {
+        throw new AppError('lounge_id is required', 400)
+      }
 
-  if (!loungeId) {
-    return c.json({ message: 'lounge_id is required' }, 400)
-  }
-
-  const isNonCafe = await getNonCafeUser(customerId, loungeId)
-  return c.json({ is_non_cafe: isNonCafe })
+      const isNonCafe = await getNonCafeUser(customerId, loungeId)
+      return c.json({ is_non_cafe: isNonCafe })
+    } catch (e) {
+      return handleError(e, c)
+    }
   }
 )
 walletRoutes.post('/register',

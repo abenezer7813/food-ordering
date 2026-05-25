@@ -10,6 +10,7 @@ import { walletRoutes } from './routes/wallet.js'
 import { reportRoutes } from './routes/report.js'
 import { feedbackRoutes } from './routes/feedback.js'
 import { cors } from 'hono/cors'
+import { handleError } from './utils/errors.js'
 
 const app = new Hono()
 app.use( 
@@ -20,6 +21,11 @@ app.use(
     credentials: true,
   })
 );
+
+app.onError((err, c) => {
+  return handleError(err, c)
+})
+
 app.get('/', (c) => {
   return c.json({ 'message': 'Hello Hono!' })
 })

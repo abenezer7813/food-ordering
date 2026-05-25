@@ -4,7 +4,7 @@ import { createMenuItem, getAllMenuItems, getCashierLounge, getMenuItems, update
 import { handleError } from "../utils/errors.js";
 import { getManagerLounge } from "./staff.js";
 import z from "zod";
-import { zValidator } from "@hono/zod-validator";
+import { zValidator } from "../utils/validator.js";
 
 type Variables = {
     userId: string
@@ -100,10 +100,14 @@ menuRoutes.patch('/:id',
     requireRole('cashier', 'lounge_manager'),
     zValidator('json', updateMenuItemSchema),
     async (c) => {
-        const menuItemId = c.req.param('id')
-        const data = c.req.valid('json')
-        const updatedMenu = await updateMenuItem({ ...data, price: data.price.toString(), }, menuItemId)
-        return c.json({ updatedMenu })
+        try {
+            const menuItemId = c.req.param('id')
+            const data = c.req.valid('json')
+            const updatedMenu = await updateMenuItem({ ...data, price: data.price.toString(), }, menuItemId)
+            return c.json({ updatedMenu })
+        } catch (e) {
+            return handleError(e, c)
+        }
     })
 
 //update availablity

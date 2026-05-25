@@ -3,7 +3,7 @@ import { verifyChapaPayment } from '../utils/chapa.js'
 import { db } from '../db/index.js'
 import { payments, orders, customers } from '../db/schema.js'
 import { eq } from 'drizzle-orm'
-import { handleError } from '../utils/errors.js'
+import { AppError, handleError } from '../utils/errors.js'
 import { authMiddleware } from '../middleware/auth.js'
 import { sendPushNotification } from '../utils/fcm.js'
 
@@ -19,14 +19,14 @@ paymentRoutes.post('/verify',
       // 1. Verify with Chapa
       const chapaData = await verifyChapaPayment(tx_ref)
       if (chapaData.status !== 'success') {
-        return c.json({ error: 'Payment not completed yet' }, 400)
+        throw new AppError('Payment not completed yet', 400)
       }
 
       // 2. Find payment by tx_ref
       const payment = await db.query.payments.findFirst({
         where: eq(payments.tx_ref, tx_ref)
       })
-      if (!payment) return c.json({ error: 'Payment not found' }, 404)
+      if (!payment) throw new AppError('Payment not found', 404)
 
       // 3. Update payment status
       await db.update(payments)
@@ -90,7 +90,7 @@ paymentRoutes.post('/webhook', async (c) => {
 
     return c.json({ message: 'Webhook received' })
   } catch (e) {
-    return c.json({ error: 'Webhook processing failed' }, 500)
+    return handleError(new AppError('Webhook processing failed', 500), c)
   }
 })
 

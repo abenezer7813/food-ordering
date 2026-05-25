@@ -1,8 +1,9 @@
-import { zValidator } from "@hono/zod-validator";
+import { zValidator } from "../utils/validator.js";
 import { Hono } from "hono";
 import z, { email } from "zod";
 import { requireRole, authMiddleware } from "../middleware/auth.js";
 import { createLounge, getAllLounges, createLoungeManager, assignLoungeManager, getAllLoungesForadmin, loungeStatus } from "../services/lounge.service.js";
+import { AppError, handleError } from "../utils/errors.js";
 
 
 
@@ -35,26 +36,33 @@ loungeRoutes.post('/',
       const lounge = await createLounge(name)
       return c.json({ lounge }, 201)
     } catch (e: any) {
-      return c.json({ e: e.message }, 400)
+      return handleError(e, c)
     }
   }
 )
 
 //get lounge 
 loungeRoutes.get('/', async (c) => {
-  const lounges = await getAllLounges()
-  return c.json({ lounges })
+  try {
+    const lounges = await getAllLounges()
+    return c.json({ lounges })
+  } catch (e) {
+    return handleError(e, c)
+  }
 })
 
 //get for admin
 loungeRoutes.get('/admin', 
-   requireRole('super_admin'),
-   async (c) => {
- 
-  const lounges = await getAllLoungesForadmin()
-  return c.json({ lounges })
-})
-
+  requireRole('super_admin'),
+  async (c) => {
+    try {
+      const lounges = await getAllLoungesForadmin()
+      return c.json({ lounges })
+    } catch (e) {
+      return handleError(e, c)
+    }
+  }
+)
 
 //create manager
 loungeRoutes.post('/managers',
@@ -64,15 +72,16 @@ loungeRoutes.post('/managers',
     try {
       const data = c.req.valid('json')
       const manager = await createLoungeManager(data)
-
       return c.json({ manager }, 201)
     } catch (e: any) {
-      return c.json({ e: e.message }, 400)
+      return handleError(e, c)
     }
-  })
+  }
+)
+
 //assign lounge manager
-loungeRoutes.patch('/:id/assign-manager'
-  , requireRole('super_admin'),
+loungeRoutes.patch('/:id/assign-manager',
+  requireRole('super_admin'),
   zValidator('json', assignManagerSchema),
   async (c) => {
     try {
@@ -80,24 +89,29 @@ loungeRoutes.patch('/:id/assign-manager'
       const { manager_id } = c.req.valid('json')
 
       if (!loungeId) {
-        return c.json({ error: "manager id is reuired" })
-
+        throw new AppError("Lounge id is required", 400)
       }
       const lounge = await assignLoungeManager(loungeId, manager_id)
       return c.json({ lounge })
     } catch (e: any) {
-      return c.json({ e: e.message }, 400)
+      return handleError(e, c)
     }
-  })
+  }
+)
+
 //deactivate lounge
 loungeRoutes.patch('/:id',
   requireRole('super_admin'),
   async (c) => {
-    const loungeId = c.req.param('id')
-    if (!loungeId) {
-      return c.json({ error: "Loinge id is required" }, 400)
+    try {
+      const loungeId = c.req.param('id')
+      if (!loungeId) {
+        throw new AppError("Lounge id is required", 400)
+      }
+      await loungeStatus(loungeId)
+      return c.json({ message: 'Lounge deactivated successfully' })
+    } catch (e) {
+      return handleError(e, c)
     }
-    await loungeStatus(loungeId)
-    return c.json({ message: 'Lounge deactivated successfully' })
   }
 )
