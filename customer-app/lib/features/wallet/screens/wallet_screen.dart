@@ -19,7 +19,7 @@ class WalletScreen extends ConsumerWidget {
     return Scaffold(
       backgroundColor: AppColors.scaffoldBackground,
       appBar: AppBar(
-        backgroundColor: AppColors.primaryBlue,
+        backgroundColor: AppColors.accent,
         title: const Text(
           'My Wallet',
           style: TextStyle(color: AppColors.textLight),
@@ -47,7 +47,7 @@ class WalletScreen extends ConsumerWidget {
                 icon: const Icon(Icons.refresh, color: Colors.white),
                 label: const Text('Retry', style: TextStyle(color: Colors.white)),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primaryBlue,
+                  backgroundColor: AppColors.accent,
                   padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
                 ),
@@ -70,7 +70,7 @@ class WalletScreen extends ConsumerWidget {
                   width: double.infinity,
                   padding: const EdgeInsets.all(30),
                   decoration: BoxDecoration(
-                    color: AppColors.primaryBlue,
+                    color: AppColors.accent,
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Column(
@@ -109,9 +109,9 @@ class WalletScreen extends ConsumerWidget {
                     child: Column(
                       children: [
                         TabBar(
-                          labelColor: AppColors.primaryBlue,
+                          labelColor: AppColors.accent,
                           unselectedLabelColor: AppColors.textSecondary,
-                          indicatorColor: AppColors.primaryBlue,
+                          indicatorColor: AppColors.accent,
                           tabs: const [
                             Tab(text: 'Chapa'),
                             Tab(text: 'Cash'),
