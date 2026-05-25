@@ -1,45 +1,45 @@
 import { and, eq } from "drizzle-orm";
 import { db } from "../db/index.js";
-import { menu_items,lounges,lounge_staff } from "../db/schema.js";
+import { menu_items, lounges, lounge_staff } from "../db/schema.js";
 import { Errors } from "../utils/errors.js";
 import type { MenuItem, NewMenuItem } from "../db/types.js";
 import { promise } from "zod";
 
 
-export async function getCashierLounge(cashierId:string) {
-    
+export async function getCashierLounge(cashierId: string) {
 
-const staffEntry = await db.query.lounge_staff.findFirst({
-  where: eq(lounge_staff.user_id, cashierId)
-})
-if (!staffEntry) throw new Error('No lounge assigned')
-return staffEntry.lounge_id
+
+    const staffEntry = await db.query.lounge_staff.findFirst({
+        where: eq(lounge_staff.user_id, cashierId)
+    })
+    if (!staffEntry) throw new Error('No lounge assigned')
+    return staffEntry.lounge_id
 }
 
 
-export async function getMenuItems(loungeId:string) {
+export async function getMenuItems(loungeId: string) {
 
-    const lounge=await db.query.lounges.findFirst({
-        where:eq(lounges.id,loungeId)
+    const lounge = await db.query.lounges.findFirst({
+        where: eq(lounges.id, loungeId)
     })
     if (!lounge) throw Errors.notFound("Lounge");
-    const menuItems=await db.query.menu_items.findMany({
-        where:and( eq(menu_items.lounge_id,loungeId),
-                eq(menu_items.is_available,true))
+    const menuItems = await db.query.menu_items.findMany({
+        where: and(eq(menu_items.lounge_id, loungeId),
+            eq(menu_items.is_available, true))
     })
     return menuItems
 
 }
 
 //this return all menu items including unavailable items for cashier
-export async function getAllMenuItems(loungeId:string) {
+export async function getAllMenuItems(loungeId: string) {
 
-    const lounge=await db.query.lounges.findFirst({
-        where:eq(lounges.id,loungeId)
+    const lounge = await db.query.lounges.findFirst({
+        where: eq(lounges.id, loungeId)
     })
     if (!lounge) throw Errors.notFound("Lounge");
-    const menuItems=await db.query.menu_items.findMany({
-        where: eq(menu_items.lounge_id,loungeId)           
+    const menuItems = await db.query.menu_items.findMany({
+        where: eq(menu_items.lounge_id, loungeId)
     })
     return menuItems
 
@@ -54,54 +54,56 @@ export async function createMenuItem(data: {
     category?: 'food' | 'drink' | null;
     meal_type?: 'breakfast' | 'lunch' | 'dinner' | 'all_day' | null;
     drink_type?: 'juice' | 'coffee' | 'tea' | 'water' | 'soda' | 'smoothie' | 'other' | null;
-},loungeId:string) {
-  const [item] = await db.insert(menu_items).values({
-    name:data.name,
-    lounge_id:loungeId,
-    price:data.price,
-    description:data.description,
-    estimated_preparation_time:data.estimated_preparation_time,
-    image_url:data.image_url,
-    is_available:true,
-    category: data.category ?? null,
-    meal_type: data.meal_type ?? null,
-    drink_type: data.drink_type ?? null,
-  }).returning()
-  return item
-}
-
-
-export async function updateMenuItem(data:{name:string,
-    description?:string|null|undefined,
-    price:string,
-    estimated_preparation_time:number,
-    image_url:string,
-    category?: 'food' | 'drink' | null;
-    meal_type?: 'breakfast' | 'lunch' | 'dinner' | 'all_day' | null;
-    drink_type?: 'juice' | 'coffee' | 'tea' | 'water' | 'soda' | 'smoothie' | 'other' | null;
-},menuItemId:string) {
-    const menuItem=await db.query.menu_items.findFirst({
-        where:eq(menu_items.id,menuItemId)
-    })
-    if(!menuItem) throw Errors.notFound('Menu item ')
-    const [updatedMenu]=await db.update(menu_items).set({
-        name:data.name,
-        description:data.description,
-        price:data.price,
-        estimated_preparation_time:data.estimated_preparation_time,
-        image_url:data.image_url,
+}, loungeId: string) {
+    const [item] = await db.insert(menu_items).values({
+        name: data.name,
+        lounge_id: loungeId,
+        price: data.price,
+        description: data.description,
+        estimated_preparation_time: data.estimated_preparation_time,
+        image_url: data.image_url,
+        is_available: true,
         category: data.category ?? null,
         meal_type: data.meal_type ?? null,
         drink_type: data.drink_type ?? null,
-    }).where(eq(menu_items.id,menuItemId)).returning()
+    }).returning()
+    return item
+}
+
+
+export async function updateMenuItem(data: {
+    name: string,
+    description?: string | null | undefined,
+    price: string,
+    estimated_preparation_time: number,
+    image_url?: string | null | undefined;
+    category?: 'food' | 'drink' | null;
+    meal_type?: 'breakfast' | 'lunch' | 'dinner' | 'all_day' | null;
+    drink_type?: 'juice' | 'coffee' | 'tea' | 'water' | 'soda' | 'smoothie' | 'other' | null;
+}, menuItemId: string) {
+    const menuItem = await db.query.menu_items.findFirst({
+        where: eq(menu_items.id, menuItemId)
+    })
+    if (!menuItem) throw Errors.notFound('Menu item ')
+    const [updatedMenu] = await db.update(menu_items).set({
+        name: data.name,
+        description: data.description,
+        price: data.price,
+        estimated_preparation_time: data.estimated_preparation_time,
+        image_url: data.image_url,
+        category: data.category ?? null,
+        meal_type: data.meal_type ?? null,
+        drink_type: data.drink_type ?? null,
+    }).where(eq(menu_items.id, menuItemId)).returning()
     return updatedMenu
 }
-export async function updateAvailablity(menuItemId:string) {
-     const menuItem=await db.query.menu_items.findFirst({
-        where:eq(menu_items.id,menuItemId)
+export async function updateAvailablity(menuItemId: string) {
+    const menuItem = await db.query.menu_items.findFirst({
+        where: eq(menu_items.id, menuItemId)
     })
-    if(!menuItem) throw Errors.notFound('Menu item ')
-  const [menu]=  await db.update(menu_items).set({
-is_available:!menuItem.is_available}).where(eq(menu_items.id,menuItemId)).returning()
-return menu
+    if (!menuItem) throw Errors.notFound('Menu item ')
+    const [menu] = await db.update(menu_items).set({
+        is_available: !menuItem.is_available
+    }).where(eq(menu_items.id, menuItemId)).returning()
+    return menu
 }
