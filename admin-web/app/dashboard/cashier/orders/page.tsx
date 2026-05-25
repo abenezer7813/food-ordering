@@ -89,8 +89,8 @@ function ExpandedItems({
                       {item.menu_item?.price
                         ? (parseFloat(item.menu_item.price) * item.quantity).toFixed(2)
                         : item.unit_price
-                        ? (parseFloat(item.unit_price) * item.quantity).toFixed(2)
-                        : "—"}{" "}
+                          ? (parseFloat(item.unit_price) * item.quantity).toFixed(2)
+                          : "—"}{" "}
                       ETB
                     </Table.Td>
                   </Table.Tr>
@@ -244,12 +244,12 @@ export default function CashierOrdersPage() {
   // Filter orders based on search query
   const filterOrders = (ordersList: Order[]) => {
     if (!searchQuery.trim()) return ordersList;
-    
+
     const query = searchQuery.toLowerCase();
     return ordersList.filter((order) => {
       const orderId = order.id.toLowerCase();
-      const customerName = order.customer_name?.toLowerCase() || "";
-      return orderId.includes(query) || customerName.includes(query);
+
+      return orderId.includes(query)
     });
   };
 

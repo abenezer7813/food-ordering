@@ -1,3 +1,10 @@
+import { clsx, type ClassValue } from "clsx";
+import { twMerge } from "tailwind-merge";
+
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+}
+
 export const getRoleDashboardPath = (role: string): string => {
   // Handle both snake_case and normal case
   const normalizedRole = role.toLowerCase().replace("_", "-");

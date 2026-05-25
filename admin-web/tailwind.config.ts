@@ -6,13 +6,11 @@ const config: Config = {
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
-  darkMode: ["attribute", '[data-mantine-color-scheme="dark"]'],
+  darkMode: ["selector", '[data-mantine-color-scheme="dark"]'],
   theme: {
     extend: {},
   },
   plugins: [],
-  // Don't purge Mantine classes
-  safelist: [],
 };
 
 export default config;

@@ -27,7 +27,7 @@ interface WalkInOrderDrawerProps {
 }
 
 export function WalkInOrderDrawer({ opened, onClose }: WalkInOrderDrawerProps) {
-  const { data: menuItems, isLoading: menuLoading } = useMenu("");
+  const { data: menuItems, isLoading: menuLoading } = useMenu();
   const createOrderMutation = useCreateWalkInOrder();
 
   const [orderItems, setOrderItems] = useState<

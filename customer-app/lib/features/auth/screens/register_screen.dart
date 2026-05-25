@@ -88,288 +88,302 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authProvider);
-return AnnotatedRegion<SystemUiOverlayStyle>(
-  value: const SystemUiOverlayStyle(
-    statusBarColor: Colors.transparent,
-    statusBarIconBrightness: Brightness.dark,
-    statusBarBrightness: Brightness.light,
-  ),
-  child: Scaffold(
-      backgroundColor: AppColors.mainBg,
-      body: SafeArea(
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 25),
-          child: SingleChildScrollView(
-            child: Column(
-              children: [
-                Center(
-                  child: Column(
-                    children: [
-                      Cards.logoCard(
-                        marginTop: 20,
-                        horizontalPadding: 25,
-                        verticalPadding: 20,
-                        imageWidth: 30,
-                        imageHeight: 30,
-                        borderRadius: 27,
-                        cardColor: AppColors.logoContainer,
-                        imagePath: 'assets/images/logo.png',
-                      ),
-                      const SizedBox(height: 20),
-
-                      Text(
-                        'Create Your Account',
-                        style: TextStyle(
-                          color: AppColors.textPrimary,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 30,
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: const SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.dark,
+        statusBarBrightness: Brightness.light,
+      ),
+      child: Scaffold(
+        backgroundColor: AppColors.mainBg,
+        body: SafeArea(
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 25),
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  Center(
+                    child: Column(
+                      children: [
+                        Cards.logoCard(
+                          marginTop: 20,
+                          horizontalPadding: 25,
+                          verticalPadding: 20,
+                          imageWidth: 30,
+                          imageHeight: 30,
+                          borderRadius: 27,
+                          cardColor: AppColors.logoContainer,
+                          imagePath: 'assets/images/logo.png',
                         ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 20),
-                Form(
-                  key: _formKey,
-                  child: Column(
-                    children: [
-                      InputFields.textInput(
-                        controller: _firstNameController,
-                        prefixIcon: Icons.person,
-                        text: 'First Name',
-                        validator: InputValidator.nameValidator,
-                      ),
-                      const SizedBox(height: 15),
-                      InputFields.textInput(
-                        controller: _lastNameController,
-                        prefixIcon: Icons.person_2,
-                        text: 'Last Name',
-                        validator: InputValidator.nameValidator,
-                      ),
-                      const SizedBox(height: 15),
-                      InputFields.textInput(
-                        controller: _emailController,
-                        prefixIcon: Icons.email,
-                        text: 'Email',
-                        validator: InputValidator.emailValidator,
-                      ),
-                      const SizedBox(height: 15),
-                      InputFields.textInput(
-                        controller: _passwordController,
-                        prefixIcon: Icons.lock,
-                        suffixIcon: Icons.visibility_off,
-                        text: 'Password',
-                        isObscure: true,
-                        validator: InputValidator.passwordValidator,
-                      ),
-                      const SizedBox(height: 15),
-                      InputFields.textInput(
-                        controller: _confirmPasswordController,
-                        prefixIcon: Icons.password,
-                        suffixIcon: Icons.visibility,
-                        text: 'Confirm Password',
-                        isObscure: true,
-                        validator: InputValidator.passwordValidator,
-                      ),
-                      const SizedBox(height: 15),
+                        const SizedBox(height: 20),
 
-                      // Gender toggle
-                      Container(
-  height: 60,
-  decoration: BoxDecoration(
-    color: AppColors.textLight,
-    borderRadius: BorderRadius.circular(30),
-    boxShadow: [
-      BoxShadow(
-        color: Colors.black.withOpacity(0.08),
-        blurRadius: 10,
-        offset: const Offset(0, 4),
-      ),
-    ],
-  ),
-  child: Row(
-    children: [
-      Expanded(
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 250),
-          margin: const EdgeInsets.all(4),
-          decoration: BoxDecoration(
-            color: _selectedGender == 'male'
-                ? AppColors.primaryBlue
-                : Colors.transparent,
-            borderRadius: BorderRadius.circular(30),
-          ),
-          child: TextButton.icon(
-            onPressed: () {
-              setState(() => _selectedGender = 'male');
-            },
-            icon: Icon(
-              Icons.male,
-              color: _selectedGender == 'male'
-                  ? AppColors.textLight
-                  : AppColors.textPrimary,
-            ),
-            label: Text(
-              'Male',
-              style: TextStyle(
-                fontWeight: FontWeight.w600,
-                fontSize: 16,
-                color: _selectedGender == 'male'
-                    ? AppColors.textLight
-                    : AppColors.textPrimary,
-              ),
-            ),
-            style: TextButton.styleFrom(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(30),
-              ),
-            ),
-          ),
-        ),
-      ),
-
-      Expanded(
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 250),
-          margin: const EdgeInsets.all(4),
-          decoration: BoxDecoration(
-            color: _selectedGender == 'female'
-                ? AppColors.primaryBlue
-                : Colors.transparent,
-            borderRadius: BorderRadius.circular(30),
-          ),
-          child: TextButton.icon(
-            onPressed: () {
-              setState(() => _selectedGender = 'female');
-            },
-            icon: Icon(
-              Icons.female,
-              color: _selectedGender == 'female'
-                  ? AppColors.textLight
-                  : AppColors.textPrimary,
-            ),
-            label: Text(
-              'Female',
-              style: TextStyle(
-                fontWeight: FontWeight.w600,
-                fontSize: 16,
-                color: _selectedGender == 'female'
-                    ? AppColors.textLight
-                    : AppColors.textPrimary,
-              ),
-            ),
-            style: TextButton.styleFrom(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(30),
-              ),
-            ),
-          ),
-        ),
-      ),
-    ],
-  ),
-),
-
-const SizedBox(height: 15),
-
-                      // Submit button
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          onPressed: authState.isLoading ? null : _submit,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.primaryBlue,
-                            padding: const EdgeInsets.symmetric(vertical: 15),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(30),
-                            ),
+                        Text(
+                          'Create Your Account',
+                          style: TextStyle(
+                            color: AppColors.textPrimary,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 30,
                           ),
-                          child: authState.isLoading
-                              ? const CircularProgressIndicator(
-                                  color: Colors.white,
-                                )
-                              : const Text(
-                                  'Register',
-                                  style: TextStyle(
-                                    color: AppColors.textLight,
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  Form(
+                    key: _formKey,
+                    child: Column(
+                      children: [
+                        InputFields.textInput(
+                          controller: _firstNameController,
+                          prefixIcon: Icons.person,
+                          text: 'First Name',
+                          validator: InputValidator.nameValidator,
+                        ),
+                        const SizedBox(height: 15),
+                        InputFields.textInput(
+                          controller: _lastNameController,
+                          prefixIcon: Icons.person_2,
+                          text: 'Last Name',
+                          validator: InputValidator.nameValidator,
+                        ),
+                        const SizedBox(height: 15),
+                        InputFields.textInput(
+                          controller: _emailController,
+                          prefixIcon: Icons.email,
+                          text: 'Email',
+                          validator: InputValidator.emailValidator,
+                        ),
+                        const SizedBox(height: 15),
+                        InputFields.textInput(
+                          controller: _passwordController,
+                          prefixIcon: Icons.lock,
+                          suffixIcon: Icons.visibility_off,
+                          text: 'Password',
+                          isObscure: true,
+                          validator: InputValidator.passwordValidator,
+                        ),
+                        const SizedBox(height: 15),
+                        InputFields.textInput(
+                          controller: _confirmPasswordController,
+                          prefixIcon: Icons.password,
+                          suffixIcon: Icons.visibility,
+                          text: 'Confirm Password',
+                          isObscure: true,
+                          validator: InputValidator.passwordValidator,
+                        ),
+                        const SizedBox(height: 15),
+
+                        // Gender toggle
+                        Container(
+                          height: 60,
+                          decoration: BoxDecoration(
+                            color: AppColors.textLight,
+                            borderRadius: BorderRadius.circular(30),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.08),
+                                blurRadius: 10,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: AnimatedContainer(
+                                  duration: const Duration(milliseconds: 250),
+                                  margin: const EdgeInsets.all(4),
+                                  decoration: BoxDecoration(
+                                    color: _selectedGender == 'male'
+                                        ? AppColors.primaryBlue
+                                        : Colors.transparent,
+                                    borderRadius: BorderRadius.circular(30),
+                                  ),
+                                  child: TextButton.icon(
+                                    onPressed: () {
+                                      setState(() => _selectedGender = 'male');
+                                    },
+                                    icon: Icon(
+                                      Icons.male,
+                                      color: _selectedGender == 'male'
+                                          ? AppColors.textLight
+                                          : AppColors.textPrimary,
+                                    ),
+                                    label: Text(
+                                      'Male',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 16,
+                                        color: _selectedGender == 'male'
+                                            ? AppColors.textLight
+                                            : AppColors.textPrimary,
+                                      ),
+                                    ),
+                                    style: TextButton.styleFrom(
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(30),
+                                      ),
+                                    ),
                                   ),
                                 ),
+                              ),
+
+                              Expanded(
+                                child: AnimatedContainer(
+                                  duration: const Duration(milliseconds: 250),
+                                  margin: const EdgeInsets.all(4),
+                                  decoration: BoxDecoration(
+                                    color: _selectedGender == 'female'
+                                        ? AppColors.primaryBlue
+                                        : Colors.transparent,
+                                    borderRadius: BorderRadius.circular(30),
+                                  ),
+                                  child: TextButton.icon(
+                                    onPressed: () {
+                                      setState(
+                                        () => _selectedGender = 'female',
+                                      );
+                                    },
+                                    icon: Icon(
+                                      Icons.female,
+                                      color: _selectedGender == 'female'
+                                          ? AppColors.textLight
+                                          : AppColors.textPrimary,
+                                    ),
+                                    label: Text(
+                                      'Female',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 16,
+                                        color: _selectedGender == 'female'
+                                            ? AppColors.textLight
+                                            : AppColors.textPrimary,
+                                      ),
+                                    ),
+                                    style: TextButton.styleFrom(
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(30),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 20),
 
-                           Row(
-                        children: [
-                          Expanded(
-                            child: Divider(
-                              color: AppColors.divider,
-                              thickness: 1,
-                              indent: 20,
-                              endIndent: 10,
-                            ),
-                          ),
-                          Text(
-                            "OR CONTINUE WITH",
-                            style: TextStyle(
-                              color: AppColors.divider,
-                              fontSize: 14,
-                            ),
-                          ),
-                          Expanded(
-                            child: Divider(
-                              color: AppColors.divider,
-                              thickness: 1,
-                              indent: 10,
-                              endIndent: 20,
-                            ),
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: 25),
-                      Buttons.buttonsCard(
-                        text: "Continue with Google",
-                        icon: Image.asset(
-                          'assets/images/google_logo.png',
-                          height: 24,
-                          width: 24,
-                        ),
-                        textColor: AppColors.textPrimary,
-                        cardColor: AppColors.textLight,
-                      ),
-                      SizedBox(height: 30),
+                        const SizedBox(height: 15),
 
-
-                      // Login link
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Text(
-                            'Already have an account? ',
-                            style: TextStyle(color: AppColors.textSecondary),
-                          ),
-                          GestureDetector(
-                            onTap: () => context.go('/login'),
-                            child: const Text(
-                              'Login',
-                              style: TextStyle(
-                                color: AppColors.primaryBlue,
-                                fontWeight: FontWeight.bold,
+                        // Submit button
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            onPressed: authState.isLoading ? null : _submit,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.primaryBlue,
+                              padding: const EdgeInsets.symmetric(vertical: 15),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(30),
                               ),
                             ),
+                            child: authState.isLoading
+                                ? const CircularProgressIndicator(
+                                    color: Colors.white,
+                                  )
+                                : const Text(
+                                    'Register',
+                                    style: TextStyle(
+                                      color: AppColors.textLight,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
                           ),
-                        ],
-                      ),
-                      const SizedBox(height: 20),
-                    ],
+                        ),
+                        const SizedBox(height: 20),
+
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Divider(
+                                color: AppColors.divider,
+                                thickness: 1,
+                                indent: 20,
+                                endIndent: 10,
+                              ),
+                            ),
+                            Text(
+                              "OR CONTINUE WITH",
+                              style: TextStyle(
+                                color: AppColors.divider,
+                                fontSize: 14,
+                              ),
+                            ),
+                            Expanded(
+                              child: Divider(
+                                color: AppColors.divider,
+                                thickness: 1,
+                                indent: 10,
+                                endIndent: 20,
+                              ),
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: 25),
+                        Buttons.buttonsCard(
+                          text: "Continue with Google",
+                          icon: Image.asset(
+                            'assets/images/google_logo.png',
+                            height: 24,
+                            width: 24,
+                          ),
+                          textColor: AppColors.textPrimary,
+                          cardColor: AppColors.textLight,
+                          isLoading: authState.isLoading,
+                          onTap: () async {
+                            await ref.read(authProvider.notifier).googleLogin();
+                            final state = ref.read(authProvider);
+                            if (state.isSuccess) {
+                              context.go('/lounges');
+                            } else if (state.error != null) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text(state.error!)),
+                              );
+                            }
+                          },
+                        ),
+                        SizedBox(height: 30),
+
+                        // Login link
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Text(
+                              'Already have an account? ',
+                              style: TextStyle(color: AppColors.textSecondary),
+                            ),
+                            GestureDetector(
+                              onTap: () => context.go('/login'),
+                              child: const Text(
+                                'Login',
+                                style: TextStyle(
+                                  color: AppColors.primaryBlue,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 20),
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
-      ),)
+      ),
     );
   }
 }
