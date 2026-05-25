@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:food_ordering_app/shared/widgets/app_drawer.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../providers/order_provider.dart';
@@ -12,17 +13,21 @@ class OrderHistoryScreen extends ConsumerWidget {
     final ordersAsync = ref.watch(myOrdersProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.scaffoldBackground,
+      backgroundColor: AppColors.mainBg,
       appBar: AppBar(
-        backgroundColor: AppColors.primaryBlue,
+        iconTheme: const IconThemeData(
+    color: AppColors.appBarNav2,
+  ),
+        backgroundColor: AppColors.accent,
         title: const Text(
           'History',
-          style: TextStyle(color: AppColors.textLight),
+          style: TextStyle(color: AppColors.textLight, fontWeight: FontWeight.bold),
         ),
       ),
+      drawer: const AppDrawer(),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: 2,
-        selectedItemColor: AppColors.primaryBlue,
+        selectedItemColor: AppColors.accent,
         unselectedItemColor: AppColors.textSecondary,
         onTap: (index) {
           if (index == 0) context.go('/lounges');
@@ -86,7 +91,7 @@ class OrderHistoryScreen extends ConsumerWidget {
                     style: TextStyle(color: Colors.white),
                   ),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primaryBlue,
+                    backgroundColor: AppColors.accent,
                     padding: const EdgeInsets.symmetric(
                       horizontal: 30,
                       vertical: 12,

@@ -244,6 +244,35 @@ authRoutes.post('/admin/verify-otp',
     }
   }
 )
+
+authRoutes.post(
+  '/admin/resend-otp',
+  zValidator('json', resendOtpSchema),
+  async (c) => {
+    try {
+      const { email } = c.req.valid('json')
+
+      // Verify the user exists and is active staff
+      const user = await db.query.users.findFirst({
+        where: eq(users.email, email),
+        columns: { id: true, is_active: true },
+      })
+
+      if (!user || !user.is_active) {
+        // Return success anyway to avoid email enumeration
+        return c.json({ success: true, message: 'OTP resent successfully' }, 200)
+      }
+
+      const otp = Math.floor(100000 + Math.random() * 900000).toString()
+      storeOTP(email, otp)
+      await sendOTPEmail(email, otp)
+
+      return c.json({ success: true, message: 'OTP resent successfully' }, 200)
+    } catch (e) {
+      return handleError(e, c)
+    }
+  }
+)
 authRoutes.post('/customer/forgot-password',
   zValidator('json', forgotPasswordSchema),
   async (c) => {

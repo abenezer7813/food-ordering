@@ -14,6 +14,8 @@ class AppColors {
   static const Color mainBg = Color(0xFFF4F6F7);
   static const Color logoContainer = Color(0xFF3F5F60);
   static const Color appBarcolor = Color.fromARGB(255, 255, 255, 255);
+  static const Color appbarNav1 = Color(0xFF212121);
+  static const Color appBarNav2 = Color(0xFFFFFFFF);
   // Text Colors
   static const Color textPrimary = Color(0xFF212121);
   static const Color textSecondary = Color(0xFF757575);

@@ -77,7 +77,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                   ElevatedButton(
                     onPressed: () => Navigator.pop(context, true),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primaryBlue,
+                      backgroundColor: AppColors.accent,
                     ),
                     child: const Text(
                       'Yes, Verify',
@@ -215,11 +215,11 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: AppColors.primaryBlue.withOpacity(0.1),
+                      color: AppColors.accent.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: const Icon(Icons.credit_card,
-                        color: AppColors.primaryBlue),
+                        color: AppColors.accent),
                   ),
                   const SizedBox(width: 16),
                   const Expanded(
@@ -277,7 +277,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                                         extra: widget.lounge);
                                   },
                                   style: ElevatedButton.styleFrom(
-                                    backgroundColor: AppColors.primaryBlue,
+                                    backgroundColor: AppColors.accent,
                                   ),
                                   child: const Text('Register',
                                       style: TextStyle(color: Colors.white)),
@@ -354,12 +354,15 @@ class _CartScreenState extends ConsumerState<CartScreen> {
     final menuAsync = ref.watch(menuItemsProvider(widget.lounge.id));
 
     return Scaffold(
-      backgroundColor: AppColors.scaffoldBackground,
+      backgroundColor: AppColors.mainBg,
       appBar: AppBar(
-        backgroundColor: AppColors.primaryBlue,
+        backgroundColor: AppColors.accent,
+        iconTheme: const IconThemeData(
+    color: Colors.white, // change back button color here
+  ),
         title: const Text(
           'Your Cart',
-          style: TextStyle(color: AppColors.textLight),
+          style: TextStyle(color: AppColors.textLight, fontWeight: FontWeight.bold),
         ),
       ),
       body: menuAsync.when(
@@ -401,9 +404,35 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                         borderRadius: BorderRadius.circular(16),
                       ),
                       child: Row(
-                        children: [
-                          // Item info
-                          Expanded(
+  children: [
+
+    // Food Image
+    ClipRRect(
+      borderRadius: BorderRadius.circular(12),
+      child: Image.network(
+  item.imageUrl ?? '',// your image field
+        width: 70,
+        height: 70,
+        fit: BoxFit.cover,
+
+        errorBuilder: (context, error, stackTrace) {
+          return Container(
+            width: 70,
+            height: 70,
+            color: AppColors.background,
+            child: const Icon(
+              Icons.fastfood,
+              color: AppColors.accent,
+            ),
+          );
+        },
+      ),
+    ),
+
+    const SizedBox(width: 14),
+
+    // Item info
+    Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
@@ -418,7 +447,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                                 Text(
                                   'ETB ${item.price.toStringAsFixed(2)}',
                                   style: const TextStyle(
-                                    color: AppColors.primaryBlue,
+                                    color: AppColors.accent,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
@@ -446,7 +475,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                                 child: Container(
                                   padding: const EdgeInsets.all(6),
                                   decoration: BoxDecoration(
-                                    color: AppColors.primaryBlue,
+                                    color: AppColors.accent,
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: const Icon(
@@ -483,7 +512,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                                 child: Container(
                                   padding: const EdgeInsets.all(6),
                                   decoration: BoxDecoration(
-                                    color: AppColors.primaryBlue,
+                                    color: AppColors.accent,
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: const Icon(
@@ -535,7 +564,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                           style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
-                            color: AppColors.primaryBlue,
+                            color: AppColors.accent,
                           ),
                         ),
                       ],
@@ -548,7 +577,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                             ? null
                             : () => _showPaymentSheet(context, menuItems),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primaryBlue,
+                          backgroundColor: AppColors.accent,
                           padding: const EdgeInsets.symmetric(vertical: 15),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(30),
