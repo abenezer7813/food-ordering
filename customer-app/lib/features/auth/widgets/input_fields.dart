@@ -11,6 +11,7 @@ class InputFields {
     required String text,
     bool isObscure = false,
     String? Function(String?)? validator,
+    VoidCallback? onSuffixTap,
 
   }) {
     return Container(
@@ -27,8 +28,12 @@ class InputFields {
           prefixIcon: Icon(prefixIcon),
           prefixIconColor: Colors.grey,
           labelStyle: TextStyle(color: Colors.grey),
-          suffixIcon: suffixIcon != null ? Icon(suffixIcon) : null,
-          labelText: text,
+suffixIcon: suffixIcon != null
+    ? IconButton(
+        onPressed: onSuffixTap,
+        icon: Icon(suffixIcon),
+      )
+    : null,          labelText: text,
           border: InputBorder.none,
         ),
       ),
