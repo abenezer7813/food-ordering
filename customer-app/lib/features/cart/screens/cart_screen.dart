@@ -357,9 +357,12 @@ class _CartScreenState extends ConsumerState<CartScreen> {
       backgroundColor: AppColors.mainBg,
       appBar: AppBar(
         backgroundColor: AppColors.accent,
+        iconTheme: const IconThemeData(
+    color: Colors.white, // change back button color here
+  ),
         title: const Text(
           'Your Cart',
-          style: TextStyle(color: AppColors.textLight),
+          style: TextStyle(color: AppColors.textLight, fontWeight: FontWeight.bold),
         ),
       ),
       body: menuAsync.when(
@@ -401,9 +404,35 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                         borderRadius: BorderRadius.circular(16),
                       ),
                       child: Row(
-                        children: [
-                          // Item info
-                          Expanded(
+  children: [
+
+    // Food Image
+    ClipRRect(
+      borderRadius: BorderRadius.circular(12),
+      child: Image.network(
+  item.imageUrl ?? '',// your image field
+        width: 70,
+        height: 70,
+        fit: BoxFit.cover,
+
+        errorBuilder: (context, error, stackTrace) {
+          return Container(
+            width: 70,
+            height: 70,
+            color: AppColors.background,
+            child: const Icon(
+              Icons.fastfood,
+              color: AppColors.accent,
+            ),
+          );
+        },
+      ),
+    ),
+
+    const SizedBox(width: 14),
+
+    // Item info
+    Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
