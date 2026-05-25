@@ -11,12 +11,13 @@ class OrderDetailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.scaffoldBackground,
+      backgroundColor: AppColors.mainBg,
       appBar: AppBar(
-        backgroundColor: AppColors.primaryBlue,
+        backgroundColor: AppColors.accent,
+        iconTheme: IconThemeData(color: AppColors.textLight),
         title: Text(
           'Order #${order.id.substring(0, 8).toUpperCase()}',
-          style: const TextStyle(color: AppColors.textLight),
+          style: const TextStyle(color: AppColors.textLight, fontWeight: FontWeight.bold),
         ),
       ),
       body: SingleChildScrollView(
@@ -29,7 +30,7 @@ class OrderDetailScreen extends StatelessWidget {
               width: double.infinity,
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: AppColors.primaryBlue,
+                color: AppColors.accent,
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Column(
@@ -140,7 +141,7 @@ class OrderDetailScreen extends StatelessWidget {
                         style: const TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 16,
-                          color: AppColors.primaryBlue,
+                          color: AppColors.accent,
                         ),
                       ),
                     ],
@@ -245,12 +246,12 @@ class _OrderProgress extends StatelessWidget {
                       height: 28,
                       decoration: BoxDecoration(
                         color: isCompleted
-                            ? AppColors.primaryBlue
+                            ? AppColors.accent
                             : AppColors.border,
                         shape: BoxShape.circle,
                         border: isActive
                             ? Border.all(
-                                color: AppColors.primaryBlue, width: 3)
+                                color: AppColors.accent, width: 3)
                             : null,
                       ),
                       child: isCompleted
@@ -264,7 +265,7 @@ class _OrderProgress extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 9,
                         color: isCompleted
-                            ? AppColors.primaryBlue
+                            ? AppColors.accent
                             : AppColors.textSecondary,
                         fontWeight: isActive
                             ? FontWeight.bold

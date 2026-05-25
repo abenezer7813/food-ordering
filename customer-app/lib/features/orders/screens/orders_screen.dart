@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../providers/order_provider.dart';
-
+import '../../../shared/widgets/app_drawer.dart';
 class OrdersScreen extends ConsumerWidget {
   const OrdersScreen({super.key});
 
@@ -12,22 +12,27 @@ class OrdersScreen extends ConsumerWidget {
     final ordersAsync = ref.watch(myOrdersProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.scaffoldBackground,
+      backgroundColor: AppColors.mainBg,
       appBar: AppBar(
-        backgroundColor: AppColors.primaryBlue,
+        iconTheme: const IconThemeData(
+    color: AppColors.appBarNav2,
+  ),
+        backgroundColor: AppColors.accent,
         title: const Text(
           'My Orders',
-          style: TextStyle(color: AppColors.textLight),
+          style: TextStyle(color: AppColors.textLight, fontWeight: FontWeight.bold),
         ),
       ),
+            drawer: const AppDrawer(),
+
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: 1,
-        selectedItemColor: AppColors.primaryBlue,
+        selectedItemColor: AppColors.accent,
         unselectedItemColor: AppColors.textSecondary,
         onTap: (index) {
           if (index == 0) context.go('/lounges');
           if (index == 1) context.go('/orders');
-          if (index == 2) context.push('/history');
+          if (index == 2) context.go('/history');
         },
         items: const [
           BottomNavigationBarItem(
@@ -86,7 +91,7 @@ class OrdersScreen extends ConsumerWidget {
                     style: TextStyle(color: Colors.white),
                   ),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primaryBlue,
+                    backgroundColor: AppColors.accent,
                     padding: const EdgeInsets.symmetric(
                       horizontal: 30,
                       vertical: 12,
