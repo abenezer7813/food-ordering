@@ -1,5 +1,5 @@
 "use client";
-import { useState, Suspense } from "react";
+import { useState, Suspense, useEffect, useRef } from "react";
 import {
   Box,
   Container,
@@ -13,20 +13,67 @@ import {
 } from "@mantine/core";
 import { IconArrowLeft } from "@tabler/icons-react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useVerifyAdminOtp } from "@/hooks/queries/useAuth";
+import { useVerifyAdminOtp, useResendAdminOtp } from "@/hooks/queries/useAuth";
+
+const RESEND_COOLDOWN = 5 * 60; // 5 minutes in seconds
 
 function AdminOtpForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const email = searchParams.get("email") || "";
   const [otp, setOtp] = useState("");
+  const [countdown, setCountdown] = useState(RESEND_COOLDOWN);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const verifyOtpMutation = useVerifyAdminOtp();
+  const resendOtpMutation = useResendAdminOtp();
+
+  // Start countdown on mount
+  useEffect(() => {
+    startCountdown();
+    return () => clearTimer();
+  }, []);
+
+  function clearTimer() {
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+  }
+
+  function startCountdown() {
+    clearTimer();
+    setCountdown(RESEND_COOLDOWN);
+    timerRef.current = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev <= 1) {
+          clearTimer();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  }
+
+  const handleResend = () => {
+    resendOtpMutation.mutate({ email }, {
+      onSuccess: () => {
+        setOtp("");
+        startCountdown();
+      },
+    });
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (otp.length < 6) return;
     verifyOtpMutation.mutate({ email, otp });
+  };
+
+  const formatTime = (seconds: number) => {
+    const m = Math.floor(seconds / 60).toString().padStart(2, "0");
+    const s = (seconds % 60).toString().padStart(2, "0");
+    return `${m}:${s}`;
   };
 
   return (
@@ -83,6 +130,29 @@ function AdminOtpForm() {
               >
                 Verify & Login
               </Button>
+
+              <Group justify="center" gap="xs">
+                <Text size="sm" c="dimmed">
+                  Didn&apos;t receive the code?
+                </Text>
+                {countdown > 0 ? (
+                  <Text size="sm" c="dimmed">
+                    Resend in{" "}
+                    <Text span fw={600} c="blue">
+                      {formatTime(countdown)}
+                    </Text>
+                  </Text>
+                ) : (
+                  <Anchor
+                    component="button"
+                    size="sm"
+                    onClick={handleResend}
+                    disabled={resendOtpMutation.isPending}
+                  >
+                    {resendOtpMutation.isPending ? "Sending..." : "Resend OTP"}
+                  </Anchor>
+                )}
+              </Group>
             </Stack>
           </form>
         </Stack>

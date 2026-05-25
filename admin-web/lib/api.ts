@@ -84,6 +84,12 @@ changePassword: (new_password: string) =>
     method: "POST",
     body: JSON.stringify({ email, otp }),
   }),
+
+  resendAdminOtp: (email: string) =>
+    fetcher<{ success: boolean; message: string }>("/auth/admin/resend-otp", {
+      method: "POST",
+      body: JSON.stringify({ email }),
+    }),
   firstTimeChangePassword: (new_password: string) =>
   fetcher<{ success: boolean; message: string }>("/auth/staff/change-password", {
     method: "PATCH",
