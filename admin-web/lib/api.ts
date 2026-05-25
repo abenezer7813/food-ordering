@@ -33,7 +33,13 @@ async function fetcher<T>(
   const data = await response.json();
 
   if (!response.ok) {
-    throw new Error(data.error || data.message || "Request failed");
+    const errorMsg = data.error || 
+                     data.message || 
+                     (data.errors && Array.isArray(data.errors) 
+                       ? data.errors.map((e: any) => `${e.field}: ${e.message}`).join(', ') 
+                       : null) || 
+                     "Request failed";
+    throw new Error(errorMsg);
   }
 
   return data;

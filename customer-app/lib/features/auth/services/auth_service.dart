@@ -44,7 +44,7 @@ class AuthService {
       print('Response data: ${e.response?.data}');
       print('Error message: ${e.message}');
       print('Error type: ${e.type}');
-      throw e.response?.data['message'] ?? 'Registration failed';
+      throw e.response?.data['error'] ?? e.response?.data['message'] ?? 'Registration failed';
     } catch (e) {
       print('=== UNKNOWN ERROR ===');
       print(e);
@@ -63,7 +63,7 @@ class AuthService {
       );
       return response.data;
     } on DioException catch (e) {
-      throw e.response?.data['message'] ?? 'Login failed';
+      throw e.response?.data['error'] ?? e.response?.data['message'] ?? 'Login failed';
     }
   }
 
@@ -78,7 +78,7 @@ class AuthService {
       );
       return response.data;
     } on DioException catch (e) {
-      throw e.response?.data['error'] ?? 'Verification failed';
+      throw e.response?.data['error'] ?? e.response?.data['message'] ?? 'Verification failed';
     }
   }
 
@@ -89,7 +89,7 @@ class AuthService {
         data: {'device_token': deviceToken},
       );
     } on DioException catch (e) {
-      throw e.response?.data['message'] ?? 'Failed to update device token';
+      throw e.response?.data['error'] ?? e.response?.data['message'] ?? 'Failed to update device token';
     }
   }
 
@@ -110,7 +110,7 @@ class AuthService {
       );
       return response.data;
     } on DioException catch (e) {
-      throw e.response?.data['message'] ?? 'Failed to send OTP';
+      throw e.response?.data['error'] ?? e.response?.data['message'] ?? 'Failed to send OTP';
     }
   }
 
@@ -126,7 +126,7 @@ class AuthService {
       );
       return response.data;
     } on DioException catch (e) {
-      throw e.response?.data['message'] ?? 'Password reset failed';
+      throw e.response?.data['error'] ?? e.response?.data['message'] ?? 'Password reset failed';
     }
   }
 
@@ -140,7 +140,7 @@ class AuthService {
       );
       return response.data;
     } on DioException catch (e) {
-      throw e.response?.data['message'] ?? 'Failed to change password';
+      throw e.response?.data['error'] ?? e.response?.data['message'] ?? 'Failed to change password';
     }
   }
 
@@ -164,7 +164,7 @@ class AuthService {
       );
       return response.data;
     } on DioException catch (e) {
-      throw e.response?.data['message'] ?? 'Google sign in failed';
+      throw e.response?.data['error'] ?? e.response?.data['message'] ?? 'Google sign in failed';
     }
   }
 }
