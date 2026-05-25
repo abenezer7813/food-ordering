@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:food_ordering_app/shared/widgets/app_drawer.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../providers/order_provider.dart';
@@ -14,12 +15,16 @@ class OrderHistoryScreen extends ConsumerWidget {
     return Scaffold(
       backgroundColor: AppColors.mainBg,
       appBar: AppBar(
+        iconTheme: const IconThemeData(
+    color: AppColors.appBarNav2,
+  ),
         backgroundColor: AppColors.accent,
         title: const Text(
           'History',
-          style: TextStyle(color: AppColors.textLight),
+          style: TextStyle(color: AppColors.textLight, fontWeight: FontWeight.bold),
         ),
       ),
+      drawer: const AppDrawer(),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: 2,
         selectedItemColor: AppColors.accent,
