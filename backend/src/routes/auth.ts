@@ -1,7 +1,8 @@
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
-import z, { email, string } from "zod";
-import { changePassword, changeStaffPassword, customerRegistration, getCustomerProfile, loginCustomer, loginStaff, requestCustomerPasswordReset, requestStaffPasswordReset, resetCustomerPassword, resetStaffPassword, updateCustomerProfile, updateDeviceToken, verifyAdminOtp, verifyUser } from "../services/auth.service.js";
+import z from "zod";
+import bcrypt from "bcryptjs";
+import { changePassword, changeStaffPassword, customerRegistration, getCustomerProfile, googleAuth, loginCustomer, loginStaff, requestCustomerPasswordReset, requestStaffPasswordReset, resetCustomerPassword, resetStaffPassword, updateCustomerProfile, updateDeviceToken, verifyAdminOtp, verifyUser } from "../services/auth.service.js";
 import { handleError } from "../utils/errors.js";
 import { storeOTP, verifyOTP } from "../utils/otp.js";
 import { tr } from "zod/locales";
@@ -15,75 +16,75 @@ import { eq } from "drizzle-orm";
 type Variables = {
   userId: string
 }
-export const authRoutes=new Hono<{ Variables: Variables }>()
+export const authRoutes = new Hono<{ Variables: Variables }>()
 
 //staff login schema 
-const staffLoginSchema=z.object({
-    email:z.email({error:"Invalid email address"}),
-    password:z.string().min(6,{message:"Password must be at least 6 characters long"})
+const staffLoginSchema = z.object({
+  email: z.email({ error: "Invalid email address" }),
+  password: z.string().min(6, { message: "Password must be at least 6 characters long" })
 })
 const customerLoginSchema = z.object({
-  email:    z.email(),
+  email: z.email(),
   password: z.string().min(6),
 })
-const customerRegistrationSchema=z.object({
-      first_name:z.string(),
-      last_name:z.string(),
-      gender:z.string(),
-      email:z.string(),
-      password:z.string(),
-      registration_method:z.enum(['email','google']),
-      device_token:z.string(),
+const customerRegistrationSchema = z.object({
+  first_name: z.string(),
+  last_name: z.string(),
+  gender: z.string(),
+  email: z.string(),
+  password: z.string(),
+  registration_method: z.enum(['email', 'google']),
+  device_token: z.string(),
 })
-const otpVerificationSchema=z.object({
-  email:z.email(),
-  otp:z.string()
+const otpVerificationSchema = z.object({
+  email: z.email(),
+  otp: z.string()
 })
-authRoutes.post("/staff/login",zValidator('json',staffLoginSchema),
-async (c)=>{
-    const {email,password}=c.req.valid('json')
-    const result=await loginStaff(email,password)
- if (!result) {
+authRoutes.post("/staff/login", zValidator('json', staffLoginSchema),
+  async (c) => {
+    const { email, password } = c.req.valid('json')
+    const result = await loginStaff(email, password)
+    if (!result) {
       return c.json({ error: 'Invalid email or password' }, 401)
     }
 
- if ('requiresOtp' in result) {
+    if ('requiresOtp' in result) {
       return c.json({ requiresOtp: true, email: result.email }, 200)
     }
 
-    
-    return c.json({ token: result.token, user: result.user })
-  }  
 
-  
+    return c.json({ token: result.token, user: result.user })
+  }
+
+
 )
 
 authRoutes.post('/customer/register',
-  zValidator('json',customerRegistrationSchema),
-async (c)=>{
-  try{
-      const data=c.req.valid('json')
-      const customer=await customerRegistration(data)
+  zValidator('json', customerRegistrationSchema),
+  async (c) => {
+    try {
+      const data = c.req.valid('json')
+      const customer = await customerRegistration(data)
       return c.json({ message: 'OTP sent to your email. Please verify your account.' }, 201)
-  }catch(e){
-    return handleError(e,c)
-  }
-})
+    } catch (e) {
+      return handleError(e, c)
+    }
+  })
 authRoutes.post('/customer/verify',
-  zValidator('json',otpVerificationSchema),
-  async (c)=>{
-    try{
-    const data=c.req.valid('json')
-    const customer=await verifyUser(data)
-    return c.json({token:customer.token,customer:customer.customer})
-    }catch(e){
-      return handleError(e,c)
+  zValidator('json', otpVerificationSchema),
+  async (c) => {
+    try {
+      const data = c.req.valid('json')
+      const customer = await verifyUser(data)
+      return c.json({ token: customer.token, customer: customer.customer })
+    } catch (e) {
+      return handleError(e, c)
     }
   }
 )
 
-const resendOtpSchema=z.object({
-  email:z.email({error:"Invalid email address"})
+const resendOtpSchema = z.object({
+  email: z.email({ error: "Invalid email address" })
 })
 authRoutes.post(
   '/customer/resend-otp',
@@ -99,13 +100,13 @@ authRoutes.post(
         100000 + Math.random() * 900000
       ).toString()
 
-      
+
       storeOTP(data.email, otp)
 
-      
+
       await sendOTPEmail(data.email, otp)
 
-      
+
       return c.json(
         {
           success: true,
@@ -120,17 +121,17 @@ authRoutes.post(
 )
 
 authRoutes.post('/customer/login',
-  zValidator('json',customerLoginSchema),
-  async (c)=>{
-    try{
-    const data=c.req.valid('json')
-    const customer=await loginCustomer(data)
-    return c.json({token:customer.token,customer:customer.customer})
-    }catch(e){
-      return handleError(e,c)
+  zValidator('json', customerLoginSchema),
+  async (c) => {
+    try {
+      const data = c.req.valid('json')
+      const customer = await loginCustomer(data)
+      return c.json({ token: customer.token, customer: customer.customer })
+    } catch (e) {
+      return handleError(e, c)
     }
   }
-  
+
 )
 
 authRoutes.get('/profile',
@@ -164,7 +165,7 @@ export const updateCustomerSchema = z.object({
   first_name: z.string().min(2).optional(),
   last_name: z.string().min(2).optional(),
   gender: z.string().optional(),
- 
+
 })
 authRoutes.patch(
   '/customer/profile',
@@ -200,8 +201,8 @@ const resetPasswordSchema = z.object({
 })
 
 // Staff forgot password
-authRoutes.post('/forgot-password', 
-  zValidator('json', forgotPasswordSchema), 
+authRoutes.post('/forgot-password',
+  zValidator('json', forgotPasswordSchema),
   async (c) => {
     try {
       const { email } = c.req.valid('json')
@@ -213,8 +214,8 @@ authRoutes.post('/forgot-password',
   }
 )
 
-authRoutes.post('/reset-password', 
-  zValidator('json', resetPasswordSchema), 
+authRoutes.post('/reset-password',
+  zValidator('json', resetPasswordSchema),
   async (c) => {
     try {
       const data = c.req.valid('json')
@@ -309,7 +310,7 @@ authRoutes.patch('/profile',
     try {
       const userId = c.get('userId')
       const data = c.req.valid('json')
-      
+
       // Update user profile (only first_name and last_name)
       const [updatedUser] = await db
         .update(users)
@@ -319,9 +320,9 @@ authRoutes.patch('/profile',
         })
         .where(eq(users.id, userId))
         .returning()
-      
-      return c.json({ 
-        success: true, 
+
+      return c.json({
+        success: true,
         message: 'Profile updated successfully',
         user: {
           id: updatedUser.id,
@@ -350,37 +351,52 @@ authRoutes.patch('/change-password',
     try {
       const userId = c.get('userId')
       const { current_password, new_password } = c.req.valid('json')
-      
+
       // Get user
       const user = await db.query.users.findFirst({
         where: eq(users.id, userId)
       })
-      
+
       if (!user) {
         return c.json({ error: 'User not found' }, 404)
       }
-      
+
       // Verify current password
-      const bcrypt = await import('bcrypt')
       const isValid = await bcrypt.compare(current_password, user.password)
-      
+
       if (!isValid) {
         return c.json({ error: 'Current password is incorrect' }, 401)
       }
-      
+
       // Hash new password
       const hashedPassword = await bcrypt.hash(new_password, 10)
-      
+
       // Update password
       await db
         .update(users)
         .set({ password: hashedPassword })
         .where(eq(users.id, userId))
-      
-      return c.json({ 
-        success: true, 
-        message: 'Password changed successfully' 
+
+      return c.json({
+        success: true,
+        message: 'Password changed successfully'
       })
+    } catch (e) {
+      return handleError(e, c)
+    }
+  }
+)
+// POST /auth/google
+authRoutes.post('/customer/google',
+  zValidator('json', z.object({
+    idToken: z.string(),
+    device_token: z.string().optional(),
+  })),
+  async (c) => {
+    try {
+      const { idToken, device_token } = c.req.valid('json')
+      const result = await googleAuth(idToken, device_token)
+      return c.json({ token: result.token, customer: result.customer })
     } catch (e) {
       return handleError(e, c)
     }

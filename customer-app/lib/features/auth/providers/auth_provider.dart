@@ -80,6 +80,25 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
+  Future<void> googleLogin() async {
+    state = state.copyWith(isLoading: true, error: null, isSuccess: false);
+    try {
+      final messaging = FirebaseMessaging.instance;
+      final deviceToken = await messaging.getToken();
+
+      final response = await _authService.googleSignIn(
+        deviceToken: deviceToken,
+      );
+
+      final token = response['token'];
+      await _ref.read(tokenStorageProvider).saveToken(token);
+
+      state = state.copyWith(isLoading: false, isSuccess: true);
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString());
+    }
+  }
+
   Future<void> verifyOtp({required String email, required String otp}) async {
     state = state.copyWith(isLoading: true, error: null);
 
@@ -156,17 +175,16 @@ class AuthNotifier extends StateNotifier<AuthState> {
       state = state.copyWith(isLoading: false, error: e.toString());
     }
   }
-  Future<void> changePassword({
-  required String newPassword,
-}) async {
-  state = state.copyWith(isLoading: true, error: null, isSuccess: false);
-  try {
-    await _authService.changePassword(newPassword: newPassword);
-    state = state.copyWith(isLoading: false, isSuccess: true);
-  } catch (e) {
-    state = state.copyWith(isLoading: false, error: e.toString());
+
+  Future<void> changePassword({required String newPassword}) async {
+    state = state.copyWith(isLoading: true, error: null, isSuccess: false);
+    try {
+      await _authService.changePassword(newPassword: newPassword);
+      state = state.copyWith(isLoading: false, isSuccess: true);
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString());
+    }
   }
-}
 }
 
 // 4. StateNotifierProvider
