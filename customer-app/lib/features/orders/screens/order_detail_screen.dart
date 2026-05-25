@@ -14,9 +14,10 @@ class OrderDetailScreen extends StatelessWidget {
       backgroundColor: AppColors.mainBg,
       appBar: AppBar(
         backgroundColor: AppColors.accent,
+        iconTheme: IconThemeData(color: AppColors.textLight),
         title: Text(
           'Order #${order.id.substring(0, 8).toUpperCase()}',
-          style: const TextStyle(color: AppColors.textLight),
+          style: const TextStyle(color: AppColors.textLight, fontWeight: FontWeight.bold),
         ),
       ),
       body: SingleChildScrollView(
