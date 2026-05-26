@@ -7,9 +7,9 @@ class MenuItem {
   final double price;
   final bool isAvailable;
   final int estimatedPreparationTime;
-
-  // ADD THESE
   final String category;
+  // For food: 'breakfast' | 'lunch' | 'dinner' | 'all_day'
+  // For drink: 'juice' | 'coffee' | 'tea' | 'water' | 'soda' | 'smoothie' | 'other'
   final String type;
 
   MenuItem({
@@ -21,13 +21,17 @@ class MenuItem {
     required this.price,
     required this.isAvailable,
     required this.estimatedPreparationTime,
-
-    // ADD THESE
     required this.category,
     required this.type,
   });
 
   factory MenuItem.fromJson(Map<String, dynamic> json) {
+    final category = (json['category'] ?? 'food').toString();
+    // API returns meal_type for food items and drink_type for drink items
+    final type = category == 'drink'
+        ? (json['drink_type'] ?? 'other').toString()
+        : (json['meal_type'] ?? 'all_day').toString();
+
     return MenuItem(
       id: json['id'],
       loungeId: json['lounge_id'],
@@ -37,10 +41,8 @@ class MenuItem {
       price: double.parse(json['price'].toString()),
       isAvailable: json['is_available'],
       estimatedPreparationTime: json['estimated_preparation_time'],
-
-      // ADD THESE
-      category: json['category'] ?? 'food',
-      type: json['type'] ?? 'lunch',
+      category: category,
+      type: type,
     );
   }
 }
