@@ -85,9 +85,9 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.scaffoldBackground,
+      backgroundColor: AppColors.mainBg,
       appBar: AppBar(
-        backgroundColor: AppColors.primaryBlue,
+        backgroundColor: AppColors.accent,
         title: const Text(
           'Edit Profile',
           style: TextStyle(color: AppColors.textLight),
@@ -102,7 +102,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
             // Avatar
             CircleAvatar(
               radius: 40,
-              backgroundColor: AppColors.primaryBlue,
+              backgroundColor: AppColors.accent,
               child: Text(
                 _firstNameController.text.isNotEmpty
                     ? _firstNameController.text[0].toUpperCase()
@@ -124,7 +124,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
               child: TextField(
                 controller: _firstNameController,
                 decoration: const InputDecoration(
-                  prefixIcon: Icon(Icons.person, color: AppColors.primaryBlue),
+                  prefixIcon: Icon(Icons.person, color: AppColors.accent),
                   hintText: 'First Name',
                   border: InputBorder.none,
                   contentPadding: EdgeInsets.symmetric(vertical: 15),
@@ -141,7 +141,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
               child: TextField(
                 controller: _lastNameController,
                 decoration: const InputDecoration(
-                  prefixIcon: Icon(Icons.person_2, color: AppColors.primaryBlue),
+                  prefixIcon: Icon(Icons.person_2, color: AppColors.accent),
                   hintText: 'Last Name',
                   border: InputBorder.none,
                   contentPadding: EdgeInsets.symmetric(vertical: 15),
@@ -162,7 +162,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                       onPressed: () => setState(() => _selectedGender = 'male'),
                       style: TextButton.styleFrom(
                         backgroundColor: _selectedGender == 'male'
-                            ? AppColors.primaryBlue
+                            ? AppColors.accent
                             : Colors.transparent,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(30),
@@ -184,7 +184,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                           setState(() => _selectedGender = 'female'),
                       style: TextButton.styleFrom(
                         backgroundColor: _selectedGender == 'female'
-                            ? AppColors.primaryBlue
+                            ? AppColors.accent
                             : Colors.transparent,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(30),
@@ -209,7 +209,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
               child: ElevatedButton(
                 onPressed: _isLoading ? null : _save,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primaryBlue,
+                  backgroundColor: AppColors.accent,
                   padding: const EdgeInsets.symmetric(vertical: 15),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(30),

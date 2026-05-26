@@ -148,6 +148,8 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
         ),
 
         actions: [
+          // PAST ORDERS BUTTON
+
           // WALLET BUTTON
           IconButton(
             icon: const Icon(
@@ -256,8 +258,7 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
                 ),
               ],
             ),
-
-         ],
+        ],
       ),
       body: menuAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
@@ -1014,10 +1015,7 @@ class _FavoriteButtonState extends ConsumerState<_FavoriteButton>
   }
 }
 
-// ── Sticky filter header delegate ────────────────────────────────────────────
-// Height: search(48) + gap(12) + toggle(52) + gap(16) + chips(40) + padding(32)
-// = 200px total
-
+// ── Queue position AppBar button ──────────────────────────────────────────────
 class _FilterHeaderDelegate extends SliverPersistentHeaderDelegate {
   final String searchQuery;
   final String selectedCategory;

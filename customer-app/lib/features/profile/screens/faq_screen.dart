@@ -50,9 +50,9 @@ class FaqScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.scaffoldBackground,
+      backgroundColor: AppColors.mainBg,
       appBar: AppBar(
-        backgroundColor: AppColors.primaryBlue,
+        backgroundColor: AppColors.accent,
         title: const Text(
           'FAQ',
           style: TextStyle(color: AppColors.textLight),
@@ -81,7 +81,7 @@ class FaqScreen extends StatelessWidget {
                   color: AppColors.textPrimary,
                 ),
               ),
-              iconColor: AppColors.primaryBlue,
+              iconColor: AppColors.accent,
               collapsedIconColor: AppColors.textSecondary,
               children: [
                 Padding(

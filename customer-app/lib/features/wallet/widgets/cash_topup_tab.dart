@@ -92,7 +92,7 @@ class _CashTopUpTabState extends ConsumerState<CashTopUpTab> {
               controller: _amountController,
               keyboardType: TextInputType.number,
               decoration: const InputDecoration(
-                prefixIcon: Icon(Icons.attach_money, color: AppColors.primaryBlue),
+                prefixIcon: Icon(Icons.attach_money, color: AppColors.accent),
                 hintText: 'Enter amount',
                 border: InputBorder.none,
                 contentPadding: EdgeInsets.symmetric(vertical: 15),

@@ -222,7 +222,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
                       child: ElevatedButton(
                         onPressed: authState.isLoading ? null : _submit,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primaryBlue,
+                          backgroundColor: AppColors.accent,
                           padding: const EdgeInsets.symmetric(vertical: 15),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(30),
@@ -263,7 +263,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
                             child: const Text(
                               'Resend OTP',
                               style: TextStyle(
-                                color: AppColors.primaryBlue,
+                                color: AppColors.accent,
                                 fontWeight: FontWeight.bold,
                                 fontSize: 15,
                               ),

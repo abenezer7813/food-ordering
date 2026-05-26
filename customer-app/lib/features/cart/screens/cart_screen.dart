@@ -91,11 +91,10 @@ class _CartScreenState extends ConsumerState<CartScreen> {
             if (confirmed == true) {
               setState(() => _isLoading = true);
               try {
-                final verifyResponse = await dio.post(
+                await dio.post(
                   '/payments/verify',
                   data: {'tx_ref': txRef},
                 );
-                print('SUCCESS: ${verifyResponse.data}');
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
@@ -103,7 +102,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                       backgroundColor: AppColors.success,
                     ),
                   );
-                  context.go('/menu');
+                  context.go('/menu', extra: {'lounge': widget.lounge, 'isNonCafe': widget.isNonCafe});
                 }
               } on DioException catch (e) {
                 final errorData = e.response?.data;
@@ -115,8 +114,8 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                 }
               }
             } else {
-              // User cancelled — go back to lounges
-              if (mounted) context.go('/menu');
+              // User cancelled — go back to menu
+              if (mounted) context.go('/menu', extra: {'lounge': widget.lounge, 'isNonCafe': widget.isNonCafe});
             }
           }
         }

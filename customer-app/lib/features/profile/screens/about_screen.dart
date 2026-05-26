@@ -7,9 +7,9 @@ class AboutScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.scaffoldBackground,
+      backgroundColor: AppColors.mainBg,
       appBar: AppBar(
-        backgroundColor: AppColors.primaryBlue,
+        backgroundColor: AppColors.accent,
         title: const Text(
           'About Us',
           style: TextStyle(color: AppColors.textLight),
@@ -26,7 +26,7 @@ class AboutScreen extends StatelessWidget {
               width: 100,
               height: 100,
               decoration: BoxDecoration(
-                color: AppColors.primaryBlue,
+                color: AppColors.accent,
                 borderRadius: BorderRadius.circular(24),
               ),
               child: const Icon(
@@ -220,11 +220,11 @@ class _TeamMember extends StatelessWidget {
         children: [
           CircleAvatar(
             radius: 18,
-            backgroundColor: AppColors.primaryBlue.withOpacity(0.1),
+            backgroundColor: AppColors.accent.withOpacity(0.1),
             child: Text(
               name[0],
               style: const TextStyle(
-                color: AppColors.primaryBlue,
+                color: AppColors.accent,
                 fontWeight: FontWeight.bold,
               ),
             ),

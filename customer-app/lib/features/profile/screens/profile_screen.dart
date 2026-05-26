@@ -14,9 +14,9 @@ class ProfileScreen extends ConsumerWidget {
     final profileAsync = ref.watch(profileProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.scaffoldBackground,
+      backgroundColor: AppColors.mainBg,
       appBar: AppBar(
-        backgroundColor: AppColors.primaryBlue,
+        backgroundColor: AppColors.accent,
         title: const Text(
           'My Profile',
           style: TextStyle(color: AppColors.textLight),
@@ -65,7 +65,7 @@ class ProfileScreen extends ConsumerWidget {
                     style: TextStyle(color: Colors.white),
                   ),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primaryBlue,
+                    backgroundColor: AppColors.accent,
                     padding: const EdgeInsets.symmetric(
                       horizontal: 30,
                       vertical: 12,
@@ -88,7 +88,7 @@ class ProfileScreen extends ConsumerWidget {
                   width: 100,
                   height: 100,
                   decoration: BoxDecoration(
-                    color: AppColors.primaryBlue,
+                    color: AppColors.accent,
                     shape: BoxShape.circle,
                   ),
                   child: Center(
@@ -222,7 +222,7 @@ class _ProfileRow extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
         children: [
-          Icon(icon, color: AppColors.primaryBlue, size: 20),
+          Icon(icon, color: AppColors.accent, size: 20),
           const SizedBox(width: 12),
           Text(
             label,

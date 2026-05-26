@@ -150,7 +150,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           text: "Login",
                           isLoading: authState.isLoading,
                           onTap: _submit,
-                          cardColor: AppColors.primaryBlue,
+                          cardColor: AppColors.accent,
                         ),
                         const SizedBox(height: 25),
                         Row(

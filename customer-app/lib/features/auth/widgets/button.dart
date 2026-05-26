@@ -36,7 +36,7 @@ class Buttons {
             ],
             color: isLoading
                 ? Colors.grey
-                : cardColor ?? AppColors.primaryBlue,
+                : cardColor ?? AppColors.accent,
             borderRadius: BorderRadius.circular(borderRadius),
           ),
           child: Center(
