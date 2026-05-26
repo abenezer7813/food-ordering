@@ -4,8 +4,6 @@ import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/utils/cache_manager.dart';
 import '../providers/lounge_provider.dart';
-import '../../auth/providers/auth_provider.dart';
-import '../../../features/profile/providers/profile_provider.dart';
 import '../../../shared/widgets/app_drawer.dart';
 class LoungesScreen extends ConsumerWidget {
   const LoungesScreen({super.key});
