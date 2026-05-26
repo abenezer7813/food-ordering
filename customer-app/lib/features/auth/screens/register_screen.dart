@@ -24,6 +24,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
+  bool _isPasswordHidden = true;
+  bool _isConfirmPasswordHidden = true;
   String _selectedGender = 'male';
   String? _deviceToken;
 
@@ -157,19 +159,34 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                         InputFields.textInput(
                           controller: _passwordController,
                           prefixIcon: Icons.lock,
-                          suffixIcon: Icons.visibility_off,
+                          suffixIcon: _isPasswordHidden
+                              ? Icons.visibility_off
+                              : Icons.visibility,
                           text: 'Password',
-                          isObscure: true,
+                          isObscure: _isPasswordHidden,
                           validator: InputValidator.passwordValidator,
+                          onSuffixTap: () {
+                            setState(() {
+                              _isPasswordHidden = !_isPasswordHidden;
+                            });
+                          },
                         ),
                         const SizedBox(height: 15),
                         InputFields.textInput(
                           controller: _confirmPasswordController,
                           prefixIcon: Icons.password,
-                          suffixIcon: Icons.visibility,
+                          suffixIcon: _isConfirmPasswordHidden
+                              ? Icons.visibility_off
+                              : Icons.visibility,
                           text: 'Confirm Password',
-                          isObscure: true,
+                          isObscure: _isConfirmPasswordHidden,
                           validator: InputValidator.passwordValidator,
+                          onSuffixTap: () {
+                            setState(() {
+                              _isConfirmPasswordHidden =
+                                  !_isConfirmPasswordHidden;
+                            });
+                          },
                         ),
                         const SizedBox(height: 15),
 

@@ -6,6 +6,7 @@ import '../providers/wallet_provider.dart';
 import '../widgets/chapa_topup_tab.dart';
 import '../widgets/cash_topup_tab.dart';
 import '../widgets/bank_topup_tab.dart';
+import '../widgets/topup_requests_section.dart';
 
 class WalletScreen extends ConsumerWidget {
   final Lounge lounge;
@@ -17,7 +18,7 @@ class WalletScreen extends ConsumerWidget {
     final walletAsync = ref.watch(walletProvider(lounge.id));
 
     return Scaffold(
-      backgroundColor: AppColors.scaffoldBackground,
+      backgroundColor: AppColors.mainBg,
       appBar: AppBar(
         backgroundColor: AppColors.accent,
         title: const Text(
@@ -132,7 +133,9 @@ class WalletScreen extends ConsumerWidget {
                     ),
                   ),
                 ),
-              ],
+
+                // Approval progress for cash & bank requests
+                TopUpRequestsSection(loungeId: lounge.id),              ],
             ),
           ),
         ),

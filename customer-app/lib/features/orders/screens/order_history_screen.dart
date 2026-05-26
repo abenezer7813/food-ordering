@@ -25,28 +25,84 @@ class OrderHistoryScreen extends ConsumerWidget {
         ),
       ),
       drawer: const AppDrawer(),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: 2,
-        selectedItemColor: AppColors.accent,
-        unselectedItemColor: AppColors.textSecondary,
-        onTap: (index) {
-          if (index == 0) context.go('/lounges');
-          if (index == 1) context.go('/orders');
-          if (index == 2) context.push('/history');
-        },
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.restaurant),
-            label: 'Lounges',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.receipt_long),
-            label: 'My Orders',
-          ),
-          BottomNavigationBarItem(icon: Icon(Icons.history), label: 'History'),
-        ],
+      bottomNavigationBar: Container(
+  margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+  decoration: BoxDecoration(
+    color: Colors.white,
+    borderRadius: BorderRadius.circular(24),
+    boxShadow: [
+      BoxShadow(
+        color: Colors.black.withOpacity(0.08),
+        blurRadius: 20,
+        offset: const Offset(0, 6),
       ),
-      body: RefreshIndicator(
+    ],
+  ),
+
+  child: ClipRRect(
+    borderRadius: BorderRadius.circular(24),
+
+    child: BottomNavigationBar(
+      type: BottomNavigationBarType.fixed,
+      backgroundColor: Colors.white,
+
+      currentIndex: 0,
+
+      selectedItemColor: AppColors.accent,
+      unselectedItemColor: AppColors.textSecondary,
+
+      selectedLabelStyle: const TextStyle(
+        fontWeight: FontWeight.bold,
+        fontSize: 12,
+      ),
+
+      unselectedLabelStyle: const TextStyle(
+        fontSize: 11,
+      ),
+
+      elevation: 0,
+
+      onTap: (index) {
+
+        if (index == 0) {
+          context.go('/lounges');
+        }
+
+       
+
+        if (index == 1) {
+          context.go('/orders');
+        }
+
+        if (index == 2) {
+          context.push('/history');
+        }
+      },
+
+      items: const [
+
+        BottomNavigationBarItem(
+          icon: Icon(Icons.restaurant_rounded),
+          activeIcon: Icon(Icons.restaurant_menu_rounded),
+          label: 'Lounges',
+        ),
+
+       
+        BottomNavigationBarItem(
+          icon: Icon(Icons.receipt_long_outlined),
+          activeIcon: Icon(Icons.receipt_long_rounded),
+          label: 'Orders',
+        ),
+
+        BottomNavigationBarItem(
+          icon: Icon(Icons.history_rounded),
+          activeIcon: Icon(Icons.history_toggle_off_rounded),
+          label: 'History',
+        ),
+      ],
+    ),
+  ),
+),body: RefreshIndicator(
         onRefresh: () async {
           ref.invalidate(myOrdersProvider);
           await ref.read(myOrdersProvider.future);
