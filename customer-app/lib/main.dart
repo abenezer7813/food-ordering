@@ -26,6 +26,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'core/services/notification_service.dart';
 import 'package:food_ordering_app/features/menu/screens/favorites_screen.dart';
+import 'package:food_ordering_app/features/orders/screens/lounge_orders_screen.dart';
 import 'package:food_ordering_app/features/auth/screens/forgot_password_screen.dart';
 
 final goRouter = GoRouter(
@@ -149,6 +150,13 @@ final goRouter = GoRouter(
         final lounge = extra['lounge'] as Lounge;
         final isNonCafe = extra['isNonCafe'] as bool;
         return FavoritesScreen(lounge: lounge, isNonCafe: isNonCafe);
+      },
+    ),
+    GoRoute(
+      path: '/lounge-orders',
+      builder: (context, state) {
+        final lounge = state.extra as Lounge;
+        return LoungeOrdersScreen(lounge: lounge);
       },
     ),
   ],
