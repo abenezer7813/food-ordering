@@ -1,4 +1,4 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { authApi } from "@/lib/api";
 import { useAuthStore } from "@/lib/auth-store";
@@ -140,11 +140,13 @@ export function useChangePassword() {
 
 export function useLogout() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const { logout } = useAuthStore();
 
   return useMutation({
     mutationFn: async () => {
       logout();
+      queryClient.clear();
     },
     onSuccess: () => {
       router.replace("/auth/login");

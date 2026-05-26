@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { useActiveLoungeStore } from "./active-lounge-store";
 
 interface User {
   id: string;
@@ -43,6 +44,9 @@ export const useAuthStore = create<AuthState>((set) => ({
     // 👇 clear cookies
     document.cookie = "token=; path=/; max-age=0";
     document.cookie = "is_first_login=; path=/; max-age=0";
+
+    // 👇 clear active lounge state
+    useActiveLoungeStore.getState().clear();
 
     set({ user: null, token: null, isAuthenticated: false });
   },

@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import z from "zod";
 import { authMiddleware, requireRole } from "../middleware/auth.js";
-import { zValidator } from "@hono/zod-validator";
+import { zValidator } from "../utils/validator.js";
 import { handleError } from "../utils/errors.js";
 import { collectOrder, createOrder, createWalkInOrder, getCustomerOrders, getLoungeOrders, updateOrderStatus } from "../services/order.service.js";
 import { db } from "../db/index.js";

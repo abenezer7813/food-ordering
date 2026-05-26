@@ -35,7 +35,7 @@ class ProfileService {
       'gender': gender,
     });
   } on DioException catch (e) {
-    throw e.response?.data['message'] ?? 'Failed to update profile';
+    throw e.response?.data['error'] ?? e.response?.data['message'] ?? 'Failed to update profile';
   }
 }
   
