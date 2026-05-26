@@ -123,7 +123,7 @@ class _LoungeOrdersScreenState extends ConsumerState<LoungeOrdersScreen> {
                         o.status != 'collected',
                   )
                   .toList()
-                ..sort((a, b) => a.createdAt.compareTo(b.createdAt));
+                ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
           if (activeOrders.isEmpty) {
             return RefreshIndicator(
