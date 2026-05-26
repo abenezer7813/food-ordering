@@ -1,7 +1,6 @@
-import { and, eq,gte,lte } from "drizzle-orm";
+import { and, eq, gte, lte } from "drizzle-orm";
 import { db } from "../db/index.js";
-import { findStaff } from "./common.js";
-import { lounges, orders, sales_report } from "../db/schema.js";
+import { lounges, orders, sales_report, lounge_staff } from "../db/schema.js";
 import { Errors } from "../utils/errors.js";
 
 export async function generateReport(
@@ -9,7 +8,9 @@ export async function generateReport(
   period: 'daily' | 'weekly' | 'monthly',
   loungeIdParam?: string
 ){
-  const  staffEntry=await findStaff(staffId)
+  const staffEntry = await db.query.lounge_staff.findFirst({
+    where: eq(lounge_staff.user_id, staffId)
+  })
   let loungeId: string
 
   if (loungeIdParam) {

@@ -14,8 +14,6 @@ import {
   ActionIcon,
   useMantineColorScheme,
   Box,
-  SimpleGrid,
-  Card,
   Anchor,
 } from "@mantine/core";
 import {
@@ -28,12 +26,7 @@ import {
 import { useLogin } from "@/hooks/queries/useAuth";
 import { useRouter } from "next/navigation";
 
-const demoAccounts = [
-  { role: "Super Admin", email: "admin@test.com", color: "violet" },
-  { role: "Provider", email: "provider@university.edu", color: "blue" },
-  { role: "Cashier", email: "cashier4@test.com", color: "teal" },
-  { role: "Cook", email: "cook@university.edu", color: "orange" },
-];
+
 
 export default function LoginPage() {
   const { colorScheme, toggleColorScheme } = useMantineColorScheme();
@@ -68,11 +61,7 @@ export default function LoginPage() {
     }
   };
 
-  const fillDemoAccount = (demoEmail: string) => {
-    setEmail(demoEmail);
-    setPassword("admin123");
-    setErrors({ email: "", password: "" });
-  };
+
 
   return (
     <Box
@@ -271,31 +260,7 @@ export default function LoginPage() {
               </Stack>
             </form>
 
-            {/* Demo Accounts */}
-            <Box mt="xl" pt="xl" style={{ borderTop: "1px solid var(--mantine-color-gray-3)" }}>
-              <Text size="xs" fw={600} tt="uppercase" c="dimmed" mb="md">
-                Demo accounts — password: password123
-              </Text>
-              <SimpleGrid cols={2} spacing="xs">
-                {demoAccounts.map((acc) => (
-                  <Card
-                    key={acc.role}
-                    padding="sm"
-                    radius="md"
-                    withBorder
-                    style={{ cursor: "pointer" }}
-                    onClick={() => fillDemoAccount(acc.email)}
-                  >
-                    <Text size="xs" fw={600}>
-                      {acc.role}
-                    </Text>
-                    <Text size="xs" c="dimmed" truncate>
-                      {acc.email.split("@")[0]}
-                    </Text>
-                  </Card>
-                ))}
-              </SimpleGrid>
-            </Box>
+
           </Box>
         </Container>
       </Box>
