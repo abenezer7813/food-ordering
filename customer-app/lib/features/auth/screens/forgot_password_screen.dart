@@ -144,7 +144,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                           text: 'Send OTP',
                           isLoading: authState.isLoading,
                           onTap: _sendOtp,
-                          cardColor: AppColors.primaryBlue,
+                          cardColor: AppColors.accent,
                         ),
                       ],
                     ),
@@ -190,7 +190,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                           text: 'Reset Password',
                           isLoading: authState.isLoading,
                           onTap: _resetPassword,
-                          cardColor: AppColors.primaryBlue,
+                          cardColor: AppColors.accent,
                         ),
                         const SizedBox(height: 15),
                         Buttons.textButton(

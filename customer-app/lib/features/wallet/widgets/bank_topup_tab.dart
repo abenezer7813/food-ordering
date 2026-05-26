@@ -118,7 +118,7 @@ class _BankTopUpTabState extends ConsumerState<BankTopUpTab> {
               controller: _amountController,
               keyboardType: TextInputType.number,
               decoration: const InputDecoration(
-                prefixIcon: Icon(Icons.attach_money, color: AppColors.primaryBlue),
+                prefixIcon: Icon(Icons.attach_money, color: AppColors.accent),
                 hintText: 'Enter amount',
                 border: InputBorder.none,
                 contentPadding: EdgeInsets.symmetric(vertical: 15),
@@ -136,7 +136,7 @@ class _BankTopUpTabState extends ConsumerState<BankTopUpTab> {
                 color: AppColors.background,
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                  color: AppColors.primaryBlue.withOpacity(0.3),
+                  color: AppColors.accent.withOpacity(0.3),
                   style: BorderStyle.solid,
                 ),
               ),
@@ -152,7 +152,7 @@ class _BankTopUpTabState extends ConsumerState<BankTopUpTab> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(Icons.upload_file,
-                            color: AppColors.primaryBlue, size: 30),
+                            color: AppColors.accent, size: 30),
                         SizedBox(height: 8),
                         Text(
                           'Tap to upload receipt',
@@ -169,7 +169,7 @@ class _BankTopUpTabState extends ConsumerState<BankTopUpTab> {
             child: ElevatedButton(
               onPressed: _isLoading ? null : _submit,
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primaryBlue,
+                backgroundColor: AppColors.accent,
                 padding: const EdgeInsets.symmetric(vertical: 15),
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(30)),

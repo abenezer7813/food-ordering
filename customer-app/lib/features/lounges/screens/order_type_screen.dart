@@ -12,9 +12,9 @@ class OrderTypeScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
-      backgroundColor: AppColors.scaffoldBackground,
+      backgroundColor: AppColors.mainBg,
       appBar: AppBar(
-        backgroundColor: AppColors.primaryBlue,
+        backgroundColor: AppColors.accent,
         title: Text(
           lounge.name,
           style: const TextStyle(color: AppColors.textLight),
@@ -86,10 +86,10 @@ class _OrderTypeCard extends StatelessWidget {
               width: 50,
               height: 50,
               decoration: BoxDecoration(
-                color: AppColors.primaryBlue.withOpacity(0.1),
+                color: AppColors.accent.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Icon(icon, color: AppColors.primaryBlue),
+              child: Icon(icon, color: AppColors.accent),
             ),
             const SizedBox(width: 16),
             Expanded(

@@ -19,7 +19,7 @@ class MainScaffold extends ConsumerWidget {
       body: child,
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: currentIndex,
-        selectedItemColor: AppColors.primaryBlue,
+        selectedItemColor: AppColors.accent,
         unselectedItemColor: AppColors.textSecondary,
         onTap: (index) {
           if (index == 0) context.go('/lounges');

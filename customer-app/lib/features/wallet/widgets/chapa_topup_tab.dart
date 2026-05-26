@@ -141,7 +141,7 @@ class _ChapaTopUpTabState extends ConsumerState<ChapaTopUpTab> {
                   child: Text(
                     'ETB $amount',
                     style: const TextStyle(
-                      color: AppColors.primaryBlue,
+                      color: AppColors.accent,
                       fontWeight: FontWeight.bold,
                       fontSize: 12,
                     ),

@@ -50,9 +50,9 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
     final authState = ref.watch(authProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.scaffoldBackground,
+      backgroundColor: AppColors.mainBg,
       appBar: AppBar(
-        backgroundColor: AppColors.primaryBlue,
+        backgroundColor: AppColors.accent,
         title: const Text(
           'Change Password',
           style: TextStyle(color: AppColors.textLight),
@@ -76,7 +76,7 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
                   controller: _newPasswordController,
                   obscureText: true,
                   decoration: const InputDecoration(
-                    prefixIcon: Icon(Icons.lock, color: AppColors.primaryBlue),
+                    prefixIcon: Icon(Icons.lock, color: AppColors.accent),
                     hintText: 'New Password',
                     border: InputBorder.none,
                     contentPadding: EdgeInsets.symmetric(vertical: 15),
@@ -99,7 +99,7 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
                   controller: _confirmPasswordController,
                   obscureText: true,
                   decoration: const InputDecoration(
-                    prefixIcon: Icon(Icons.lock_outline, color: AppColors.primaryBlue),
+                    prefixIcon: Icon(Icons.lock_outline, color: AppColors.accent),
                     hintText: 'Confirm Password',
                     border: InputBorder.none,
                     contentPadding: EdgeInsets.symmetric(vertical: 15),
@@ -117,7 +117,7 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
                 child: ElevatedButton(
                   onPressed: authState.isLoading ? null : _submit,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primaryBlue,
+                    backgroundColor: AppColors.accent,
                     padding: const EdgeInsets.symmetric(vertical: 15),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(30),

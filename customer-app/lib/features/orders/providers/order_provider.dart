@@ -12,3 +12,11 @@ final myOrdersProvider = FutureProvider<List<Order>>((ref) async {
   final orderService = ref.watch(orderServiceProvider);
   return orderService.getMyOrders();
 });
+
+final queuePositionProvider = FutureProvider.family<QueuePosition, String>((
+  ref,
+  loungeId,
+) async {
+  final orderService = ref.watch(orderServiceProvider);
+  return orderService.getQueuePosition(loungeId);
+});

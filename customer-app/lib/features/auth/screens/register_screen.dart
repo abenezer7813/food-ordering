@@ -212,7 +212,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                                   margin: const EdgeInsets.all(4),
                                   decoration: BoxDecoration(
                                     color: _selectedGender == 'male'
-                                        ? AppColors.primaryBlue
+                                        ? AppColors.accent
                                         : Colors.transparent,
                                     borderRadius: BorderRadius.circular(30),
                                   ),
@@ -251,7 +251,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                                   margin: const EdgeInsets.all(4),
                                   decoration: BoxDecoration(
                                     color: _selectedGender == 'female'
-                                        ? AppColors.primaryBlue
+                                        ? AppColors.accent
                                         : Colors.transparent,
                                     borderRadius: BorderRadius.circular(30),
                                   ),
@@ -297,7 +297,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                           child: ElevatedButton(
                             onPressed: authState.isLoading ? null : _submit,
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.primaryBlue,
+                              backgroundColor: AppColors.accent,
                               padding: const EdgeInsets.symmetric(vertical: 15),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(30),
@@ -384,7 +384,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                               child: const Text(
                                 'Login',
                                 style: TextStyle(
-                                  color: AppColors.primaryBlue,
+                                  color: AppColors.accent,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
