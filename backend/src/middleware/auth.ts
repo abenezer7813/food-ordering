@@ -1,12 +1,13 @@
 import type { Context, Next } from "hono";
 import jwt from "jsonwebtoken";
+import { Errors } from "../utils/errors.js";
 
 export async function authMiddleware(c:Context,next:Next){
     
     const authHeader=c.req.header('Authorization')
 
     if(!authHeader||!authHeader.startsWith('Bearer ')){
-        return c.json({error:'unaothorized- no token provided'},401)
+        throw Errors.unauthorized('Unauthorized: No token provided')
     }
 
     const token=authHeader.split(' ')[1]
@@ -21,7 +22,7 @@ export async function authMiddleware(c:Context,next:Next){
         
         await next()//authentication passed so continue
     }catch{
-        return c.json({error:'unauthorized -invaid token'},401)
+        throw Errors.unauthorized('Unauthorized: Invalid token')
     }
 
 }
@@ -33,7 +34,7 @@ export function requireRole(...roles:string[]){
 
         if(!roles.includes(userRole)){
             console.log(roles)
-            return c.json({error:'fobidden -insuffient permissions'},403)
+            throw Errors.forbidden('Forbidden: Insufficient permissions')
         }
         await next()
     }

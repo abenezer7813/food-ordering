@@ -2,11 +2,11 @@ import z from "zod";
 import { createLoungeStaff, deactivateStaff, getLoungeStaff, getManagers } from "../services/staff.service.js";
 import { Hono, type Context } from "hono";
 import { authMiddleware, requireRole } from "../middleware/auth.js";
-import { zValidator } from "@hono/zod-validator";
+import { zValidator } from "../utils/validator.js";
 import { db } from "../db/index.js";
 import { eq } from "drizzle-orm";
 import { lounges, lounge_staff } from "../db/schema.js";
-import { handleError } from "../utils/errors.js";
+import { AppError, handleError } from "../utils/errors.js";
 
 
 type Variables = {
@@ -67,8 +67,8 @@ staffRoutes.post('/',
             const data = c.req.valid('json')
             const staff = await createLoungeStaff(data, lounge.id)
             return c.json({ staff })
-        } catch (e: any) {
-            return c.json({ error: e.message }, 400)
+        } catch (e) {
+            return handleError(e, c)
         }
     }
 )
@@ -115,12 +115,12 @@ staffRoutes.get('/my-lounge',
             const staffEntry = await db.query.lounge_staff.findFirst({
                 where: eq(lounge_staff.user_id, userId)
             })
-            if (!staffEntry) return c.json({ error: 'No lounge assigned' }, 404)
+            if (!staffEntry) throw new AppError('No lounge assigned', 404)
 
             const lounge = await db.query.lounges.findFirst({
                 where: eq(lounges.id, staffEntry.lounge_id)
             })
-            if (!lounge) return c.json({ error: 'Lounge not found' }, 404)
+            if (!lounge) throw new AppError('Lounge not found', 404)
 
             return c.json({ lounge_id: lounge.id, lounge_name: lounge.name })
         } catch (e) {

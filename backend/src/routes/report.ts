@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { authMiddleware, requireRole } from "../middleware/auth.js";
 import z from "zod";
-import { zValidator } from "@hono/zod-validator";
+import { zValidator } from "../utils/validator.js";
 import { handleError } from "../utils/errors.js";
 import { generateReport } from "../services/report.service.js";
 

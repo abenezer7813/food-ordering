@@ -13,7 +13,7 @@ class WalletService {
       );
       return response.data['is_non_cafe'];
     } on DioException catch (e) {
-      throw e.response?.data['message'] ?? 'Failed to check status';
+      throw e.response?.data['error'] ?? e.response?.data['message'] ?? 'Failed to check status';
     }
   }
 
@@ -22,7 +22,7 @@ class WalletService {
       final response = await _dio.get('/wallet/$loungeId');
       return response.data;
     } on DioException catch (e) {
-      throw e.response?.data['message'] ?? 'Failed to fetch wallet';
+      throw e.response?.data['error'] ?? e.response?.data['message'] ?? 'Failed to fetch wallet';
     }
   }
 
@@ -40,7 +40,7 @@ class WalletService {
         'tx_ref': response.data['tx_ref'],
       };
     } on DioException catch (e) {
-      throw e.response?.data['message'] ?? 'Failed to initiate top up';
+      throw e.response?.data['error'] ?? e.response?.data['message'] ?? 'Failed to initiate top up';
     }
   }
 
@@ -48,7 +48,7 @@ class WalletService {
     try {
       await _dio.post('/wallet/verify', data: {'tx_ref': txRef});
     } on DioException catch (e) {
-      throw e.response?.data['message'] ?? 'Verification failed';
+      throw e.response?.data['error'] ?? e.response?.data['message'] ?? 'Verification failed';
     }
   }
 
@@ -60,7 +60,7 @@ class WalletService {
       );
       return response.data['wallet'];
     } on DioException catch (e) {
-      throw e.response?.data['message'] ?? 'Failed to register as non-café';
+      throw e.response?.data['error'] ?? e.response?.data['message'] ?? 'Failed to register as non-café';
     }
   }
 
@@ -81,7 +81,7 @@ class WalletService {
       );
       return response.data['request'];
     } on DioException catch (e) {
-      throw e.response?.data['message'] ?? 'Failed to submit top up request';
+      throw e.response?.data['error'] ?? e.response?.data['message'] ?? 'Failed to submit top up request';
     }
   }
 
@@ -90,7 +90,7 @@ class WalletService {
       final response = await _dio.get('/wallet/$loungeId/topup-requests/my');
       return response.data['requests'];
     } on DioException catch (e) {
-      throw e.response?.data['message'] ?? 'Failed to fetch requests';
+      throw e.response?.data['error'] ?? e.response?.data['message'] ?? 'Failed to fetch requests';
     }
   }
 }

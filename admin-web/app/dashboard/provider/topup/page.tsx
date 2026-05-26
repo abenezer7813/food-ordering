@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { DashboardShell } from "@/components/layout/DashboardShell";
-import { useMyLounge } from "@/hooks/queries/useStaff";
+import { useActiveLoungeStore } from "@/lib/active-lounge-store";
 import {
   useTopUpRequests,
   useManagerApproveTopUp,
@@ -248,8 +248,7 @@ function RequestsTable({
 }
 
 export default function ManagerTopUpPage() {
-  const { data: myLounge, isLoading: loungeLoading } = useMyLounge();
-  const loungeId = myLounge?.lounge_id ?? null;
+  const { activeLoungeId: loungeId } = useActiveLoungeStore();
   const { data: requests, isLoading } = useTopUpRequests(loungeId);
 
   // Manager sees cashier_approved bank transfers awaiting final approval
@@ -260,7 +259,7 @@ export default function ManagerTopUpPage() {
 
   const allRequests = requests ?? [];
 
-  if (loungeLoading) {
+  if (!loungeId) {
     return (
       <DashboardShell allowedRoles={["lounge_manager"]}>
         <Center py="xl"><Loader /></Center>

@@ -70,10 +70,13 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   const { data: myLounges } = useMyLounges();
   const { activeLoungeId, setActiveLounge } = useActiveLoungeStore();
 
-  // Initialize active lounge for manager on first load
+  // Initialize/validate active lounge for manager on first load or changes
   useEffect(() => {
-    if (isManager && myLounges && myLounges.length > 0 && !activeLoungeId) {
-      setActiveLounge(myLounges[0].id, myLounges[0].name);
+    if (isManager && myLounges && myLounges.length > 0) {
+      const isValidLounge = myLounges.some((l) => l.id === activeLoungeId);
+      if (!isValidLounge) {
+        setActiveLounge(myLounges[0].id, myLounges[0].name);
+      }
     }
   }, [isManager, myLounges, activeLoungeId, setActiveLounge]);
 
