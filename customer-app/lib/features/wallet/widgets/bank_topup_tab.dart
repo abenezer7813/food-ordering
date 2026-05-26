@@ -84,6 +84,8 @@ class _BankTopUpTabState extends ConsumerState<BankTopUpTab> {
             backgroundColor: AppColors.success,
           ),
         );
+        // Refresh the requests list so the new request appears immediately
+        ref.invalidate(myTopUpRequestsProvider(widget.lounge.id));
       }
     } catch (e) {
       if (mounted) {

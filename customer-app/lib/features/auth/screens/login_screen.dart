@@ -20,7 +20,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-
+  bool _isPasswordHidden = true;
   @override
   void dispose() {
     _emailController.dispose();
@@ -114,13 +114,21 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         ),
                         const SizedBox(height: 25),
                         InputFields.textInput(
-                          controller: _passwordController,
-                          prefixIcon: Icons.lock,
-                          suffixIcon: Icons.visibility_off,
-                          text: 'Password',
-                          isObscure: true,
-                          validator: InputValidator.passwordValidator,
-                        ),
+  controller: _passwordController,
+  prefixIcon: Icons.lock,
+  suffixIcon: _isPasswordHidden
+      ? Icons.visibility_off
+      : Icons.visibility,
+  text: 'Password',
+  isObscure: _isPasswordHidden,
+  validator: InputValidator.passwordValidator,
+
+  onSuffixTap: () {
+    setState(() {
+      _isPasswordHidden = !_isPasswordHidden;
+    });
+  },
+),
                         const SizedBox(height: 15),
 
                         Row(

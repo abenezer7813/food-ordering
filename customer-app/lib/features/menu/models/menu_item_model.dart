@@ -8,6 +8,10 @@ class MenuItem {
   final bool isAvailable;
   final int estimatedPreparationTime;
 
+  // ADD THESE
+  final String category;
+  final String type;
+
   MenuItem({
     required this.id,
     required this.loungeId,
@@ -17,6 +21,10 @@ class MenuItem {
     required this.price,
     required this.isAvailable,
     required this.estimatedPreparationTime,
+
+    // ADD THESE
+    required this.category,
+    required this.type,
   });
 
   factory MenuItem.fromJson(Map<String, dynamic> json) {
@@ -26,9 +34,13 @@ class MenuItem {
       name: json['name'],
       description: json['description'],
       imageUrl: json['image_url'],
-      price: double.parse(json['price']),
+      price: double.parse(json['price'].toString()),
       isAvailable: json['is_available'],
       estimatedPreparationTime: json['estimated_preparation_time'],
+
+      // ADD THESE
+      category: json['category'] ?? 'food',
+      type: json['type'] ?? 'lunch',
     );
   }
 }
